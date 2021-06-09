@@ -7,7 +7,7 @@ from configparser import ConfigParser
 
 config = ConfigParser()
 filename = 'ARMORED_toolkit_prefs.ini'
-filepath = os.path.join(bpy.utils.user_resource('SCRIPTS', 'ADDONS', create=True), filename)
+filepath = os.path.join(bpy.utils.user_resource('SCRIPTS', create=True), filename)
 # print(f'filepath: {filepath}')
 
 config.add_section('keymap')
@@ -34,14 +34,19 @@ def get_name():
     return os.path.basename(get_path())
 
 
-def get_prefs():
+def preferences():
     return bpy.context.preferences.addons[get_name()].preferences
 
 
 def update(prop, category):
     '''Enable or Disable different aspects of the Addon based on the Preferences'''
 
-    state = True if getattr(get_prefs(), prop) == 'ENABLED' else False
+    # state = True if getattr(preferences(), prop) == 'ENABLED' else False
+    # state = getattr(preferences(), prop) == 'ENABLED'
+    state = getattr(preferences(), prop)
+    
+    # state = getattr(AddonClass.preferences(), prop)
+    # print(f'STATE: {state}')
 
     if category == 'keymap':
         if state:   getattr(keymaps, ('register_' + prop))()
@@ -50,7 +55,7 @@ def update(prop, category):
     elif category == 'matcap':
         if state:   matcaps.load_matcaps()
         else:       matcaps.unload_matcaps()
-    
+
     elif category == 'theme':
         if state:   themes.apply_theme()
         else:       themes.reset_theme()
@@ -64,27 +69,7 @@ def update(prop, category):
 
         ARMORED_mode_toggle.unregister()
         ARMORED_mode_toggle.register()
-        
 
-        # try: 
-        #     bpy.utils.unregister_class(ARMORED_OT_mode_toggle_grouped);
-        # except NameError: pass
-        # try: 
-        #     bpy.utils.unregister_class(ARMORED_OT_mode_toggle_normal);
-        # except NameError: pass
-        # try: 
-        #     bpy.utils.unregister_class(ARMORED_OT_mode_toggle_none);
-        # except NameError: pass
-
-        # try:
-        #     bpy.utils.register_class(ARMORED_OT_mode_toggle_grouped)
-        # except NameError: pass
-        # try:
-        #     bpy.utils.register_class(ARMORED_OT_mode_toggle_normal)
-        # except NameError: pass
-        # try:
-        #     bpy.utils.register_class(ARMORED_OT_mode_toggle_none)
-        # except NameError: pass
 
     if category != 'operator_refresh':
         config.set(category, prop, str(state))
@@ -92,33 +77,18 @@ def update(prop, category):
             config.write(configfile)
 
 
-# def load_configold():
-#     print('loading config')
-#     config.read(filepath)
-#     for section in config.sections():
-#         # print(f'SECTION {section}')
-
-#         for (prop, _) in config.items(section):
-#             state = config.getboolean(section, prop)
-
-#             state = 'ENABLED' if state else 'DISABLED'
-
-#             # setattr(get_prefs(), prop, state)
-#             setattr(get_prefs(), prop, state)
-#             # print(f'    SET prop:{prop} state:{state}')
-
 def load_config():
     config.read(filepath)
     for section in config.sections():
-        # print(f'SECTION {section}')
 
         for (prop, _) in config.items(section):
-            val = config.getboolean(section, prop)
-            state = 'ENABLED' if val else 'DISABLED'
+            state = config.getboolean(section, prop)
+            # val = config.getboolean(section, prop)
+            # state = 'ENABLED' if val else 'DISABLED'
             
             # In case the the preferences reset because the addon was disabled and enabled again.
-            if state != getattr(get_prefs(), prop):
-                setattr(get_prefs(), prop, state)
+            if state != getattr(preferences(), prop):
+                setattr(preferences(), prop, state)
                 # print(f'config {prop} different blender')
             else:
                 pass
@@ -127,12 +97,12 @@ def load_config():
 
 # def write_config():
 #     return
-#     maya_navigation    = True if get_prefs().maya_navigation    == 'ENABLED' else False
-#     loop_selection     = True if get_prefs().loop_selection     == 'ENABLED' else False
-#     deselect_with_ctrl = True if get_prefs().deselect_with_ctrl == 'ENABLED' else False
-#     tab_skips_undo     = True if get_prefs().tab_skips_undo     == 'ENABLED' else False
-#     sculpting_setup    = True if get_prefs().tab_skips_undo     == 'ENABLED' else False
-#     operator_shortcuts = True if get_prefs().operator_shortcuts == 'ENABLED' else False
+#     maya_navigation    = True if preferences().maya_navigation    == 'ENABLED' else False
+#     loop_selection     = True if preferences().loop_selection     == 'ENABLED' else False
+#     deselect_with_ctrl = True if preferences().deselect_with_ctrl == 'ENABLED' else False
+#     tab_skips_undo     = True if preferences().tab_skips_undo     == 'ENABLED' else False
+#     sculpting_setup    = True if preferences().tab_skips_undo     == 'ENABLED' else False
+#     operator_shortcuts = True if preferences().operator_shortcuts == 'ENABLED' else False
 
 #     config.set('keymap', 'maya_navigation', str(maya_navigation))
 #     config.set('keymap', 'loop_selection', str(loop_selection))

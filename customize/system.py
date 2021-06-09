@@ -43,8 +43,9 @@ def reset_system_preferences():
 
 
 def register():
-    from .. utils.preferences import get_prefs
-    state = True if get_prefs().system_preferences == 'ENABLED' else False
+    from .. utils import addon
+
+    state = addon.preferences().system_preferences == 'ENABLED'
 
     if state:
         handlers.load_post.append(apply_delay)
@@ -55,4 +56,6 @@ def register():
 def unregister():
     if isinstance(bpy.context.space_data, bpy.types.SpacePreferences):
         reset_system_preferences()
-        if debug: print('Reset System Preferences because addon was Disabled')
+        
+        if debug: 
+            print('Reset System Preferences because addon was Disabled')

@@ -1,7 +1,8 @@
 # v1.0
 
 import bpy
-from .. utils.preferences import get_prefs, get_path, get_name
+from .. utils import addon
+# from .. utils.addon import get_prefs, get_path, get_name
 
 
 debug = False
@@ -110,7 +111,7 @@ class ARMORED_OT_mode_toggle_none(bpy.types.Operator):
 def register():
     # from .. utils.preferences import get_prefs, get_path, get_name
 
-    undo_mode = get_prefs().tab_undo_mode
+    undo_mode = addon.preferences().tab_undo_mode
     # print(f'TAB Undo History Mode: {undo_mode}')
 
     if undo_mode == 'GROUPED':

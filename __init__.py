@@ -2,7 +2,7 @@ bl_info = {
     'name'        : 'Toolkit',
     'description' : 'A collection of Scripts, Hotkeys and more',
     'author'      : 'Armored Colony',
-    'version'     : (0, 2),
+    'version'     : (0, 1),
     'blender'     : (2, 90),
     'location'    : 'Search Menu (ARMORED prefix)',
     # 'warning'     : 'Whatever', # Used for warning icon and text in addons panel.
@@ -12,6 +12,7 @@ bl_info = {
 
 import bpy
 import os
+from . import preferences
 
 
 def import_modules(folderstring, reportstring='Found', debug=False):
@@ -45,10 +46,12 @@ for folder in sub_folders:
 
 
 def register():
+    preferences.register()
     for mod in ALL_MODULES:
         mod.register()
 
 
 def unregister():
+    preferences.unregister()
     for mod in reversed(ALL_MODULES):
         mod.unregister()

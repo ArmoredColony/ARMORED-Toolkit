@@ -1,7 +1,11 @@
 import bpy
 from bpy.props import EnumProperty, BoolProperty, StringProperty
 
-from .. utils.preferences import get_name, get_path, update, folder_paths
+from . utils import (
+    addon,
+    extrapy,
+)
+# from . utils.addon import get_name, get_path, update, folder_paths
 
 import os
 from os.path import dirname
@@ -18,70 +22,64 @@ from os.path import dirname
 # print(f'testerino patherino {folder_paths.datafiles_path}')
 
 class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
-    bl_idname = get_name()
+    bl_idname = addon.get_name()
 
     def update_theme(self, context):
-        update(prop='themes', category='theme')
+        addon.update(prop='themes', category='theme')
 
     def update_maya_navigation(self, context):
-        update(prop='maya_navigation', category='keymap')
+        addon.update(prop='maya_navigation', category='keymap')
 
     def update_loop_selection(self, context):
-        update(prop='loop_selection', category='keymap')
+        addon.update(prop='loop_selection', category='keymap')
 
     def update_deselect_with_ctrl(self, context):
-        update(prop='deselect_with_ctrl', category='keymap')
+        addon.update(prop='deselect_with_ctrl', category='keymap')
 
     def update_sculpting_setup(self, context):
-        update(prop='sculpting_setup', category='keymap')
+        addon.update(prop='sculpting_setup', category='keymap')
 
     def update_operator_shortcuts(self, context):
-        update(prop='operator_shortcuts', category='keymap')
+        addon.update(prop='operator_shortcuts', category='keymap')
     
     def update_smart_tab(self, context):
-        update(prop='smart_tab', category='keymap')
+        addon.update(prop='smart_tab', category='keymap')
 
     def update_tab_undo_mode(self, context):
-        update(prop='tab_undo_mode', category='operator_refresh')
+        addon.update(prop='tab_undo_mode', category='operator_refresh')
 
     def update_matcaps(self, context):
-        update(prop='matcaps', category='matcap')
+        addon.update(prop='matcaps', category='matcap')
     
     def update_system_preferences(self, context):
-        update(prop='system_preferences', category='system')
+        addon.update(prop='system_preferences', category='system')
 
     def test_func(self, context):
         write_default_config()
         
 
-    maya_navigation: EnumProperty(
-        name='Maya Navigation', 
-        default='DISABLED',
-        update=update_maya_navigation,
-        description='Maya style navigation (ALT + Mouse Buttons)',
-        items=[ ('ENABLED',  'On', ''), 
-                ('DISABLED', 'Off (default)', ''),
-            ]
-        )
+    maya_navigation: BoolProperty(name='Maya Navigation', default=False,
+            description='Maya style navigation (ALT + Mouse Buttons)',
+            update=update_maya_navigation)
 
-    loop_selection: EnumProperty(
+    loop_selection: BoolProperty(
         name='Double Click to Select Loops', 
-        default='DISABLED',
+        default=False,
         update=update_loop_selection,
         description='Double Click to select component loops',
-        items=[ ('ENABLED',  'On', ''), 
-                ('DISABLED', 'Off (default)', ''),
-            ]
+        # items=[ ('ENABLED',  'On', ''), 
+                # ('DISABLED', 'Off (default)', ''),
+            # ]
         )
 
-    deselect_with_ctrl: EnumProperty(
+    deselect_with_ctrl: BoolProperty(
         name='Deselect with CTRL', 
-        default='DISABLED',
+        default=False,
         update=update_deselect_with_ctrl,
         description='CTRL Click now deselects stuff (both in Edit and Object mode)',
-        items=[ ('ENABLED',  'On', ''), 
-                ('DISABLED', 'Off (default)', ''),
-            ]
+        # items=[ ('ENABLED',  'On', ''), 
+        #         ('DISABLED', 'Off (default)', ''),
+        #     ]
         )
 
     list_description = [
@@ -101,24 +99,24 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
     packed_description = '\n'.join(line for line in list_description)
 
-    sculpting_setup: EnumProperty(
+    sculpting_setup: BoolProperty(
         name='Sculpting Setup', 
-        default='DISABLED',
+        default=False,
         update=update_sculpting_setup,
-        description='Enables number row keymaps for brushes and more',
-        items=[ ('ENABLED',  'On', packed_description), 
-                ('DISABLED', 'Off (default)', ''),
-            ]
+        description='Enables number row keymaps for brushes and more\n\n' + packed_description,
+        # items=[ ('ENABLED',  'On', packed_description), 
+        #         ('DISABLED', 'Off (default)', ''),
+        #     ]
         )
 
-    operator_shortcuts: EnumProperty(
+    operator_shortcuts: BoolProperty(
         name='Operator Keymaps', 
-        default='DISABLED',
+        default=False,
         update=update_operator_shortcuts,
         description='Enables the predefined keymaps for a bunch of operators in the Armored Toolkit',
-        items=[ ('ENABLED',  'On', ''), 
-                ('DISABLED', 'Off (default)', ''),
-            ]
+        # items=[ ('ENABLED',  'On', ''), 
+        #         ('DISABLED', 'Off (default)', ''),
+        #     ]
         )
     
     list_description = [
@@ -129,14 +127,14 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
     packed_description = '\u2022 ' + ( '\n\u2022 '.join(line for line in list_description) )
     
-    smart_tab: EnumProperty(
+    smart_tab: BoolProperty(
         name='Smart TAB', 
-        default='DISABLED',
+        default=False,
         update=update_smart_tab,
         description='Use custom TAB functionality',
-        items=[ ('ENABLED',  'On', packed_description), 
-                ('DISABLED', 'Off (default)', 'Use blender\'s default TAB operator'),
-            ]
+        # items=[ ('ENABLED',  'On', packed_description), 
+        #         ('DISABLED', 'Off (default)', 'Use blender\'s default TAB operator'),
+        #     ]
         )
 
     tab_undo_mode: EnumProperty(
@@ -150,36 +148,36 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             ]
         )
 
-    matcaps: EnumProperty(
+    matcaps: BoolProperty(
         name='Matcaps', 
-        default='ENABLED',
+        default=True,
         update=update_matcaps,
         description='Consult the PDF for a detailed list of my personal keymaps',
-        items=[ ('ENABLED', 'On (default)', 'Override Blender\'s default Keymaps with my personal setup.'), 
-                ('DISABLED', 'Off', 'Disable my personal Keymaps and leave Blender\'s keymaps as they were'),
-            ]
+        # items=[ ('ENABLED', 'On (default)', 'Override Blender\'s default Keymaps with my personal setup.'), 
+        #         ('DISABLED', 'Off', 'Disable my personal Keymaps and leave Blender\'s keymaps as they were'),
+        #     ]
         )
 
-    themes: EnumProperty(
+    themes: BoolProperty(
         name='Themes', 
-        default='ENABLED',
+        default=True,
         update=update_theme,
         description='Consult the PDF for a detailed list of my personal keymaps',
-        items=[ ('ENABLED', 'On', 'Use one of my custom themes.'), 
-                ('DISABLED', 'Off (default)', 'Use whatever theme oyu had before.'),
-            ]
+        # items=[ ('ENABLED', 'On', 'Use one of my custom themes.'), 
+        #         ('DISABLED', 'Off (default)', 'Use whatever theme oyu had before.'),
+        #     ]
         )
 
-    theme_list: EnumProperty(
-        name='Themes', 
-        default='BLENDER_DARK',
-        # update=update_theme,
-        description='Consult the PDF for a detailed list of my personal keymaps',
-        items=[ ('BLENDER_DARK', 'Blender Dark (default)', 'Default Blender Theme.'), 
-                ('ARMORED_PINK', 'Armored Pink (NEW)', 'My current theme (dark).'),
-                ('ARMORED_PINK_LEGACY', 'Armored Pink (legacy)', 'My previous theme (not as dark).'),
-            ]
-        )
+    # theme_list: BoolProperty(
+    #     name='Themes', 
+    #     default='BLENDER_DARK',
+    #     # update=update_theme,
+    #     description='Consult the PDF for a detailed list of my personal keymaps',
+    #     # items=[ ('BLENDER_DARK', 'Blender Dark (default)', 'Default Blender Theme.'), 
+    #     #         ('ARMORED_PINK', 'Armored Pink (NEW)', 'My current theme (dark).'),
+    #     #         ('ARMORED_PINK_LEGACY', 'Armored Pink (legacy)', 'My previous theme (not as dark).'),
+    #     #     ]
+    #     )
 
     list_description = [
         'Show Splash OFF',
@@ -191,14 +189,14 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
     packed_description = '\u2022 ' + ( '\n\u2022 '.join(line for line in list_description) )
     
-    system_preferences: EnumProperty(
+    system_preferences: BoolProperty(
         name='Armored Preferences', 
-        default='DISABLED',
+        default=False,
         update=update_system_preferences,
         description='My custom system preferences',
-        items=[ ('ENABLED', 'On', packed_description), 
-                ('DISABLED', 'Off (default)', 'Use default system preferences'),
-            ]
+        # items=[ ('ENABLED', 'On', packed_description), 
+        #         ('DISABLED', 'Off (default)', 'Use default system preferences'),
+        #     ]
         )
     
     matcaps_folder: StringProperty(
@@ -212,38 +210,37 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
     def draw(self, context):
         layout = self.layout
-        layout.use_property_split = True
+        layout.use_property_split = False
 
         def enum_line(prop, icon, url):
-            row = box.row(align=True)
-            row.prop(self, prop, expand=True); 
-            row.separator()
-            row.operator('wm.url_open', icon=icon, text='').url = url
+            row = box.column(align=True).row()
             
-        box = layout.box()
-        box.label(text='Keymap Overrides')
-        enum_line(prop='maya_navigation',    icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='loop_selection',     icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='deselect_with_ctrl', icon='FILE_MOVIE', url='www.youtube.com')
-        # enum_line(prop='tab_skips_undo',     icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='sculpting_setup', icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='operator_shortcuts', icon='FILE_MOVIE', url='www.youtube.com')
+            row.label(text=extrapy.format_string(prop))
+            row.separator()
+            row.prop(self, prop, text='On' if getattr(self, prop) else 'Off', toggle=True); 
+            # row.separator()
+            row.operator('wm.url_open', icon=icon, text='').url = url
 
-        layout.use_property_split = False
         split = layout.split()
         col1 = split.column(align=True)
         col2 = split.column(align=True)
 
-        box = col2.box()
-        box.label(text='Smart TAB')
-        # box.prop(self, 'smart_tab', expand=False)
-        enum_line(prop='smart_tab', icon='FILE_MOVIE', url='www.youtube.com')
-        # if self.smart_tab:
-        if self.smart_tab == 'ENABLED':
-            box.prop(self, 'tab_undo_mode', text='', expand=False)
-            # enum_line(prop='tab_undo_mode', icon='MATERIAL', url='www.youtube.com')
-        col2.separator()
+        box = col1.box()
+        box.label(text='Keymap Overrides')
+        enum_line(prop='maya_navigation',    icon='FILE_MOVIE', url='www.youtube.com')
+        enum_line(prop='loop_selection',     icon='FILE_MOVIE', url='www.youtube.com')
+        enum_line(prop='deselect_with_ctrl', icon='FILE_MOVIE', url='www.youtube.com')
+        enum_line(prop='sculpting_setup', icon='FILE_MOVIE', url='www.youtube.com')
+        enum_line(prop='operator_shortcuts', icon='FILE_MOVIE', url='www.youtube.com')
+        col1.separator()
 
+        # box = col2.box()
+        # box.label(text='Smart TAB')
+        # enum_line(prop='smart_tab', icon='FILE_MOVIE', url='www.youtube.com')
+        # if self.smart_tab == 'ENABLED':
+        #     box.prop(self, 'tab_undo_mode', text='', expand=False)
+        # col2.separator()
+        
         box = col1.box()
         box.label(text='Extra Matcaps')
         enum_line(prop='matcaps', icon='MATERIAL', url='www.youtube.com')
@@ -254,29 +251,19 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         enum_line(prop='system_preferences', icon='TOPBAR', url='www.youtube.com')
         col1.separator()
         
-        box = col1.box()
+        box = col2.box()
         box.label(text='Custom Theme')
-        # enum_line(prop='themes', icon='TOPBAR', url='www.youtube.com')
         box.operator('armored.theme_install', text='Load Armored Theme')
-        box.operator('preferences.reset_default_theme', text='Reset to Default')
-        col1.separator()
+        box.operator('preferences.reset_default_theme', text='Reset to Default Theme')
+        col2.separator()
 
-        # TEST PROPERTY
-        # box.prop(self, 'boolean')
-
-        # col2.separator()
-        # col2.separator()
-        # col2.separator()
-        # col2.separator()
-        # col2.separator()
-        # col2.separator()
-        col1.separator()
-        box = col1.box()
+        col2.separator()
+        box = col2.box()
         box.label(text='Useful Directories')
-        box.operator('armored.open_folder', text='Open Operator Folder', icon='ERROR')     .path = folder_paths.operators
-        box.operator('armored.open_folder', text='Open Startup Folder', icon='FILE_FOLDER').path = folder_paths.startup
-        box.operator('armored.open_folder', text='Open Matcaps Folder', icon='MATERIAL')   .path = folder_paths.matcaps
-        box.operator('armored.open_folder', text='Open Themes Folder', icon='TOPBAR')      .path = folder_paths.themes
+        box.operator('armored.open_folder', text='Open Operator Folder', icon='ERROR')     .path = addon.folder_paths.operators
+        box.operator('armored.open_folder', text='Open Startup Folder', icon='FILE_FOLDER').path = addon.folder_paths.startup
+        box.operator('armored.open_folder', text='Open Matcaps Folder', icon='MATERIAL')   .path = addon.folder_paths.matcaps
+        box.operator('armored.open_folder', text='Open Themes Folder', icon='TOPBAR')      .path = addon.folder_paths.themes
 
 
 

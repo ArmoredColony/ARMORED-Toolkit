@@ -28,9 +28,7 @@ def kmi_props(kmi_props, attr, value):
         print(f'Warning: {e}')
 
 
-def create_kmi(args, idname, key, event, ctrl=False, alt=False, shift=False):
-    km, keymap_list = args
-
+def create_kmi(idname, key, event, ctrl=False, alt=False, shift=False):
     kmi = km.keymap_items.new(idname, key, event, ctrl=ctrl, alt=alt, shift=shift)
     keymap_list.append((km, kmi))
 
@@ -38,40 +36,38 @@ def create_kmi(args, idname, key, event, ctrl=False, alt=False, shift=False):
 
 
 def register_maya_navigation():
+    global km, keymap_list
+    keymap_list = maya_navigation_keymaps
 
-# 3D View Global >>
     km = kc.keymaps.new('3D View', space_type='VIEW_3D', region_type='WINDOW', modal=False)
-    args = (km, maya_navigation_keymaps)
 
-    # Maya Style Navigation
-    create_kmi(args, 'view3d.rotate', 'LEFTMOUSE',   'CLICK_DRAG', alt=True)
-    create_kmi(args, 'view3d.move',   'MIDDLEMOUSE', 'PRESS', alt=True)
-    create_kmi(args, 'view3d.zoom',   'RIGHTMOUSE',  'PRESS', alt=True)
+    create_kmi('view3d.rotate', 'LEFTMOUSE',   'CLICK_DRAG', alt=True)
+    create_kmi('view3d.move',   'MIDDLEMOUSE', 'PRESS', alt=True)
+    create_kmi('view3d.zoom',   'RIGHTMOUSE',  'PRESS', alt=True)
 
     # print('ENABLED Maya Navigation')
 
 
 def register_loop_selection():
+    global km, keymap_list
+    keymap_list = loop_selection_keymaps
 
-# Mesh >>
     km = kc.keymaps.new(name='Mesh')
-    args = (km, loop_selection_keymaps)
-    # Global_Keys()
 
     # Loop Select
-    kmi = create_kmi(args, 'mesh.loop_select', 'LEFTMOUSE', 'DOUBLE_CLICK')
+    kmi = create_kmi('mesh.loop_select', 'LEFTMOUSE', 'DOUBLE_CLICK')
     kmi_props(kmi.properties, 'extend',   False)
     kmi_props(kmi.properties, 'deselect', False)
     kmi_props(kmi.properties, 'toggle',   False)
 
     # Loop Select ADD
-    kmi = create_kmi(args, 'mesh.loop_select', 'LEFTMOUSE', 'DOUBLE_CLICK', shift=True)
+    kmi = create_kmi('mesh.loop_select', 'LEFTMOUSE', 'DOUBLE_CLICK', shift=True)
     kmi_props(kmi.properties, 'extend',   True)
     kmi_props(kmi.properties, 'deselect', False)
     kmi_props(kmi.properties, 'toggle',   False)
 
     # Loop Select REMOVE
-    kmi = create_kmi(args, 'mesh.loop_select', 'LEFTMOUSE', 'DOUBLE_CLICK', ctrl=True)
+    kmi = create_kmi('mesh.loop_select', 'LEFTMOUSE', 'DOUBLE_CLICK', ctrl=True)
     kmi_props(kmi.properties, 'extend',   False)
     kmi_props(kmi.properties, 'deselect', True)
     kmi_props(kmi.properties, 'toggle',   False)
@@ -80,242 +76,215 @@ def register_loop_selection():
 
     
 def register_deselect_with_ctrl():
+    global km, keymap_list
+    keymap_list = deselect_with_ctrl_keymaps
 
-# Object Mode
     km = kc.keymaps.new(name='Object Mode')
-    args = (km, deselect_with_ctrl_keymaps)
-    create_kmi(args, 'armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
+    create_kmi('armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
 
-# Mesh >>
     km = kc.keymaps.new(name='Mesh')
-    args = (km, deselect_with_ctrl_keymaps)
-    create_kmi(args, 'armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
+    create_kmi('armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
 
-# Curve >>
     km = kc.keymaps.new('Curve', space_type='EMPTY', region_type='WINDOW', modal=False)
-    args = (km, deselect_with_ctrl_keymaps)
-    create_kmi(args, 'armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
+    create_kmi('armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
 
     # print('ENABLED Deselect with Ctrl')
 
 
 def register_smart_tab():
+    global km, keymap_list
+    keymap_list = smart_tab_keymaps
 
-# Object Non-modal
     km = kc.keymaps.new('Object Non-modal')
-    args = (km, smart_tab_keymaps)
-    
-    # create_kmi(args, 'armored.mode_toggle', 'TAB', 'PRESS')
-    create_kmi(args, 'armored.mode_toggle', 'TAB', 'PRESS')
+    create_kmi('armored.mode_toggle', 'TAB', 'PRESS')
 
     # print('ENABLED Smart TAB')
 
 
 def register_sculpting_setup():
+    global km, keymap_list
 
 # Sculpt
     km = kc.keymaps.new(name='Sculpt')
-    args = (km, sculpting_setup_keymaps)
+    keymap_list = sculpting_setup_keymaps
 
-    create_kmi(args, 'view3d.view_center_pick', 'F', 'PRESS', alt=True)
-    create_kmi(args, 'view3d.view_center_pick', 'C', 'PRESS')
-    create_kmi(args, 'view3d.view_center_pick', 'SPACE', 'PRESS')
-    create_kmi(args, 'view3d.armored_smart_subdivide', 'D', 'PRESS', ctrl=True)
-    # create_kmi(args, 'transform.translate', 'G', 'PRESS')
-    # create_kmi(args, 'view3d.armored_toggle_transform_tool', 'W', 'PRESS').properties.tool = 'builtin.move'
+    create_kmi('view3d.view_center_pick', 'F', 'PRESS', alt=True)
+    create_kmi('view3d.view_center_pick', 'C', 'PRESS')
+    create_kmi('view3d.view_center_pick', 'SPACE', 'PRESS')
+    create_kmi('view3d.armored_smart_subdivide', 'D', 'PRESS', ctrl=True)
+    # create_kmi('transform.translate', 'G', 'PRESS')
+    # create_kmi('view3d.armored_toggle_transform_tool', 'W', 'PRESS').properties.tool = 'builtin.move'
 
     # Invert brush stroke (set to ALT instead of CTRL)
-    create_kmi(args, 'sculpt.brush_stroke', 'LEFTMOUSE', 'PRESS', alt=True).properties.mode = 'INVERT'
+    create_kmi('sculpt.brush_stroke', 'LEFTMOUSE', 'PRESS', alt=True).properties.mode = 'INVERT'
 
     # BRUSHES
-    create_kmi(args, 'wm.tool_set_by_id', 'ONE',   'PRESS'          ).properties.name = 'builtin_brush.Clay Strips'
-    create_kmi(args, 'wm.tool_set_by_id', 'ONE',   'PRESS', alt=True).properties.name = 'builtin_brush.Clay'
+    create_kmi('wm.tool_set_by_id', 'ONE',   'PRESS'          ).properties.name = 'builtin_brush.Clay Strips'
+    create_kmi('wm.tool_set_by_id', 'ONE',   'PRESS', alt=True).properties.name = 'builtin_brush.Clay'
 
-    create_kmi(args, 'wm.tool_set_by_id', 'TWO',   'PRESS'          ).properties.name = 'builtin_brush.Draw Sharp'
-    create_kmi(args, 'wm.tool_set_by_id', 'TWO',   'PRESS', alt=True).properties.name = 'builtin_brush.Draw'
+    create_kmi('wm.tool_set_by_id', 'TWO',   'PRESS'          ).properties.name = 'builtin_brush.Draw Sharp'
+    create_kmi('wm.tool_set_by_id', 'TWO',   'PRESS', alt=True).properties.name = 'builtin_brush.Draw'
 
-    create_kmi(args, 'wm.tool_set_by_id', 'THREE', 'PRESS'          ).properties.name = 'builtin_brush.Scrape'
-    create_kmi(args, 'wm.tool_set_by_id', 'THREE', 'PRESS', alt=True).properties.name = 'builtin_brush.Flatten'
+    create_kmi('wm.tool_set_by_id', 'THREE', 'PRESS'          ).properties.name = 'builtin_brush.Scrape'
+    create_kmi('wm.tool_set_by_id', 'THREE', 'PRESS', alt=True).properties.name = 'builtin_brush.Flatten'
 
-    create_kmi(args, 'wm.tool_set_by_id', 'FOUR',  'PRESS'          ).properties.name = 'builtin_brush.Grab'
-    create_kmi(args, 'wm.tool_set_by_id', 'FOUR',  'PRESS', alt=True).properties.name = 'builtin_brush.Snake Hook'
+    create_kmi('wm.tool_set_by_id', 'FOUR',  'PRESS'          ).properties.name = 'builtin_brush.Grab'
+    create_kmi('wm.tool_set_by_id', 'FOUR',  'PRESS', alt=True).properties.name = 'builtin_brush.Snake Hook'
 
-    create_kmi(args, 'wm.tool_set_by_id', 'FIVE',  'PRESS'          ).properties.name = 'builtin_brush.Crease'
-    create_kmi(args, 'wm.tool_set_by_id', 'FIVE',  'PRESS', alt=True).properties.name = 'builtin_brush.Inflate'
+    create_kmi('wm.tool_set_by_id', 'FIVE',  'PRESS'          ).properties.name = 'builtin_brush.Crease'
+    create_kmi('wm.tool_set_by_id', 'FIVE',  'PRESS', alt=True).properties.name = 'builtin_brush.Inflate'
 
-    create_kmi(args, 'wm.context_toggle',  'W', 'PRESS', shift=True).properties.data_path = 'space_data.overlay.show_wireframes'
+    create_kmi('wm.context_toggle',  'W', 'PRESS', shift=True).properties.data_path = 'space_data.overlay.show_wireframes'
 
 
 def register_operator_shortcuts():
+    global km, keymap_list
+    keymap_list = operator_shortcuts_keymaps
 
     def global_focus_key():
-        create_kmi(args, 'mesh.armored_focus', 'F','PRESS')
+        create_kmi('mesh.armored_focus', 'F','PRESS')
 
     def Global_Keys():
-        create_kmi(args, 'screen.userpref_show', 'COMMA', 'PRESS', ctrl=True)
+        create_kmi('screen.userpref_show', 'COMMA', 'PRESS', ctrl=True)
 
-# Window
     km = kc.keymaps.new('Window', space_type='EMPTY', region_type='WINDOW', modal=False)
-    args = (km, operator_shortcuts_keymaps)
-
-    create_kmi(args, 'script.reload', 'F5', 'PRESS')
+    create_kmi('script.reload', 'F5', 'PRESS')
 
 
-# Generic (doesn't work unless separate from 3D View)
+    # Generic (doesn't work unless separate from 3D View)
     km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D', region_type='WINDOW', modal=False)
-    args = (km, operator_shortcuts_keymaps)
-    
-    create_kmi(args, 'screen.redo_last', 'T', 'PRESS')
+    create_kmi('screen.redo_last', 'T', 'PRESS')
 
 
-# 3D View Global
     km = kc.keymaps.new('3D View', space_type='VIEW_3D', region_type='WINDOW', modal=False)
-    args = (km, operator_shortcuts_keymaps)
     Global_Keys()
 
-    create_kmi(args, 'view3d.zoom_border', 'F',            'PRESS', ctrl=True, shift=True)
-    create_kmi(args, 'view3d.zoom_border', 'BUTTON4MOUSE', 'PRESS')
+    create_kmi('view3d.zoom_border', 'F',            'PRESS', ctrl=True, shift=True)
+    create_kmi('view3d.zoom_border', 'BUTTON4MOUSE', 'PRESS')
 
-    # create_kmi(args, 'wm.tool_set_by_id', 'Q', 'PRESS')        .properties.name = 'builtin.select_box'
-    create_kmi(args, 'view3d.armored_paint_select', 'Q', 'PRESS') # Tapping this will activate select_box instead.
-    create_kmi(args, 'wm.call_menu_pie', 'Q', 'DOUBLE_CLICK') .properties.name = 'ARMORED_MT_PIE_select'
+    # create_kmi('wm.tool_set_by_id', 'Q', 'PRESS')        .properties.name = 'builtin.select_box'
+    create_kmi('view3d.armored_paint_select', 'Q', 'PRESS') # Tapping this will activate select_box instead.
+    create_kmi('wm.call_menu_pie', 'Q', 'DOUBLE_CLICK') .properties.name = 'ARMORED_MT_PIE_select'
 
-    create_kmi(args, 'wm.context_toggle',  'W', 'PRESS', shift=True).properties.data_path = 'space_data.overlay.show_wireframes'
-    create_kmi(args, 'wm.context_toggle',  'W', 'PRESS', alt=True  ).properties.data_path = 'space_data.overlay.show_overlays'
+    create_kmi('wm.context_toggle',  'W', 'PRESS', shift=True).properties.data_path = 'space_data.overlay.show_wireframes'
+    create_kmi('wm.context_toggle',  'W', 'PRESS', alt=True  ).properties.data_path = 'space_data.overlay.show_overlays'
 
-    create_kmi(args, 'view3d.armored_toggle_transform_tool', 'W', 'PRESS').properties.tool = 'builtin.move'
-    # create_kmi(args, 'view3d.armored_toggle_transform_tool', 'S', 'PRESS').properties.tool = 'builtin.scale'
-    # create_kmi(args, 'view3d.armored_toggle_transform_tool', 'R', 'PRESS').properties.tool = 'builtin.rotate'
+    create_kmi('view3d.armored_toggle_transform_tool', 'W', 'PRESS').properties.tool = 'builtin.move'
+    # create_kmi('view3d.armored_toggle_transform_tool', 'S', 'PRESS').properties.tool = 'builtin.scale'
+    # create_kmi('view3d.armored_toggle_transform_tool', 'R', 'PRESS').properties.tool = 'builtin.rotate'
 
-    create_kmi(args, 'view3d.armored_open_most_recent',  'R', 'PRESS', alt=True,  shift=True)
-    create_kmi(args, 'view3d.armored_autosmooth',        'A', 'PRESS', ctrl=True, shift=True)
-    create_kmi(args, 'object.armored_rest_on_ground',    'R', 'PRESS', ctrl=True)
+    create_kmi('view3d.armored_open_most_recent',  'R', 'PRESS', alt=True,  shift=True)
+    create_kmi('view3d.armored_autosmooth',        'A', 'PRESS', ctrl=True, shift=True)
+    create_kmi('object.armored_rest_on_ground',    'R', 'PRESS', ctrl=True)
 
-    create_kmi(args, 'view3d.armored_toggle_cavity',     'C', 'PRESS', alt=True)
-    create_kmi(args, 'view3d.armored_cycle_cavity_type', 'C', 'PRESS', alt=True, shift=True)
-    create_kmi(args, 'view3d.armored_smart_loopcut',     'C', 'PRESS')
-    # create_kmi(args, 'view3d.armored_subdivide',         'D', 'PRESS', ctrl=True)
-    create_kmi(args, 'view3d.armored_smart_subdivide',         'D', 'PRESS', ctrl=True)
+    create_kmi('view3d.armored_toggle_cavity',     'C', 'PRESS', alt=True)
+    create_kmi('view3d.armored_cycle_cavity_type', 'C', 'PRESS', alt=True, shift=True)
+    create_kmi('view3d.armored_smart_loopcut',     'C', 'PRESS')
+    # create_kmi('view3d.armored_subdivide',         'D', 'PRESS', ctrl=True)
+    create_kmi('view3d.armored_smart_subdivide',         'D', 'PRESS', ctrl=True)
 
-    create_kmi(args, 'view3d.armored_single_subdivision_level', 'PAGE_UP',   'PRESS').properties.action = 'INCREASE'
-    create_kmi(args, 'view3d.armored_single_subdivision_level', 'PAGE_DOWN', 'PRESS').properties.action = 'DECREASE'
+    create_kmi('view3d.armored_single_subdivision_level', 'PAGE_UP',   'PRESS').properties.action = 'INCREASE'
+    create_kmi('view3d.armored_single_subdivision_level', 'PAGE_DOWN', 'PRESS').properties.action = 'DECREASE'
     
 
-# Object Mode
     km = kc.keymaps.new(name='Object Mode')
-    args = (km, operator_shortcuts_keymaps)
     Global_Keys()
     global_focus_key()
 
-    create_kmi(args, 'object.delete', 'X', 'PRESS').properties.confirm = False
+    create_kmi('object.delete', 'X', 'PRESS').properties.confirm = False
 
-    kmi = create_kmi(args, 'object.move_to_collection', 'N', 'PRESS', shift=True)
+    kmi = create_kmi('object.move_to_collection', 'N', 'PRESS', shift=True)
     kmi_props(kmi.properties, 'collection_index', 0)
     kmi_props(kmi.properties, 'is_new', True)
 
 
-# Mesh
     km = kc.keymaps.new(name='Mesh')
-    args = (km, operator_shortcuts_keymaps)
     Global_Keys()
     global_focus_key()
 
-    create_kmi(args, 'mesh.faces_select_linked_flat', 'F', 'PRESS', shift=True)
-    create_kmi(args, 'mesh.edge_face_add',            'F', 'PRESS', alt=True)
-    create_kmi(args, 'mesh.f2',                       'F', 'PRESS', alt=True) # Same keymap as above, but seems to take prio if f2 is installed and viceversa.
+    create_kmi('mesh.faces_select_linked_flat', 'F', 'PRESS', shift=True)
+    create_kmi('mesh.edge_face_add',            'F', 'PRESS', alt=True)
+    create_kmi('mesh.f2',                       'F', 'PRESS', alt=True) # Same keymap as above, but seems to take prio if f2 is installed and viceversa.
 
-    create_kmi(args, 'mesh.armored_extract',    'E', 'PRESS', ctrl=True, shift=True)
-    create_kmi(args, 'mesh.armored_duplicate',  'D', 'PRESS', ctrl=True, shift=True)
+    create_kmi('mesh.armored_extract',    'E', 'PRESS', ctrl=True, shift=True)
+    create_kmi('mesh.armored_duplicate',  'D', 'PRESS', ctrl=True, shift=True)
 
-    create_kmi(args, 'transform.shrink_fatten', 'S', 'PRESS', alt=True).properties.use_even_offset = True
+    create_kmi('transform.shrink_fatten', 'S', 'PRESS', alt=True).properties.use_even_offset = True
     
-    create_kmi(args, 'mesh.armored_select_adjacent',  'HOME',         'PRESS', shift=True)
-    create_kmi(args, 'mesh.armored_select_adjacent',  'WHEELUPMOUSE', 'PRESS', ctrl=True, shift=True)
+    create_kmi('mesh.armored_select_adjacent',  'HOME',         'PRESS', shift=True)
+    create_kmi('mesh.armored_select_adjacent',  'WHEELUPMOUSE', 'PRESS', ctrl=True, shift=True)
 
-    create_kmi(args, 'mesh.armored_fast_bevel', 'B', 'PRESS')
-    create_kmi(args, 'mesh.bridge_edge_loops',  'B', 'PRESS', shift=True)
+    create_kmi('mesh.armored_fast_bevel', 'B', 'PRESS')
+    create_kmi('mesh.bridge_edge_loops',  'B', 'PRESS', shift=True)
 
-    create_kmi(args, 'object.armored_rest_on_ground', 'R', 'PRESS', ctrl=True)
-    create_kmi(args, 'mesh.loop_multi_select',        'R', 'PRESS', alt=True).properties.ring = True # Fallback for the next entry.
-    create_kmi(args, 'mesh.armored_select_edge_ring', 'R', 'PRESS', alt=True) 
+    create_kmi('object.armored_rest_on_ground', 'R', 'PRESS', ctrl=True)
+    create_kmi('mesh.loop_multi_select',        'R', 'PRESS', alt=True).properties.ring = True # Fallback for the next entry.
+    create_kmi('mesh.armored_select_edge_ring', 'R', 'PRESS', alt=True) 
 
-    create_kmi(args, 'mesh.armored_connect',     'C',    'PRESS', shift=True)
-    create_kmi(args, 'mesh.armored_align_verts', 'V',    'PRESS', shift=True)
+    create_kmi('mesh.armored_connect',     'C',    'PRESS', shift=True)
+    create_kmi('mesh.armored_align_verts', 'V',    'PRESS', shift=True)
 
-    create_kmi(args, 'mesh.armored_crease', 'BUTTON5MOUSE', 'PRESS', shift=True).properties.crease_mode = 'CREASE'
-    create_kmi(args, 'mesh.armored_crease', 'BUTTON4MOUSE', 'PRESS', shift=True).properties.crease_mode = 'UNCREASE'
-    create_kmi(args, 'mesh.armored_crease', 'NUMPAD_PLUS',  'PRESS', shift=True).properties.crease_mode = 'CREASE'
-    create_kmi(args, 'mesh.armored_crease', 'NUMPAD_MINUS', 'PRESS', shift=True).properties.crease_mode = 'UNCREASE'
+    create_kmi('mesh.armored_crease', 'BUTTON5MOUSE', 'PRESS', shift=True).properties.crease_mode = 'CREASE'
+    create_kmi('mesh.armored_crease', 'BUTTON4MOUSE', 'PRESS', shift=True).properties.crease_mode = 'UNCREASE'
+    create_kmi('mesh.armored_crease', 'NUMPAD_PLUS',  'PRESS', shift=True).properties.crease_mode = 'CREASE'
+    create_kmi('mesh.armored_crease', 'NUMPAD_MINUS', 'PRESS', shift=True).properties.crease_mode = 'UNCREASE'
 
-    create_kmi(args, 'mesh.select_linked_pick', 'LEFTMOUSE', 'DOUBLE_CLICK', alt=True )           .properties.deselect = False
-    create_kmi(args, 'mesh.select_linked_pick', 'LEFTMOUSE', 'DOUBLE_CLICK', alt=True, shift=True).properties.deselect = True
+    create_kmi('mesh.select_linked_pick', 'LEFTMOUSE', 'DOUBLE_CLICK', alt=True )           .properties.deselect = False
+    create_kmi('mesh.select_linked_pick', 'LEFTMOUSE', 'DOUBLE_CLICK', alt=True, shift=True).properties.deselect = True
     
-    create_kmi(args, 'mesh.select_more','WHEELUPMOUSE',   'PRESS', shift=True)
-    create_kmi(args, 'mesh.select_less','WHEELDOWNMOUSE', 'PRESS', shift=True)
+    create_kmi('mesh.select_more','WHEELUPMOUSE',   'PRESS', shift=True)
+    create_kmi('mesh.select_less','WHEELDOWNMOUSE', 'PRESS', shift=True)
 
-    create_kmi(args, 'mesh.region_to_loop', 'FIVE',         'PRESS', alt=True)
-    create_kmi(args, 'mesh.region_to_loop', 'BUTTON5MOUSE', 'PRESS')
+    create_kmi('mesh.region_to_loop', 'FIVE',         'PRESS', alt=True)
+    create_kmi('mesh.region_to_loop', 'BUTTON5MOUSE', 'PRESS')
 
-    create_kmi(args, 'mesh.armored_subd_toggle', 'ONE',   'PRESS', alt=True).properties.mode = 'OFF'
-    create_kmi(args, 'mesh.armored_subd_toggle', 'TWO',   'PRESS', alt=True).properties.mode = 'HYBRID'
-    create_kmi(args, 'mesh.armored_subd_toggle', 'THREE', 'PRESS', alt=True).properties.mode = 'FULL'
+    create_kmi('mesh.armored_subd_toggle', 'ONE',   'PRESS', alt=True).properties.mode = 'OFF'
+    create_kmi('mesh.armored_subd_toggle', 'TWO',   'PRESS', alt=True).properties.mode = 'HYBRID'
+    create_kmi('mesh.armored_subd_toggle', 'THREE', 'PRESS', alt=True).properties.mode = 'FULL'
 
-    create_kmi(args, 'mesh.armored_center_vertices', 'X', 'PRESS', ctrl=True, alt=True).properties.axis = 'X'
-    create_kmi(args, 'mesh.armored_center_vertices', 'Y', 'PRESS', ctrl=True, alt=True).properties.axis = 'Y'
-    create_kmi(args, 'mesh.armored_center_vertices', 'Z', 'PRESS', ctrl=True, alt=True).properties.axis = 'Z'
+    create_kmi('mesh.armored_center_vertices', 'X', 'PRESS', ctrl=True, alt=True).properties.axis = 'X'
+    create_kmi('mesh.armored_center_vertices', 'Y', 'PRESS', ctrl=True, alt=True).properties.axis = 'Y'
+    create_kmi('mesh.armored_center_vertices', 'Z', 'PRESS', ctrl=True, alt=True).properties.axis = 'Z'
 
     # SubD Hotkeys for Edit Mode
-    create_kmi(args, 'object.subdivision_set', 'ZERO',  'PRESS', ctrl=True).properties.level = 0
-    create_kmi(args, 'object.subdivision_set', 'ONE',   'PRESS', ctrl=True).properties.level = 1
-    create_kmi(args, 'object.subdivision_set', 'TWO',   'PRESS', ctrl=True).properties.level = 2
-    create_kmi(args, 'object.subdivision_set', 'THREE', 'PRESS', ctrl=True).properties.level = 3
-    create_kmi(args, 'object.subdivision_set', 'FOUR',  'PRESS', ctrl=True).properties.level = 4
-    create_kmi(args, 'object.subdivision_set', 'FIVE',  'PRESS', ctrl=True).properties.level = 5
-    create_kmi(args, 'object.subdivision_set', 'SIX',   'PRESS', ctrl=True).properties.level = 6
-    create_kmi(args, 'object.subdivision_set', 'SEVEN', 'PRESS', ctrl=True).properties.level = 7
-    create_kmi(args, 'object.subdivision_set', 'EIGHT', 'PRESS', ctrl=True).properties.level = 8
-    create_kmi(args, 'object.subdivision_set', 'NINE',  'PRESS', ctrl=True).properties.level = 9
+    create_kmi('object.subdivision_set', 'ZERO',  'PRESS', ctrl=True).properties.level = 0
+    create_kmi('object.subdivision_set', 'ONE',   'PRESS', ctrl=True).properties.level = 1
+    create_kmi('object.subdivision_set', 'TWO',   'PRESS', ctrl=True).properties.level = 2
+    create_kmi('object.subdivision_set', 'THREE', 'PRESS', ctrl=True).properties.level = 3
+    create_kmi('object.subdivision_set', 'FOUR',  'PRESS', ctrl=True).properties.level = 4
+    create_kmi('object.subdivision_set', 'FIVE',  'PRESS', ctrl=True).properties.level = 5
+    create_kmi('object.subdivision_set', 'SIX',   'PRESS', ctrl=True).properties.level = 6
+    create_kmi('object.subdivision_set', 'SEVEN', 'PRESS', ctrl=True).properties.level = 7
+    create_kmi('object.subdivision_set', 'EIGHT', 'PRESS', ctrl=True).properties.level = 8
+    create_kmi('object.subdivision_set', 'NINE',  'PRESS', ctrl=True).properties.level = 9
 
 
-
-
-
-# Map Curve
     km = kc.keymaps.new('Curve', space_type='EMPTY', region_type='WINDOW', modal=False)
-    args = (km, operator_shortcuts_keymaps)
     Global_Keys()
     global_focus_key()
 
-    create_kmi(args, 'curve.shortest_path_pick', 'LEFTMOUSE', 'PRESS', ctrl=True, shift=True)
-    # create_kmi(args, 'curve.draw', 'LEFTMOUSE', 'PRESS', alt=True)
+    create_kmi('curve.shortest_path_pick', 'LEFTMOUSE', 'PRESS', ctrl=True, shift=True)
+    # create_kmi('curve.draw', 'LEFTMOUSE', 'PRESS', alt=True)
 
 
 # Property Editor
     # km = kc.keymaps.new('Property Editor', space_type='PROPERTIES', region_type='WINDOW', modal=False)
 
     # Works for other key combos, like CTRL+Shift, but not for Shift Only.
-    # create_kmi(args, 'screen.space_context_cycle', 'WHEELUPMOUSE',   'PRESS', shift=True).properties.direction = 'PREV'
-    # create_kmi(args, 'screen.space_context_cycle', 'WHEELDOWNMOUSE', 'PRESS', shift=True).properties.direction = 'NEXT'
+    # create_kmi('screen.space_context_cycle', 'WHEELUPMOUSE',   'PRESS', shift=True).properties.direction = 'PREV'
+    # create_kmi('screen.space_context_cycle', 'WHEELDOWNMOUSE', 'PRESS', shift=True).properties.direction = 'NEXT'
 
 
-# 'ACCENT_GRAVE'
-#Window
     km = kc.keymaps.new('Window', space_type='EMPTY', region_type='WINDOW', modal=False)
-    args = (km, operator_shortcuts_keymaps)
     Global_Keys()
-    # create_kmi(args, 'wm.search_menu', 'SPACE', 'PRESS')
+    # create_kmi('wm.search_menu', 'SPACE', 'PRESS')
     
 
-# Outliner
     km = kc.keymaps.new('Outliner', space_type='OUTLINER', region_type='WINDOW', modal=False)
-    args = (km, operator_shortcuts_keymaps)
     Global_Keys()
-    create_kmi(args, 'outliner.show_active', 'F', 'PRESS', ctrl=True, shift=True)
+    create_kmi('outliner.show_active', 'F', 'PRESS', ctrl=True, shift=True)
 
     # print('ENABLED Operator Keymaps')
-    # version = '.'.join(str(n) for n in bl_info['version'])
-    # print(f'ARMORED Hotkeys v{version} was installed.')
-
 
 
 def unregister_keymaps(prop):
@@ -343,27 +312,25 @@ def register():
     and registration, but I still have to check them anyway in case some properties have not been
     written to config.ini in the first place'''
 
-    from .. utils.preferences import load_config
-    load_config()
+    from .. utils import addon 
+    addon.load_config()
 
-    from .. utils.preferences import get_prefs
-
-    if  get_prefs().maya_navigation == 'ENABLED':
+    if  addon.preferences().maya_navigation:
         register_maya_navigation()
 
-    if get_prefs().loop_selection == 'ENABLED':
+    if addon.preferences().loop_selection:
         register_loop_selection()
         
-    if get_prefs().deselect_with_ctrl == 'ENABLED':
+    if addon.preferences().deselect_with_ctrl:
         register_deselect_with_ctrl()
 
-    if get_prefs().smart_tab == 'ENABLED':
+    if addon.preferences().smart_tab:
         register_smart_tab()
 
-    if get_prefs().sculpting_setup == 'ENABLED':
+    if addon.preferences().sculpting_setup:
         register_sculpting_setup()
 
-    if get_prefs().operator_shortcuts == 'ENABLED':
+    if addon.preferences().operator_shortcuts:
         register_operator_shortcuts()
 
 

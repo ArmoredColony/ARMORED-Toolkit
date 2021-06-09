@@ -48,7 +48,7 @@ def load_matcaps():
     bpy.context.preferences.studio_lights.refresh()
 
     # if all([mc in matcaps for mc in ['matcap_base.exr', 'matcap_shiny_red.exr']]):
-        # get_prefs().switchmatcap1 = 'matcap_base.exr'
+        # preferences().switchmatcap1 = 'matcap_base.exr'
 
 def unload_matcaps():
     import os
@@ -65,8 +65,8 @@ def unload_matcaps():
     bpy.context.preferences.studio_lights.refresh()
 
     # if all([mc in matcaps for mc in ['matcap_base.exr', 'matcap_shiny_red.exr']]):
-        # get_prefs().switchmatcap1 = 'matcap_base.exr'
-        # get_prefs().switchmatcap2 = 'matcap_shiny_red.exr'
+        # preferences().switchmatcap1 = 'matcap_base.exr'
+        # preferences().switchmatcap2 = 'matcap_shiny_red.exr'
 
 
 def register():

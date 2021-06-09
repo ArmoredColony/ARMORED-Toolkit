@@ -1,7 +1,7 @@
 import bpy
 import os
 from bpy.props import StringProperty
-from .. utils.preferences import get_path
+from .. utils.addon import get_path
 
 # v1.0
 

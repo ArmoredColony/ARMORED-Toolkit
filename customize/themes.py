@@ -35,7 +35,7 @@ def reset_theme():
 
 def register():
     return
-    # state = True if get_prefs().themes == 'ENABLED' else False
+    # state = True if preferences().themes == 'ENABLED' else False
 
     # if state:
     #     handlers.load_post.append(apply_theme_delay)
