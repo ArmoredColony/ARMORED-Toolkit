@@ -221,7 +221,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             # row.separator()
             row.operator('wm.url_open', icon=icon, text='').url = url
 
-        split = layout.split()
+        split = layout.split(factor=0.6)
         col1 = split.column(align=True)
         col2 = split.column(align=True)
 
