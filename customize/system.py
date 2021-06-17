@@ -4,8 +4,10 @@ import contextlib
 
 from bpy.app import handlers
 
+from .. utils import addon
 
-debug = True
+
+debug = False
 
 
 @handlers.persistent
@@ -24,28 +26,32 @@ def apply_system_preferences():
     bpy.context.preferences.view.show_splash = False
     bpy.context.preferences.view.show_tooltips_python = True
     bpy.context.preferences.view.show_developer_ui = True
+    # bpy.context.preferences.view.smooth_view = 100
     bpy.context.preferences.inputs.drag_threshold_mouse = 1
     bpy.context.preferences.inputs.invert_mouse_zoom = True
     bpy.context.preferences.edit.undo_steps = 90
 
-    if debug: print('ENABLED Armored Preferences')
+    if debug: 
+        print('ENABLED Armored Preferences')
 
 
 def reset_system_preferences():
     bpy.context.preferences.view.show_splash = True
     bpy.context.preferences.view.show_tooltips_python = False
     bpy.context.preferences.view.show_developer_ui = False
+    # bpy.context.preferences.view.smooth_view = 200
     bpy.context.preferences.inputs.drag_threshold_mouse = 3
     bpy.context.preferences.inputs.invert_mouse_zoom = False
     bpy.context.preferences.edit.undo_steps = 32
 
-    if debug: print('RESET System Preferences.')
+    if debug: 
+        print('RESET System Preferences.')
 
 
 def register():
-    from .. utils import addon
+    # from .. utils import addon
 
-    state = addon.preferences().system_preferences == 'ENABLED'
+    state = addon.preferences().system_preferences
 
     if state:
         handlers.load_post.append(apply_delay)

@@ -48,6 +48,7 @@ for folder in sub_folders:
 def register():
     preferences.register()
     for mod in ALL_MODULES:
+        # print(f'registered mod: {mod.__name__}')
         mod.register()
 
 

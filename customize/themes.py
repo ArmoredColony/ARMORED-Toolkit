@@ -1,21 +1,21 @@
 import bpy
 import os
 
-from bpy.app import handlers
+# from bpy.app import handlers
 # from .. utils.update_preferences import update, get_prefs
 
 
-@handlers.persistent
-def apply_theme_delay(*args):
-    print('Calling Apply Function')
-    apply_theme()
-    handlers.load_post.remove(apply_theme_delay)
+# @handlers.persistent
+# def apply_theme_delay(*args):
+#     print('Calling Apply Function')
+#     apply_theme()
+#     handlers.load_post.remove(apply_theme_delay)
 
 
-@handlers.persistent
-def reset_theme_delay(*args):
-    reset_theme()
-    handlers.load_post.remove(reset_theme_delay)
+# @handlers.persistent
+# def reset_theme_delay(*args):
+#     reset_theme()
+#     handlers.load_post.remove(reset_theme_delay)
 
 
 def apply_theme(filename='armored_colony.xml'):
