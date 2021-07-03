@@ -4,6 +4,8 @@ import bpy
 # import shutil
 import os
 
+from .. utils import addon
+
 # class ARMORED_OT_Resources(bpy.types.Operator):
 #     bl_idname = 'armored.customize'
 #     bl_label = 'MACHIN3: Customize'
@@ -70,9 +72,12 @@ def unload_matcaps():
 
 
 def register():
-    # bpy.app.timers.register(lambda: import_matcaps(), first_interval=5)
-    load_matcaps()
-    pass
+    state = addon.preferences().matcaps
+
+    if state:
+        load_matcaps()
+    else:
+        unload_matcaps()
 
 
 def unregister():

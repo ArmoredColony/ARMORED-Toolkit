@@ -103,14 +103,13 @@ def register_smart_tab():
 
 def register_sculpting_setup():
     global km, keymap_list
-
-# Sculpt
-    km = kc.keymaps.new(name='Sculpt')
     keymap_list = sculpting_setup_keymaps
+
+    km = kc.keymaps.new(name='Sculpt')
 
     create_kmi('view3d.view_center_pick', 'F', 'PRESS', alt=True)
     create_kmi('view3d.view_center_pick', 'C', 'PRESS')
-    create_kmi('view3d.view_center_pick', 'SPACE', 'PRESS')
+    # create_kmi('view3d.view_center_pick', 'SPACE', 'PRESS')
     create_kmi('view3d.armored_smart_subdivide', 'D', 'PRESS', ctrl=True)
     # create_kmi('transform.translate', 'G', 'PRESS')
     # create_kmi('view3d.armored_toggle_transform_tool', 'W', 'PRESS').properties.tool = 'builtin.move'

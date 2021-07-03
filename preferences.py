@@ -150,9 +150,9 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
     matcaps: BoolProperty(
         name='Matcaps', 
-        default=True,
+        default=False,
         update=update_matcaps,
-        description='Consult the PDF for a detailed list of my personal keymaps',
+        description='Consult the PDF for a detailed list of my personal keymaps, what PDF LUL',
         # items=[ ('ENABLED', 'On (default)', 'Override Blender\'s default Keymaps with my personal setup.'), 
         #         ('DISABLED', 'Off', 'Disable my personal Keymaps and leave Blender\'s keymaps as they were'),
         #     ]
@@ -160,9 +160,9 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
     themes: BoolProperty(
         name='Themes', 
-        default=True,
+        default=False,
         update=update_theme,
-        description='Consult the PDF for a detailed list of my personal keymaps',
+        description='Consult the PDF for a detailed list of my personal keymaps, what PDF LUL',
         # items=[ ('ENABLED', 'On', 'Use one of my custom themes.'), 
         #         ('DISABLED', 'Off (default)', 'Use whatever theme oyu had before.'),
         #     ]
@@ -220,6 +220,10 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             row.prop(self, prop, text='On' if getattr(self, prop) else 'Off', toggle=True); 
             # row.separator()
             row.operator('wm.url_open', icon=icon, text='').url = url
+        
+        box = layout.box()
+        col = box.column(align=True)
+        col.label(text='This addon automatically enables developer extras', icon='ERROR')
 
         split = layout.split(factor=0.6)
         col1 = split.column(align=True)

@@ -17,6 +17,13 @@ def apply_delay(*args):
 
 
 @handlers.persistent
+def developer_extras_delay(*args):
+    bpy.context.preferences.view.show_developer_ui = True
+    print('ARMORED Toolkit: Enabled Developer Extras')
+    handlers.load_post.remove(developer_extras_delay)
+
+
+@handlers.persistent
 def reset_delay(*args):
     reset_system_preferences()
     handlers.load_post.remove(reset_delay)
@@ -25,7 +32,7 @@ def reset_delay(*args):
 def apply_system_preferences():
     bpy.context.preferences.view.show_splash = False
     bpy.context.preferences.view.show_tooltips_python = True
-    bpy.context.preferences.view.show_developer_ui = True
+    # bpy.context.preferences.view.show_developer_ui = True     # Not needed here, force it on all the time
     # bpy.context.preferences.view.smooth_view = 100
     bpy.context.preferences.inputs.drag_threshold_mouse = 1
     bpy.context.preferences.inputs.invert_mouse_zoom = True
@@ -38,7 +45,7 @@ def apply_system_preferences():
 def reset_system_preferences():
     bpy.context.preferences.view.show_splash = True
     bpy.context.preferences.view.show_tooltips_python = False
-    bpy.context.preferences.view.show_developer_ui = False
+    # bpy.context.preferences.view.show_developer_ui = False     # Not needed here, force it on all the time
     # bpy.context.preferences.view.smooth_view = 200
     bpy.context.preferences.inputs.drag_threshold_mouse = 3
     bpy.context.preferences.inputs.invert_mouse_zoom = False
@@ -49,6 +56,8 @@ def reset_system_preferences():
 
 
 def register():
+    handlers.load_post.append(developer_extras_delay)
+    
     # from .. utils import addon
 
     state = addon.preferences().system_preferences
