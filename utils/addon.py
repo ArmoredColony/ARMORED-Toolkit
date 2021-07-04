@@ -20,9 +20,9 @@ config.add_section('operator_refresh')
 class folder_paths():
     datafiles = bpy.utils.user_resource('DATAFILES', create=True)
     scripts   = bpy.utils.user_resource('SCRIPTS', create=True)
-    startup   = bpy.utils.user_resource('SCRIPTS', 'startup', create=True)
-    themes    = bpy.utils.user_resource('SCRIPTS',   os.path.join('presets', 'interface_theme'), create=True)
-    matcaps   = bpy.utils.user_resource('DATAFILES', os.path.join('studiolights', 'matcap'), create=True)
+    startup   = bpy.utils.user_resource('SCRIPTS', path='startup', create=True)
+    themes    = bpy.utils.user_resource('SCRIPTS',   path=os.path.join('presets', 'interface_theme'), create=True)
+    matcaps   = bpy.utils.user_resource('DATAFILES', path=os.path.join('studiolights', 'matcap'), create=True)
     operators = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'operators')
 
 
