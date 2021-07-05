@@ -6,6 +6,8 @@ import os
 
 from .. utils import addon
 
+debug = True
+
 # class ARMORED_OT_Resources(bpy.types.Operator):
 #     bl_idname = 'armored.customize'
 #     bl_label = 'MACHIN3: Customize'
@@ -19,6 +21,9 @@ from .. utils import addon
 # print(f'Data Files Path: {datafilespath}')
 
 # scriptspath = bpy.utils.user_resource('SCRIPTS')
+
+matcapsourcepath = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'matcaps')
+original_matcaps = os.listdir(matcapsourcepath)
 
 def makedir(pathstring):
     import os
@@ -37,15 +42,21 @@ def load_matcaps():
     matcaptargetpath = makedir(os.path.join(datafilespath, 'studiolights', 'matcap'))
     matcaps = os.listdir(matcapsourcepath)
     installed_matcaps = set(os.listdir(matcaptargetpath))
-    # print(f'installed matcaps {installed_matcaps}')
+
+    
+    if debug:
+        print(f'installed matcaps {installed_matcaps}')
 
     for matcap in matcaps:
         if matcap in installed_matcaps:
-            # print(f'matcap {matcap} already exists')
+            if debug:
+                print(f'matcap {matcap} already exists')
             continue
 
         shutil.copy(os.path.join(matcapsourcepath, matcap), matcaptargetpath)
-        # print(f'Installed Matcap: {matcap}')
+
+        if debug:
+            print(f'Installed Matcap: {matcap}')
 
     bpy.context.preferences.studio_lights.refresh()
 
@@ -56,13 +67,17 @@ def unload_matcaps():
     import os
     import shutil
 
+    matcapsourcepath = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'matcaps')
+    matcaps = os.listdir(matcapsourcepath)
+
     datafilespath = bpy.utils.user_resource('DATAFILES')
     matcaptargetpath = makedir(os.path.join(datafilespath, 'studiolights', 'matcap'))
-    matcaps = os.listdir(matcaptargetpath)
+    # matcaps = os.listdir(matcaptargetpath)
 
     for matcap in matcaps:
         os.remove(os.path.join(matcaptargetpath, matcap))
-        # print(f'Uninstalled Matcap: {matcap}')
+        if debug:
+            print(f'Uninstalled Matcap: {matcap}')
 
     bpy.context.preferences.studio_lights.refresh()
 
