@@ -10,9 +10,9 @@ from .. utils import addon
 debug = True
 
 
-def get_source_matcaps():
-    matcap_source_path = os.path.join(addon.get_path(), 'resources', 'matcaps')
-    return os.listdir(matcap_source_path)
+# def get_source_matcaps():
+#     matcap_source_path = os.path.join(addon.get_path(), 'resources', 'matcaps')
+#     return os.listdir(matcap_source_path)
 
 
 def makedir(pathstring):
@@ -51,11 +51,11 @@ def unload_matcaps():
     matcap_target_path = makedir(os.path.join(data_files_path, 'studiolights', 'matcap'))
 
     matcap_source_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'matcaps')
-    matcaps = os.listdir(matcap_source_path)
+    source_matcaps = os.listdir(matcap_source_path)
 
     installed_matcaps = set(os.listdir(matcap_target_path))
 
-    for matcap in matcaps:
+    for matcap in source_matcaps:
         if matcap not in installed_matcaps:
             if debug:
                 print(f'matcap {matcap} doesnt even exist')
