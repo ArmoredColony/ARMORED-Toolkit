@@ -7,7 +7,7 @@ import shutil
 from .. utils import addon
 
 
-debug = True
+debug = False
 
 
 # def get_source_matcaps():
