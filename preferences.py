@@ -283,10 +283,11 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         col2.separator()
         box = col2.box()
         box.label(text='Useful Directories')
-        box.operator('armored.open_folder', text='Open Operator Folder', icon='ERROR')     .path = addon.folder_paths.operators
-        box.operator('armored.open_folder', text='Open Startup Folder', icon='FILE_FOLDER').path = addon.folder_paths.startup
-        box.operator('armored.open_folder', text='Open Matcaps Folder', icon='MATERIAL')   .path = addon.folder_paths.matcaps
-        box.operator('armored.open_folder', text='Open Themes Folder', icon='TOPBAR')      .path = addon.folder_paths.themes
+        box.operator('armored.open_folder', text='Operators Folder', icon='ERROR')      .path = addon.FolderPaths.operators
+        box.operator('armored.open_folder', text='Keymaps File',     icon='FILE_SCRIPT').path = addon.FolderPaths.keymaps
+        box.operator('armored.open_folder', text='Startup Folder',   icon='FILE_FOLDER').path = addon.FolderPaths.startup
+        box.operator('armored.open_folder', text='Matcaps Folder',   icon='MATERIAL')   .path = addon.FolderPaths.matcaps
+        box.operator('armored.open_folder', text='Themes Folder',    icon='TOPBAR')     .path = addon.FolderPaths.themes
 
 
 

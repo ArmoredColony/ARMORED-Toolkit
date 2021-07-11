@@ -17,15 +17,6 @@ config.add_section('system')
 config.add_section('operator_refresh')
 
 
-class folder_paths():
-    datafiles = bpy.utils.user_resource('DATAFILES', create=True)
-    scripts   = bpy.utils.user_resource('SCRIPTS', create=True)
-    startup   = bpy.utils.user_resource('SCRIPTS', path='startup', create=True)
-    themes    = bpy.utils.user_resource('SCRIPTS',   path=os.path.join('presets', 'interface_theme'), create=True)
-    matcaps   = bpy.utils.user_resource('DATAFILES', path=os.path.join('studiolights', 'matcap'), create=True)
-    operators = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'operators')
-
-
 def get_path():
     return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
@@ -36,6 +27,16 @@ def get_name():
 
 def preferences():
     return bpy.context.preferences.addons[get_name()].preferences
+
+
+class FolderPaths():
+    datafiles = bpy.utils.user_resource('DATAFILES', create=True)
+    scripts   = bpy.utils.user_resource('SCRIPTS', create=True)
+    startup   = bpy.utils.user_resource('SCRIPTS', path='startup', create=True)
+    themes    = bpy.utils.user_resource('SCRIPTS',   path=os.path.join('presets', 'interface_theme'), create=True)
+    matcaps   = bpy.utils.user_resource('DATAFILES', path=os.path.join('studiolights', 'matcap'), create=True)
+    operators = os.path.join(get_path(), 'operators')
+    keymaps   = os.path.join(get_path(), 'customize', 'keymaps.py')
 
 
 def update(prop, category):
