@@ -28,6 +28,9 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
     def update_transform_with_gizmos(self, context):
         addon.update(prop='transform_with_gizmos', category='keymap')
 
+    def update_allow_gizmo_click(self, context):
+        addon.update(prop='allow_gizmo_click', category='keymap')
+
     def update_sculpting_setup(self, context):
         addon.update(prop='sculpting_setup', category='keymap')
 
@@ -83,6 +86,13 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         default=False,
         update=update_transform_with_gizmos,
         description='Use the Gizmo version of the Move, Rotate and Scale Tools',
+        )
+
+    allow_gizmo_click: BoolProperty(
+        name='Allow Gizmo Click', 
+        default=False,
+        update=update_allow_gizmo_click,
+        description='Activate Gizmos on Click instead of waiting for a Drag event',
         )
 
     list_description = [
@@ -239,6 +249,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         prop_line(prop='focus_selected_with_f', icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
+        prop_line(prop='allow_gizmo_click',     icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='sculpting_setup',       icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='operator_shortcuts',    icon='FILE_MOVIE', url='www.youtube.com')
         

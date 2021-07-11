@@ -8,6 +8,7 @@ keymap_names = [
     'focus_selected_with_f',
     'deselect_with_ctrl',
     'transform_with_gizmos',
+    'allow_gizmo_click',
     'smart_tab',
     'sculpting_setup',
     'operator_shortcuts',
@@ -166,6 +167,12 @@ class TRANSFORM_WITH_GIZMOS(KeymapGroup):
         # print('ENABLED Transform with Gizmos')
 
 
+class ALLOW_GIZMO_CLICK(KeymapGroup):
+    def register(self):
+        km = kc.keymaps.new('Generic Gizmo Maybe Drag', space_type='EMPTY')     # Makes Gizmos activate on click instead of drag.
+        self.add(km, 'gizmogroup.gizmo_tweak', 'LEFTMOUSE', 'PRESS')
+
+
 class SMART_TAB(KeymapGroup):
     def register(self):
         km = kc.keymaps.new('Object Non-modal')
@@ -219,6 +226,7 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         km = kc.keymaps.new('Window', space_type='EMPTY')
         self.add(km, 'script.reload', 'F5', 'PRESS')
 
+        
 
         # Generic (doesn't work unless separate from 3D View)
         km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D')
@@ -354,6 +362,7 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         self.add(km, 'outliner.show_active', 'F', 'PRESS', ctrl=True, shift=True)
 
         print('ENABLED Operator Keymaps')
+        
 
 
 def unregister_keymaps(prop):

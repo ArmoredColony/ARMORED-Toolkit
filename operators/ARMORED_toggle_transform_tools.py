@@ -46,7 +46,7 @@ class ARMORED_OT_toggle_transform_tool(bpy.types.Operator):
         if current_tool != self.tool:
             self.previous_tool = current_tool
             bpy.ops.wm.tool_set_by_id(name=self.tool)
-            context.scene.tool_settings.workspace_tool_type = 'DEFAULT'     # Allows using the tool in screen space when draging anywhere in the viewport. Simply comment this line to remove this behaviour.
+            # context.scene.tool_settings.workspace_tool_type = 'DEFAULT'     # Allows using the tool in screen space when draging anywhere in the viewport. Simply comment this line to remove this behaviour.
 
         elif self.fallback_tool == 'PREVIOUS':
             bpy.ops.wm.tool_set_by_id(name=self.previous_tool)
