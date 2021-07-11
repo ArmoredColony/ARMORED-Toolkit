@@ -15,8 +15,7 @@ class ARMORED_OT_toggle_transform_tool(bpy.types.Operator):
     fallback_tool: EnumProperty( 
         name='Fallback Tool', 
         description='Space the aligned vertices evenly or not.', 
-        default='builtin.select_box', 
-        # default='PREVIOUS', 
+        default='PREVIOUS', 
         items=[ ('PREVIOUS',           'Previous',   'Revert back to this tool'),
                 ('builtin.select_box', 'Box Select', 'Revert back to this tool'), ]
         )
@@ -47,12 +46,13 @@ class ARMORED_OT_toggle_transform_tool(bpy.types.Operator):
         if current_tool != self.tool:
             self.previous_tool = current_tool
             bpy.ops.wm.tool_set_by_id(name=self.tool)
-            # context.scene.tool_settings.workspace_tool_type = 'DEFAULT'
+            context.scene.tool_settings.workspace_tool_type = 'DEFAULT'     # Allows using the tool in screen space when draging anywhere in the viewport. Simply comment this line to remove this behaviour.
+
+        elif self.fallback_tool == 'PREVIOUS':
+            bpy.ops.wm.tool_set_by_id(name=self.previous_tool)
+
         else:
-            if self.fallback_tool == 'PREVIOUS':
-                bpy.ops.wm.tool_set_by_id(name=self.previous_tool)
-            else:
-                bpy.ops.wm.tool_set_by_id(name=self.fallback_tool)
+            bpy.ops.wm.tool_set_by_id(name=self.fallback_tool)
 
         return {'FINISHED'}
 
@@ -64,6 +64,7 @@ classes = (
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
+
 
 def unregister():
     for cls in classes:

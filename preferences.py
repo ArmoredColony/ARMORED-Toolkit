@@ -36,6 +36,9 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
     def update_deselect_with_ctrl(self, context):
         addon.update(prop='deselect_with_ctrl', category='keymap')
 
+    def update_transform_with_gizmos(self, context):
+        addon.update(prop='transform_with_gizmos', category='keymap')
+
     def update_sculpting_setup(self, context):
         addon.update(prop='sculpting_setup', category='keymap')
 
@@ -80,6 +83,13 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         # items=[ ('ENABLED',  'On', ''), 
         #         ('DISABLED', 'Off (default)', ''),
         #     ]
+        )
+
+    transform_with_gizmos: BoolProperty(
+        name='Transform with Gizmos', 
+        default=False,
+        update=update_transform_with_gizmos,
+        description='Use the Gizmo version of the Move, Rotate and Scale Tools',
         )
 
     list_description = [
@@ -231,11 +241,12 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
         box = col1.box()
         box.label(text='Keymap Overrides')
-        enum_line(prop='maya_navigation',    icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='loop_selection',     icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='deselect_with_ctrl', icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='sculpting_setup', icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='operator_shortcuts', icon='FILE_MOVIE', url='www.youtube.com')
+        enum_line(prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
+        enum_line(prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
+        enum_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
+        enum_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
+        enum_line(prop='sculpting_setup',       icon='FILE_MOVIE', url='www.youtube.com')
+        enum_line(prop='operator_shortcuts',    icon='FILE_MOVIE', url='www.youtube.com')
         col1.separator()
 
         # box = col2.box()

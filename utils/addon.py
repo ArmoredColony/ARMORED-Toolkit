@@ -49,8 +49,12 @@ def update(prop, category):
     # print(f'STATE: {state}')
 
     if category == 'keymap':
-        if state:   getattr(keymaps, ('register_' + prop))()
-        else:       keymaps.unregister_keymaps(prop)
+        cls = keymaps.keymap_classes[prop]
+
+        if state:   
+            cls.register()
+        else:       
+            cls.unregister()
 
     elif category == 'matcap':
         if state:   matcaps.load_matcaps()
@@ -69,7 +73,6 @@ def update(prop, category):
 
         ARMORED_mode_toggle.unregister()
         ARMORED_mode_toggle.register()
-
 
     if category != 'operator_refresh':
         config.set(category, prop, str(state))
