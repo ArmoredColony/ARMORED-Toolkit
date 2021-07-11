@@ -5,6 +5,7 @@ import os
 keymap_names = [
     'maya_navigation',
     'loop_selection',
+    'focus_selected_with_f',
     'deselect_with_ctrl',
     'transform_with_gizmos',
     'smart_tab',
@@ -30,14 +31,13 @@ class KeymapGroup():
     
     def unregister(self):
         for km, kmi in self.keymap_list:
-            print(f'    unregistering: {kmi}')
+            # print(f'    unregistering: {kmi}')
             try:
                 km.keymap_items.remove(kmi)
             except RuntimeError as e:
                 pass
                 # print(f'ARMORED Toolkit [INFO]: Probably an F2 Exception')
         
-        print('UN-register maya nav')
         self.keymap_list.clear()
 
 
@@ -54,7 +54,7 @@ def kmi_props(kmi_props, attr, value):
 
 class MAYA_NAVIGATION(KeymapGroup):
     def register(self):
-        km = kc.keymaps.new('3D View', space_type='VIEW_3D', region_type='WINDOW', modal=False)
+        km = kc.keymaps.new('3D View', space_type='VIEW_3D')
 
         self.add(km, 'view3d.rotate', 'LEFTMOUSE',   'CLICK_DRAG', alt=True)
         self.add(km, 'view3d.move',   'MIDDLEMOUSE', 'PRESS', alt=True)
@@ -87,6 +87,53 @@ class LOOP_SELECTION(KeymapGroup):
 
         print('ENABLED Select Loops with Double Click')
 
+
+class FOCUS_SELECTED_WITH_F(KeymapGroup):
+    def register(self):
+        '''
+        Some keymaps work with the global km = kc.keymaps.new('Window') (space_type defaults to EMPTY)
+        ...but others get overriden by more specific category names, not sure how space_type affects priority.
+        Individual KMs is ugly but it guarantees priority
+        '''
+
+        km = kc.keymaps.new('Outliner', space_type='OUTLINER')
+        self.add(km, 'outliner.show_active',  'F', 'PRESS')
+
+        km = kc.keymaps.new('Object Mode')  # Not sure why these sub-categories require EMPTY as space_type, which is the default.
+        self.add(km, 'view3d.view_selected',    'F', 'PRESS')
+
+        km = kc.keymaps.new('Mesh')
+        self.add(km, 'view3d.view_selected',    'F', 'PRESS')
+        
+        km = kc.keymaps.new('Curve')
+        self.add(km, 'view3d.view_selected',    'F', 'PRESS')
+
+        km = kc.keymaps.new('Graph Editor', space_type='GRAPH_EDITOR')
+        self.add(km, 'graph.view_selected',     'F', 'PRESS')
+
+        km = kc.keymaps.new('Image', space_type='IMAGE_EDITOR')
+        self.add(km, 'image.view_selected',     'F', 'PRESS')
+
+        km = kc.keymaps.new('Node Editor', space_type='NODE_EDITOR')
+        self.add(km, 'node.view_selected',      'F', 'PRESS')
+
+        km = kc.keymaps.new('File Browser Main', space_type='FILE_BROWSER')
+        self.add(km, 'file.view_selected',      'F', 'PRESS')
+
+        km = kc.keymaps.new('Dopesheet', space_type='DOPESHEET_EDITOR')
+        self.add(km, 'action.view_selected',    'F', 'PRESS')
+
+        km = kc.keymaps.new('NLA Editor', space_type='OUTLINER')
+        self.add(km, 'nla.view_selected',       'F', 'PRESS')
+
+        km = kc.keymaps.new('Sequencer', space_type='SEQUENCE_EDITOR')
+        self.add(km, 'sequencer.view_selected', 'F', 'PRESS')
+
+        km = kc.keymaps.new('Outliner', space_type='OUTLINER')
+        self.add(km, 'clip.view_selected',      'F', 'PRESS')
+
+
+
     
 class DESELECT_WITH_CTRL(KeymapGroup):
     def register(self):
@@ -96,7 +143,7 @@ class DESELECT_WITH_CTRL(KeymapGroup):
         km = kc.keymaps.new(name='Mesh')
         self.add(km, 'armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
 
-        km = kc.keymaps.new('Curve', space_type='EMPTY', region_type='WINDOW', modal=False)
+        km = kc.keymaps.new('Curve', space_type='EMPTY')
         self.add(km, 'armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
 
         print('ENABLED Deselect with Ctrl')
@@ -104,7 +151,7 @@ class DESELECT_WITH_CTRL(KeymapGroup):
 
 class TRANSFORM_WITH_GIZMOS(KeymapGroup):
     def register(self):
-        km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D', region_type='WINDOW', modal=False)
+        km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D')
         # self.add(km, 'wm.tool_set_by_id', 'G', 'PRESS').properties.name = 'builtin.move'
         # self.add(km, 'wm.tool_set_by_id', 'R', 'PRESS').properties.name = 'builtin.rotate'
         # self.add(km, 'wm.tool_set_by_id', 'S', 'PRESS').properties.name = 'builtin.scale'
@@ -159,21 +206,22 @@ class SCULPTING_SETUP(KeymapGroup):
 class OPERATOR_SHORTCUTS(KeymapGroup):
     def register(self):
         def global_focus_key():
-            self.add(km, 'mesh.armored_focus', 'F','PRESS')
+            pass
+            # self.add(km, 'mesh.armored_focus', 'F','PRESS')
 
         def Global_Keys():
             self.add(km, 'screen.userpref_show', 'COMMA', 'PRESS', ctrl=True)
 
-        km = kc.keymaps.new('Window', space_type='EMPTY', region_type='WINDOW', modal=False)
+        km = kc.keymaps.new('Window', space_type='EMPTY')
         self.add(km, 'script.reload', 'F5', 'PRESS')
 
 
         # Generic (doesn't work unless separate from 3D View)
-        km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D', region_type='WINDOW', modal=False)
+        km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D')
         self.add(km, 'screen.redo_last', 'T', 'PRESS')
 
 
-        km = kc.keymaps.new('3D View', space_type='VIEW_3D', region_type='WINDOW', modal=False)
+        km = kc.keymaps.new('3D View', space_type='VIEW_3D')
         Global_Keys()
 
         self.add(km, 'view3d.zoom_border', 'F',            'PRESS', ctrl=True, shift=True)
@@ -276,7 +324,7 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         self.add(km, 'object.subdivision_set', 'NINE',  'PRESS', ctrl=True).properties.level = 9
 
 
-        km = kc.keymaps.new('Curve', space_type='EMPTY', region_type='WINDOW', modal=False)
+        km = kc.keymaps.new('Curve', space_type='EMPTY')
         Global_Keys()
         global_focus_key()
 
@@ -285,19 +333,19 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
 
 
     # Property Editor
-        # km = kc.keymaps.new('Property Editor', space_type='PROPERTIES', region_type='WINDOW', modal=False)
+        # km = kc.keymaps.new('Property Editor', space_type='PROPERTIES')
 
         # Works for other key combos, like CTRL+Shift, but not for Shift Only.
         # self.add(km, 'screen.space_context_cycle', 'WHEELUPMOUSE',   'PRESS', shift=True).properties.direction = 'PREV'
         # self.add(km, 'screen.space_context_cycle', 'WHEELDOWNMOUSE', 'PRESS', shift=True).properties.direction = 'NEXT'
 
 
-        km = kc.keymaps.new('Window', space_type='EMPTY', region_type='WINDOW', modal=False)
+        km = kc.keymaps.new('Window', space_type='EMPTY')
         Global_Keys()
         # self.add(km, 'wm.search_menu', 'SPACE', 'PRESS')
         
 
-        km = kc.keymaps.new('Outliner', space_type='OUTLINER', region_type='WINDOW', modal=False)
+        km = kc.keymaps.new('Outliner', space_type='OUTLINER')
         Global_Keys()
         self.add(km, 'outliner.show_active', 'F', 'PRESS', ctrl=True, shift=True)
 

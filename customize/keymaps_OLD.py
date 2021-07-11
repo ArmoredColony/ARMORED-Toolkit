@@ -323,6 +323,7 @@ def unregister_keymaps(prop):
 
 
 def register():
+    return
     '''Not sure if loading properties from config.ini file automatically triggers their update function
     and registration, but I still have to check them anyway in case some properties have not been
     written to config.ini in the first place'''
@@ -353,6 +354,7 @@ def register():
 
 
 def unregister():
+    return
     # Just Unregister everything. This works because unregister_keymaps() is based on keymap lists.
     # If the keymaps are disabled the lists will be empty, so nothing will be done.
     

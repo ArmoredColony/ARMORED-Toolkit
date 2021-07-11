@@ -33,6 +33,9 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
     def update_loop_selection(self, context):
         addon.update(prop='loop_selection', category='keymap')
 
+    def update_focus_selected_with_f(self, context):
+        addon.update(prop='focus_selected_with_f', category='keymap')
+
     def update_deselect_with_ctrl(self, context):
         addon.update(prop='deselect_with_ctrl', category='keymap')
 
@@ -70,9 +73,13 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         default=False,
         update=update_loop_selection,
         description='Double Click to select component loops',
-        # items=[ ('ENABLED',  'On', ''), 
-                # ('DISABLED', 'Off (default)', ''),
-            # ]
+        )
+        
+    focus_selected_with_f: BoolProperty(
+        name='Focus Selected with F', 
+        default=False,
+        update=update_focus_selected_with_f,
+        description='Frame your selection with the F key instead of Numpad Period',
         )
 
     deselect_with_ctrl: BoolProperty(
@@ -243,6 +250,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         box.label(text='Keymap Overrides')
         enum_line(prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
         enum_line(prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
+        enum_line(prop='focus_selected_with_f', icon='FILE_MOVIE', url='www.youtube.com')
         enum_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
         enum_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
         enum_line(prop='sculpting_setup',       icon='FILE_MOVIE', url='www.youtube.com')

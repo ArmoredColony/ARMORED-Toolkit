@@ -3,7 +3,7 @@ import bpy
 # v1.0
 
 class ARMORED_OT_keymap_restore(bpy.types.Operator):
-    '''Restore keymaps to defaults (addon keymaps are unnafected).
+    '''Restore keymaps to defaults (addon keymaps seem unnafected).
 
 (www.armoredColony.com)'''
     
