@@ -5,21 +5,7 @@ from . utils import (
     addon,
     extrapy,
 )
-# from . utils.addon import get_name, get_path, update, folder_paths
 
-import os
-from os.path import dirname
-
-# FOLDERS
-# datafiles_path = bpy.utils.user_resource('DATAFILES', create=True)
-# datafiles_path = bpy.utils.user_resource('SCRIPTS', 'ADDONS', create=True)
-# scripts_path   = bpy.utils.user_resource('SCRIPTS', create=True)
-# startup_path   = bpy.utils.user_resource('SCRIPTS', 'startup', create=True)
-# theme_path     = bpy.utils.user_resource('SCRIPTS',   os.path.join('presets', 'interface_theme'), create=True)
-# matcap_path    = bpy.utils.user_resource('DATAFILES', os.path.join('studiolights', 'matcap'), create=True)
-# operators_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'operators')
-
-# print(f'testerino patherino {folder_paths.datafiles_path}')
 
 class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
     bl_idname = addon.get_name()
@@ -229,7 +215,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         layout = self.layout
         layout.use_property_split = False
 
-        def enum_line(prop, icon, url):
+        def prop_line(prop, icon, url):
             row = box.column(align=True).row()
             
             row.label(text=extrapy.format_string(prop))
@@ -248,30 +234,34 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
         box = col1.box()
         box.label(text='Keymap Overrides')
-        enum_line(prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='focus_selected_with_f', icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='sculpting_setup',       icon='FILE_MOVIE', url='www.youtube.com')
-        enum_line(prop='operator_shortcuts',    icon='FILE_MOVIE', url='www.youtube.com')
+        prop_line(prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
+        prop_line(prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
+        prop_line(prop='focus_selected_with_f', icon='FILE_MOVIE', url='www.youtube.com')
+        prop_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
+        prop_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
+        prop_line(prop='sculpting_setup',       icon='FILE_MOVIE', url='www.youtube.com')
+        prop_line(prop='operator_shortcuts',    icon='FILE_MOVIE', url='www.youtube.com')
+        
+        # for name in keymaps.keymap_names:
+            # prop_line(prop=name, icon='FILE_MOVIE', url='www.youtube.com')
+
         col1.separator()
 
         # box = col2.box()
         # box.label(text='Smart TAB')
-        # enum_line(prop='smart_tab', icon='FILE_MOVIE', url='www.youtube.com')
+        # prop_line(prop='smart_tab', icon='FILE_MOVIE', url='www.youtube.com')
         # if self.smart_tab == 'ENABLED':
         #     box.prop(self, 'tab_undo_mode', text='', expand=False)
         # col2.separator()
         
         box = col1.box()
         box.label(text='Extra Matcaps')
-        enum_line(prop='matcaps', icon='MATERIAL', url='www.youtube.com')
+        prop_line(prop='matcaps', icon='MATERIAL', url='www.youtube.com')
         col1.separator()
 
         box = col1.box()
         box.label(text='Armored Preferences')
-        enum_line(prop='system_preferences', icon='TOPBAR', url='www.youtube.com')
+        prop_line(prop='system_preferences', icon='TOPBAR', url='www.youtube.com')
         col1.separator()
         
         box = col2.box()

@@ -1,5 +1,5 @@
 import bpy
-import os
+from abc import ABC, abstractmethod
 
 
 keymap_names = [
@@ -17,7 +17,7 @@ wm = bpy.context.window_manager
 kc = wm.keyconfigs.addon
 
 
-class KeymapGroup():
+class KeymapGroup(ABC):
     '''Keymaps that override or supersede default Blender Keymaps'''
 
     def __init__(self):
@@ -28,6 +28,10 @@ class KeymapGroup():
         self.keymap_list.append((km, kmi))
 
         return kmi
+    
+    @abstractmethod
+    def register(self):
+        pass
     
     def unregister(self):
         for km, kmi in self.keymap_list:
