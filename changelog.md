@@ -4,15 +4,18 @@
 ## v0.1.3 (LATEST)
 *(unreleased)*
 
-**FEATURES**
+**NEW**
 - Keymap Override: Transform with Gizmos.
-- New Tool: *Set Custom Orientation* creates a temporaty orientation based on your selection, running the script
+- Operator: *Set Custom Orientation* creates a temporaty orientation based on your selection, running the script
   from an empty area of the viewport goes back to Global pivot orientation.
-- Transform Toggle Tool now goes back to the previous tool instead of defaulting to Box Select.
-- Transform Toggle Tool (now Toggle Tool) now toggles any tool with the input *idname*.
+
+**CHANGES**
+- Operator: Toggle Transform now goes back to the previous tool instead of defaulting to Box Select.
+- Operator: Toggle Transform (renamed to Toggle) now toggles any tool with the input *idname*.
 
 **DEV**
-- Swapped out the keymap functions for classes, simplifying the module's register/unregister methods among other things.
+- Replaced the keymap override functions for classes, simplifying the module's register/unregister methods among other things.
+- Using __package__ instead of dirname for getting the addon name.
 
 ## v0.1.2
 *(06/Jul/21)*
