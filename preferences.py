@@ -248,7 +248,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         prop_line(prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='focus_selected_with_f', icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
-        prop_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
+        # prop_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='allow_gizmo_click',     icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='sculpting_setup',       icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='operator_shortcuts',    icon='FILE_MOVIE', url='www.youtube.com')

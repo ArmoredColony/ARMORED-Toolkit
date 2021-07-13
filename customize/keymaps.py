@@ -247,10 +247,8 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         self.add(km, 'wm.context_toggle',  'W', 'PRESS', shift=True).properties.data_path = 'space_data.overlay.show_wireframes'
         self.add(km, 'wm.context_toggle',  'W', 'PRESS', alt=True  ).properties.data_path = 'space_data.overlay.show_overlays'
 
-        # self.add(km, 'view3d.armored_toggle_transform_tool', 'W', 'PRESS').properties.tool = 'builtin.move'
-        self.add(km, 'wm.tool_set_by_id', 'W', 'PRESS').properties.name = 'tool.gizmo_pro'
-        # self.add(km, 'view3d.armored_toggle_transform_tool', 'S', 'PRESS').properties.tool = 'builtin.scale'
-        # self.add(km, 'view3d.armored_toggle_transform_tool', 'R', 'PRESS').properties.tool = 'builtin.rotate'
+        # self.add(km, 'view3d.armored_toggle_tool', 'W', 'PRESS').properties.name = 'builtin.move'
+        self.add(km, 'view3d.armored_toggle_tool', 'W', 'PRESS').properties.name = 'tool.gizmo_pro'
 
         self.add(km, 'view3d.armored_open_most_recent',  'R', 'PRESS', alt=True,  shift=True)
         self.add(km, 'view3d.armored_autosmooth',        'A', 'PRESS', ctrl=True, shift=True)
@@ -270,7 +268,6 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         Global_Keys()
 
         self.add(km, 'object.delete', 'X', 'PRESS').properties.confirm = False
-        # self.add(km, 'wm.tool_set_by_id', 'W', 'PRESS').properties.name = 'tool.gizmo_pro'
 
         kmi = self.add(km, 'object.move_to_collection', 'N', 'PRESS', shift=True)
         kmi_props(kmi.properties, 'collection_index', 0)
@@ -280,7 +277,6 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         km = kc.keymaps.new(name='Mesh')
         Global_Keys()
 
-        # self.add(km, 'wm.tool_set_by_id', 'W', 'PRESS').properties.name = 'tool.gizmo_pro'
         self.add(km, 'mesh.faces_select_linked_flat', 'F', 'PRESS', shift=True)
         self.add(km, 'mesh.edge_face_add',            'F', 'PRESS', alt=True)
         self.add(km, 'mesh.f2',                       'F', 'PRESS', alt=True) # Same keymap as above, but seems to take prio if f2 is installed and viceversa.
