@@ -281,6 +281,8 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         self.add(km, 'mesh.edge_face_add',            'F', 'PRESS', alt=True)
         self.add(km, 'mesh.f2',                       'F', 'PRESS', alt=True) # Same keymap as above, but seems to take prio if f2 is installed and viceversa.
 
+        self.add(km, 'mesh.armored_custom_orientation', 'D', 'PRESS')
+
         self.add(km, 'mesh.armored_extract',    'E', 'PRESS', ctrl=True, shift=True)
         self.add(km, 'mesh.armored_duplicate',  'D', 'PRESS', ctrl=True, shift=True)
 

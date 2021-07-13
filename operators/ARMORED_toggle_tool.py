@@ -2,7 +2,7 @@
 
 
 import bpy
-from bpy.props import EnumProperty, StringProperty
+from bpy.props import StringProperty
 
 
 class ARMORED_OT_toggle_tool(bpy.types.Operator):
@@ -14,8 +14,8 @@ class ARMORED_OT_toggle_tool(bpy.types.Operator):
     bl_label   = 'ARMORED Toggle Tool'
     bl_options = {'REGISTER',}
     
-    previous_tool: StringProperty(  name='Previous Tool',  default='builtin.select_box')
-    name: StringProperty(           name='Tool to toggle', default='builtin.move')
+    previous_tool:  StringProperty(name='Previous Tool',  default='builtin.select_box')
+    name:           StringProperty(name='Tool to toggle', default='builtin.move')
     
 
     def execute(self, context):
