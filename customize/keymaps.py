@@ -137,7 +137,7 @@ class FOCUS_SELECTED_WITH_F(KeymapGroup):
         km = kc.keymaps.new('Outliner', space_type='OUTLINER')
         self.add(km, 'clip.view_selected',      'F', 'PRESS')
 
-
+        print('ENABLED Focus Selected with F')
 
     
 class DESELECT_WITH_CTRL(KeymapGroup):
@@ -164,7 +164,7 @@ class TRANSFORM_WITH_GIZMOS(KeymapGroup):
         self.add(km, 'view3d.armored_toggle_transform_tool', 'R', 'PRESS').properties.tool = 'builtin.rotate'
         self.add(km, 'view3d.armored_toggle_transform_tool', 'S', 'PRESS').properties.tool = 'builtin.scale'
 
-        # print('ENABLED Transform with Gizmos')
+        print('ENABLED Transform with Gizmos')
 
 
 class ALLOW_GIZMO_CLICK(KeymapGroup):
@@ -213,6 +213,8 @@ class SCULPTING_SETUP(KeymapGroup):
 
         self.add(km, 'wm.context_toggle',  'W', 'PRESS', shift=True).properties.data_path = 'space_data.overlay.show_wireframes'
 
+        print('ENABLED Sculpting Setup')
+
 
 class OPERATOR_SHORTCUTS(KeymapGroup):
     def register(self):
@@ -226,7 +228,6 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         km = kc.keymaps.new('Window', space_type='EMPTY')
         self.add(km, 'script.reload', 'F5', 'PRESS')
 
-        
 
         # Generic (doesn't work unless separate from 3D View)
         km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D')
@@ -246,7 +247,8 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         self.add(km, 'wm.context_toggle',  'W', 'PRESS', shift=True).properties.data_path = 'space_data.overlay.show_wireframes'
         self.add(km, 'wm.context_toggle',  'W', 'PRESS', alt=True  ).properties.data_path = 'space_data.overlay.show_overlays'
 
-        self.add(km, 'view3d.armored_toggle_transform_tool', 'W', 'PRESS').properties.tool = 'builtin.move'
+        # self.add(km, 'view3d.armored_toggle_transform_tool', 'W', 'PRESS').properties.tool = 'builtin.move'
+        self.add(km, 'wm.tool_set_by_id', 'W', 'PRESS').properties.name = 'tool.gizmo_pro'
         # self.add(km, 'view3d.armored_toggle_transform_tool', 'S', 'PRESS').properties.tool = 'builtin.scale'
         # self.add(km, 'view3d.armored_toggle_transform_tool', 'R', 'PRESS').properties.tool = 'builtin.rotate'
 
@@ -266,9 +268,9 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
 
         km = kc.keymaps.new(name='Object Mode')
         Global_Keys()
-        global_focus_key()
 
         self.add(km, 'object.delete', 'X', 'PRESS').properties.confirm = False
+        # self.add(km, 'wm.tool_set_by_id', 'W', 'PRESS').properties.name = 'tool.gizmo_pro'
 
         kmi = self.add(km, 'object.move_to_collection', 'N', 'PRESS', shift=True)
         kmi_props(kmi.properties, 'collection_index', 0)
@@ -277,8 +279,8 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
 
         km = kc.keymaps.new(name='Mesh')
         Global_Keys()
-        global_focus_key()
 
+        # self.add(km, 'wm.tool_set_by_id', 'W', 'PRESS').properties.name = 'tool.gizmo_pro'
         self.add(km, 'mesh.faces_select_linked_flat', 'F', 'PRESS', shift=True)
         self.add(km, 'mesh.edge_face_add',            'F', 'PRESS', alt=True)
         self.add(km, 'mesh.f2',                       'F', 'PRESS', alt=True) # Same keymap as above, but seems to take prio if f2 is installed and viceversa.
@@ -338,18 +340,9 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
 
         km = kc.keymaps.new('Curve', space_type='EMPTY')
         Global_Keys()
-        global_focus_key()
 
         self.add(km, 'curve.shortest_path_pick', 'LEFTMOUSE', 'PRESS', ctrl=True, shift=True)
         # self.add(km, 'curve.draw', 'LEFTMOUSE', 'PRESS', alt=True)
-
-
-    # Property Editor
-        # km = kc.keymaps.new('Property Editor', space_type='PROPERTIES')
-
-        # Works for other key combos, like CTRL+Shift, but not for Shift Only.
-        # self.add(km, 'screen.space_context_cycle', 'WHEELUPMOUSE',   'PRESS', shift=True).properties.direction = 'PREV'
-        # self.add(km, 'screen.space_context_cycle', 'WHEELDOWNMOUSE', 'PRESS', shift=True).properties.direction = 'NEXT'
 
 
         km = kc.keymaps.new('Window', space_type='EMPTY')
@@ -362,27 +355,6 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         self.add(km, 'outliner.show_active', 'F', 'PRESS', ctrl=True, shift=True)
 
         print('ENABLED Operator Keymaps')
-        
-
-
-def unregister_keymaps(prop):
-    listname = prop + '_keymaps'
-    keymaps_list = eval(prop + '_keymaps')
-    name = prop.replace('_', ' ').title()
-
-    # print(f'Unregistering {name} Keymaps >>')
-    
-    for km, kmi in keymaps_list:
-        # print(f'    unregistered: {kmi}')
-        try:
-            km.keymap_items.remove(kmi)
-        except RuntimeError as e:
-            pass
-            # print(f'ARMORED Toolkit [INFO]: Probably an F2 Exception')
-
-    keymaps_list.clear()
-
-    # print(f'DISABLED {name}')
 
 
 def register():

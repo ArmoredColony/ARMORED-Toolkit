@@ -22,7 +22,8 @@ def get_path():
 
 
 def get_name():
-    return os.path.basename(get_path())
+    return __package__.split(".")[0]
+    # return os.path.basename(get_path())
 
 
 def preferences():
