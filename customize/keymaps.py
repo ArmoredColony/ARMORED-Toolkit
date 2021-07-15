@@ -104,6 +104,9 @@ class FOCUS_SELECTED_WITH_F(KeymapGroup):
         km = kc.keymaps.new('Outliner', space_type='OUTLINER')
         self.add(km, 'outliner.show_active',  'F', 'PRESS')
 
+        # km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D')
+        # self.add(km, 'view3d.view_selected',    'F', 'PRESS')
+
         km = kc.keymaps.new('Object Mode')  # Not sure why these sub-categories require EMPTY as space_type, which is the default.
         self.add(km, 'view3d.view_selected',    'F', 'PRESS')
 
@@ -188,7 +191,7 @@ class SCULPTING_SETUP(KeymapGroup):
         self.add(km, 'view3d.view_center_pick', 'F', 'PRESS', alt=True)
         self.add(km, 'view3d.view_center_pick', 'C', 'PRESS')
         # self.add(km, 'view3d.view_center_pick', 'SPACE', 'PRESS')
-        self.add(km, 'view3d.armored_smart_subdivide', 'D', 'PRESS', ctrl=True)
+        self.add(km, 'view3d.armored_subdivide', 'D', 'PRESS', ctrl=True)
         # self.add(km, 'transform.translate', 'G', 'PRESS')
         # self.add(km, 'view3d.armored_toggle_transform_tool', 'W', 'PRESS').properties.tool = 'builtin.move'
 
@@ -247,8 +250,8 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         self.add(km, 'wm.context_toggle',  'W', 'PRESS', shift=True).properties.data_path = 'space_data.overlay.show_wireframes'
         self.add(km, 'wm.context_toggle',  'W', 'PRESS', alt=True  ).properties.data_path = 'space_data.overlay.show_overlays'
 
-        # self.add(km, 'view3d.armored_toggle_tool', 'W', 'PRESS').properties.name = 'builtin.move'
-        self.add(km, 'view3d.armored_toggle_tool', 'W', 'PRESS').properties.name = 'tool.gizmo_pro'
+        self.add(km, 'view3d.armored_toggle_tool', 'W', 'PRESS').properties.name = 'builtin.move'
+        # self.add(km, 'view3d.armored_toggle_tool', 'W', 'PRESS').properties.name = 'tool.gizmo_pro'
 
         self.add(km, 'view3d.armored_open_most_recent',  'R', 'PRESS', alt=True,  shift=True)
         self.add(km, 'view3d.armored_autosmooth',        'A', 'PRESS', ctrl=True, shift=True)
@@ -257,8 +260,7 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         self.add(km, 'view3d.armored_toggle_cavity',     'C', 'PRESS', alt=True)
         self.add(km, 'view3d.armored_cycle_cavity_type', 'C', 'PRESS', alt=True, shift=True)
         self.add(km, 'view3d.armored_smart_loopcut',     'C', 'PRESS')
-        # self.add(km, 'view3d.armored_subdivide',         'D', 'PRESS', ctrl=True)
-        self.add(km, 'view3d.armored_smart_subdivide',         'D', 'PRESS', ctrl=True)
+        self.add(km, 'view3d.armored_subdivide',         'D', 'PRESS', ctrl=True)
 
         self.add(km, 'view3d.armored_single_subdivision_level', 'PAGE_UP',   'PRESS').properties.action = 'INCREASE'
         self.add(km, 'view3d.armored_single_subdivision_level', 'PAGE_DOWN', 'PRESS').properties.action = 'DECREASE'

@@ -21,8 +21,8 @@ class ARMORED_OT_cube(bpy.types.Operator):
                 ('CURSOR', 'Cursor', 'Align to Cursor')
     )
     
-    size           : FloatProperty ( name='Size',         default=2, min=0.001 )
     subdivisions   : IntProperty   ( name='Subdivisions', default=0, min=0, max=30 )
+    size           : FloatProperty ( name='Size',         default=2, min=0.001 )
     align_rotation : EnumProperty  ( name='Align', items=align_options, default='WORLD' )
 
 

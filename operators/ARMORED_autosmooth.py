@@ -32,12 +32,12 @@ class ARMORED_OT_autosmooth(bpy.types.Operator):
                 return {'CANCELLED'}
 
         auto_smooth  = not active.data.use_auto_smooth
-        smooth_angle = 0.610865 # 35 deg
+        # smooth_angle = 0.610865 # 35 deg
 
         # Make all the objects match the toggled properties of the active object.
         for ob in selected_objects:
             ob.data.use_auto_smooth   = auto_smooth
-            ob.data.auto_smooth_angle = smooth_angle
+            # ob.data.auto_smooth_angle = smooth_angle
         
         sel_status = context.object.select_get()
         context.object.select_set(True)
