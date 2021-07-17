@@ -6,7 +6,7 @@ from .. utils.addon import get_path
 # v1.0
 
 class ARMORED_OT_theme_install(bpy.types.Operator):
-    '''Install a theme from the Armored Toolkit.
+    '''Install my personal theme: "Armored Pink", cuz it\'s not quite red but sometimes feels like pink.
 
 www.armoredColony.com'''
     

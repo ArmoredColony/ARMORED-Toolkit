@@ -22,6 +22,24 @@ def raycast(context, event):
     result, location, normal, index, obj, matrix = scene.ray_cast(depsgraph, origin, direction)
 
     return obj
+
+
+def delete_custom_orientation(self):
+    try:
+        bpy.ops.transform.select_orientation(orientation=self.orientation_name)
+        bpy.ops.transform.delete_orientation()
+    #     print('deleted custom orientation')
+    except TypeError:
+        pass
+        # print('orientation does not exist')
+
+def set_custom_orientation(self):
+    try:
+        bpy.ops.transform.create_orientation(name=self.orientation_name, use_view=False, use=True, overwrite=True)
+    except RuntimeError:
+        self.report({'WARNING'}, 'ARMORED Toolkit: Custom orientations require a selection')
+
+    return {'FINISHED'}
     
 
 class ARMORED_OT_custom_orientation(bpy.types.Operator):
@@ -42,25 +60,14 @@ class ARMORED_OT_custom_orientation(bpy.types.Operator):
             return {'CANCELLED'}
 
         obj = raycast(context, event)
-        # print(f'hit object {obj}')
 
         if obj != context.active_object:
-            try:
-                bpy.ops.transform.select_orientation(orientation=self.orientation_name)
-                bpy.ops.transform.delete_orientation()
-            #     print('deleted custom orientation')
-            except Exception:
-                pass
-            #     # print('orientation does not exist')
+            delete_custom_orientation(self)
             return {'FINISHED'}
 
-        try:
-            bpy.ops.transform.create_orientation(name=self.orientation_name, use_view=False, use=True, overwrite=True)
-        except RuntimeError:
-            self.report({'WARNING'}, 'ARMORED Toolkit: Custom orientations require a selection')
-
+        set_custom_orientation(self)
         return {'FINISHED'}
-
+        
 
 classes = (
     ARMORED_OT_custom_orientation,

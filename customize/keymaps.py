@@ -1,6 +1,8 @@
 import bpy
 from abc import ABC, abstractmethod
 
+from .. utils import addon
+
 
 keymap_names = [
     'maya_navigation',
@@ -41,7 +43,8 @@ class KeymapGroup(ABC):
                 km.keymap_items.remove(kmi)
             except RuntimeError as e:
                 pass
-                # print(f'ARMORED Toolkit [INFO]: Probably an F2 Exception')
+                # if addon.debug():
+                    # print(f'ARMORED Toolkit [INFO]: Probably an F2 Exception')
         
         self.keymap_list.clear()
 
@@ -65,7 +68,8 @@ class MAYA_NAVIGATION(KeymapGroup):
         self.add(km, 'view3d.move',   'MIDDLEMOUSE', 'PRESS', alt=True)
         self.add(km, 'view3d.zoom',   'RIGHTMOUSE',  'PRESS', alt=True)
 
-        print('ENABLED Maya Navigation')
+        if addon.debug():
+            print('ENABLED Maya Navigation')
 
 
 class LOOP_SELECTION(KeymapGroup):
@@ -90,7 +94,8 @@ class LOOP_SELECTION(KeymapGroup):
         kmi_props(kmi.properties, 'deselect', True)
         kmi_props(kmi.properties, 'toggle',   False)
 
-        print('ENABLED Select Loops with Double Click')
+        if addon.debug():
+            print('ENABLED Select Loops with Double Click')
 
 
 class FOCUS_SELECTED_WITH_F(KeymapGroup):
@@ -140,7 +145,8 @@ class FOCUS_SELECTED_WITH_F(KeymapGroup):
         km = kc.keymaps.new('Outliner', space_type='OUTLINER')
         self.add(km, 'clip.view_selected',      'F', 'PRESS')
 
-        print('ENABLED Focus Selected with F')
+        if addon.debug():
+            print('ENABLED Focus Selected with F')
 
     
 class DESELECT_WITH_CTRL(KeymapGroup):
@@ -154,7 +160,8 @@ class DESELECT_WITH_CTRL(KeymapGroup):
         km = kc.keymaps.new('Curve', space_type='EMPTY')
         self.add(km, 'armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
 
-        print('ENABLED Deselect with Ctrl')
+        if addon.debug():
+            print('ENABLED Deselect with Ctrl')
 
 
 class TRANSFORM_WITH_GIZMOS(KeymapGroup):
@@ -167,7 +174,8 @@ class TRANSFORM_WITH_GIZMOS(KeymapGroup):
         self.add(km, 'view3d.armored_toggle_transform_tool', 'R', 'PRESS').properties.tool = 'builtin.rotate'
         self.add(km, 'view3d.armored_toggle_transform_tool', 'S', 'PRESS').properties.tool = 'builtin.scale'
 
-        print('ENABLED Transform with Gizmos')
+        if addon.debug():
+            print('ENABLED Transform with Gizmos')
 
 
 class ALLOW_GIZMO_CLICK(KeymapGroup):
@@ -175,13 +183,17 @@ class ALLOW_GIZMO_CLICK(KeymapGroup):
         km = kc.keymaps.new('Generic Gizmo Maybe Drag', space_type='EMPTY')     # Makes Gizmos activate on click instead of drag.
         self.add(km, 'gizmogroup.gizmo_tweak', 'LEFTMOUSE', 'PRESS')
 
+        if addon.debug():
+            print('ENABLED Allow Gizmo Click')
+
 
 class SMART_TAB(KeymapGroup):
     def register(self):
         km = kc.keymaps.new('Object Non-modal')
         self.add(km, 'armored.mode_toggle', 'TAB', 'PRESS')
 
-        print('ENABLED Smart TAB')
+        if addon.debug():
+            print('ENABLED Smart TAB')
 
 
 class SCULPTING_SETUP(KeymapGroup):
@@ -189,7 +201,7 @@ class SCULPTING_SETUP(KeymapGroup):
         km = kc.keymaps.new(name='Sculpt')
 
         self.add(km, 'view3d.view_center_pick', 'F', 'PRESS', alt=True)
-        self.add(km, 'view3d.view_center_pick', 'C', 'PRESS')
+        # self.add(km, 'view3d.view_center_pick', 'C', 'PRESS')
         # self.add(km, 'view3d.view_center_pick', 'SPACE', 'PRESS')
         self.add(km, 'view3d.armored_subdivide', 'D', 'PRESS', ctrl=True)
         # self.add(km, 'transform.translate', 'G', 'PRESS')
@@ -216,14 +228,12 @@ class SCULPTING_SETUP(KeymapGroup):
 
         self.add(km, 'wm.context_toggle',  'W', 'PRESS', shift=True).properties.data_path = 'space_data.overlay.show_wireframes'
 
-        print('ENABLED Sculpting Setup')
+        if addon.debug():
+            print('ENABLED Sculpting Setup')
 
 
 class OPERATOR_SHORTCUTS(KeymapGroup):
     def register(self):
-        def global_focus_key():
-            pass
-            # self.add(km, 'mesh.armored_focus', 'F','PRESS')
 
         def Global_Keys():
             self.add(km, 'screen.userpref_show', 'COMMA', 'PRESS', ctrl=True)
@@ -253,8 +263,8 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         self.add(km, 'view3d.armored_toggle_tool', 'W', 'PRESS').properties.name = 'builtin.move'
         # self.add(km, 'view3d.armored_toggle_tool', 'W', 'PRESS').properties.name = 'tool.gizmo_pro'
 
-        self.add(km, 'view3d.armored_open_most_recent',  'R', 'PRESS', alt=True,  shift=True)
         self.add(km, 'view3d.armored_autosmooth',        'A', 'PRESS', ctrl=True, shift=True)
+        self.add(km, 'view3d.armored_open_most_recent',  'R', 'PRESS', alt=True,  shift=True)
         self.add(km, 'object.armored_rest_on_ground',    'R', 'PRESS', ctrl=True)
 
         self.add(km, 'view3d.armored_toggle_cavity',     'C', 'PRESS', alt=True)
@@ -285,6 +295,8 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
 
         self.add(km, 'mesh.armored_custom_orientation', 'D', 'PRESS')
 
+        self.add(km, 'mesh.shortest_path_pick', 'LEFTMOUSE', 'PRESS', ctrl=True, shift=True).properties.use_fill = False
+
         self.add(km, 'mesh.armored_extract',    'E', 'PRESS', ctrl=True, shift=True)
         self.add(km, 'mesh.armored_duplicate',  'D', 'PRESS', ctrl=True, shift=True)
 
@@ -298,7 +310,7 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
 
         self.add(km, 'object.armored_rest_on_ground', 'R', 'PRESS', ctrl=True)
         self.add(km, 'mesh.loop_multi_select',        'R', 'PRESS', alt=True).properties.ring = True # Fallback for the next entry.
-        self.add(km, 'mesh.armored_select_edge_ring', 'R', 'PRESS', alt=True) 
+        # self.add(km, 'mesh.armored_select_edge_ring', 'R', 'PRESS', alt=True) 
 
         self.add(km, 'mesh.armored_connect',     'C',    'PRESS', shift=True)
         self.add(km, 'mesh.armored_align_verts', 'V',    'PRESS', shift=True)
@@ -347,14 +359,9 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
 
         km = kc.keymaps.new('Window', space_type='EMPTY')
         Global_Keys()
-        # self.add(km, 'wm.search_menu', 'SPACE', 'PRESS')
-        
 
-        km = kc.keymaps.new('Outliner', space_type='OUTLINER')
-        Global_Keys()
-        self.add(km, 'outliner.show_active', 'F', 'PRESS', ctrl=True, shift=True)
-
-        print('ENABLED Operator Keymaps')
+        if addon.debug():
+            print('ENABLED Operator Keymaps')
 
 
 def register():

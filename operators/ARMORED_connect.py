@@ -1,4 +1,4 @@
-# v2.2
+# v2.3
 
 import bpy, bmesh
 from bpy.props import IntProperty, FloatProperty, BoolProperty
@@ -97,7 +97,8 @@ class ARMORED_OT_connect(bpy.types.Operator):
                     pc = c/(c+2) * 100
                     sel = bmesh.ops.bevel(bm, geom=new_edges['geom_inner'], affect='EDGES', 
                                             offset_type='PERCENT', offset=pc+self.stretch, segments=self.edge_count-1, loop_slide=True,)
-                    for e in sel['faces']: e.select = True
+                    for e in sel['faces']: 
+                        e.select = True
             
         # FACE MODE
         elif sel_mode[2]:
@@ -119,10 +120,11 @@ class ARMORED_OT_connect(bpy.types.Operator):
                 perimeter_edges = set(e for e in bm.edges if e.select)
                 contained_edges = edge_sel - perimeter_edges
                 
-                # We're have to do some extra stuff just in case we only selected a partial loop of faces
+                # We have to do some extra stuff just in case we only selected a partial loop of faces
                 # or a partial loop that changes direction
                 bpy.ops.mesh.select_all(action='DESELECT')     
-                for e in contained_edges: e.select = True                  
+                for e in contained_edges: 
+                    e.select = True                  
 
                 # Extend and store the full ring because (contained_edges) is missing the first and last
                 # edges of the ring if you only selected a partial loop of faces
@@ -143,8 +145,9 @@ class ARMORED_OT_connect(bpy.types.Operator):
                 bpy.ops.mesh.select_all(action='DESELECT')
 
                 # SINGLE EDGE BEVEL METHOD >>
-                new_edges = bmesh.ops.subdivide_edges(bm, edges=list(final_ring_sel), cuts=1, use_grid_fill=False)
-                for e in new_edges['geom_inner']: e.select = True
+                new_edges = bmesh.ops.subdivide_edges(bm, edges=list(final_ring_sel), cuts=1, use_grid_fill=self.grid_fill)
+                for e in new_edges['geom_inner']: 
+                    e.select = True
             
                 if self.edge_count > 1:
                     c = self.edge_count-1

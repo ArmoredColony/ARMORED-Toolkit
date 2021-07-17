@@ -2,24 +2,24 @@
 
 
 ## v0.1.3 (LATEST)
-*(unreleased)*
+*(16/Jul/21)*
 
 **NEW**
-- Keymap Override: Transform with Gizmos.
-- Operator: *Set Custom Orientation* creates a temporaty orientation based on your selection, running the script
-  from an empty area of the viewport goes back to Global pivot orientation.
+- Keymap Override: *Focus with F* creates all the necessary keymaps 'fit view to selection' can also be done with F and not just NUMPAD_PERIOD (works for most of the main spaces such as Viewport, Outliner, Geometry Nodes, etc).
+- Operator: *Set Custom Orientation* creates a temporaty orientation based on your selection, running the script from an empty area of the viewport goes back to Global pivot orientation (bound to D if *Operator Shurtcuts* is enabled).
 
 **CHANGES**
 - Operator: Toggle Transform now goes back to the previous tool instead of defaulting to Box Select.
-- Operator: Toggle Transform (renamed to Toggle) now toggles any tool with the input *idname*.
+- Operator: Toggle Transform (renamed to Toggle) now toggles any tool with the input *idname* when creating a custom KMI.
+- Customize: System preferences now load once with a button instead of being a toggle, preventing my preferences from overriding the user's preferences un.expectedly.
+- All properties in the addon preferences have more detailed descriptions of what they do/enable--but no video links yet--.
+- BUGFIX: load_post events being managed incorrectly caused some user preferences to reset unexpectedly.
+- Plus some minor operator edits I can't recall.
 
-**DEV**
-- Replaced the keymap override functions for classes, simplifying the module's register/unregister methods among other things.
-- Using __package__ instead of dirname for getting the addon name.
 
 ## v0.1.2
 *(06/Jul/21)*
-- BUGFIX: Addon was deleting default blender matcaps LMAO, but only in certain custom builds.
+- BUGFIX: Addon was deleting default blender matcaps LMAO, but only with certain custom builds (99.99% of users were unnafected).
 
 
 ## v0.1.1

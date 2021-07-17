@@ -7,14 +7,18 @@ from configparser import ConfigParser
 
 config = ConfigParser()
 filename = 'ARMORED_toolkit_prefs.ini'
-filepath = os.path.join(bpy.utils.user_resource('SCRIPTS', create=True), filename)
-# print(f'filepath: {filepath}')
+config_path = os.path.join(bpy.utils.user_resource('SCRIPTS', create=True), filename)
 
 config.add_section('keymap')
 config.add_section('matcap')
 config.add_section('theme')
 config.add_section('system')
 config.add_section('operator_refresh')
+
+
+def update_config_file():
+    with open(config_path, 'w') as configfile:
+        config.write(configfile)
 
 
 def get_path():
@@ -28,6 +32,10 @@ def get_name():
 
 def preferences():
     return bpy.context.preferences.addons[get_name()].preferences
+
+
+def debug():
+    return preferences().debug
 
 
 class FolderPaths():
@@ -66,9 +74,9 @@ def update(prop, category):
         if state:   themes.apply_theme()
         else:       themes.reset_theme()
 
-    elif category == 'system':
-        if state:   system.apply_system_preferences()
-        else:       system.reset_system_preferences()
+    # elif category == 'system':
+    #     if state:   system.apply_system_preferences()
+    #     else:       system.reset_system_preferences()
 
     elif category == 'operator_refresh':
         from .. operators import ARMORED_mode_toggle
@@ -78,26 +86,31 @@ def update(prop, category):
 
     if category != 'operator_refresh':
         config.set(category, prop, str(state))
-        with open(filepath, 'w') as configfile:
-            config.write(configfile)
+        update_config_file()
 
 
 def load_config():
-    config.read(filepath)
-    for section in config.sections():
+    config.read(config_path)
 
+    for section in config.sections():
         for (prop, _) in config.items(section):
+            attr = getattr(preferences(), prop, None)
+
+            if attr is None:
+                config.remove_option(section, prop)
+                update_config_file()
+                if debug():
+                    print(f'ARM-TK Config: Removed KEY {prop} from SECTION {section}')
+                continue
+
             state = config.getboolean(section, prop)
-            # val = config.getboolean(section, prop)
-            # state = 'ENABLED' if val else 'DISABLED'
-            
-            # In case the the preferences reset because the addon was disabled and enabled again.
-            if state != getattr(preferences(), prop):
+            if state != attr:
                 setattr(preferences(), prop, state)
-                # print(f'config {prop} different blender')
-            else:
-                pass
-                # print(f'config {prop} matches blender')
+                if debug():
+                    print(f'ARM-TK Config: KEY {prop} different from blender')
+
+            elif debug():
+                print(f'ARM-TK Config: KEY {prop} matches blender')
 
 
 # def write_config():
@@ -117,7 +130,7 @@ def load_config():
 #     config.set('keymap', 'operator_shortcuts', str(operator_shortcuts))
 
     
-#     with open(filepath, 'w') as configfile:
+#     with open(config_path, 'w') as configfile:
 #         config.write(configfile)
 #     pass
 
