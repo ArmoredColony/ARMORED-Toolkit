@@ -255,13 +255,13 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
 
         # self.add(km, 'wm.tool_set_by_id', 'Q', 'PRESS')        .properties.name = 'builtin.select_box'
         self.add(km, 'view3d.armored_paint_select', 'Q', 'PRESS') # Tapping this will activate select_box instead.
-        self.add(km, 'wm.call_menu_pie', 'Q', 'DOUBLE_CLICK') .properties.name = 'ARMORED_MT_PIE_select'
+        self.add(km, 'wm.call_menu_pie',            'Q', 'DOUBLE_CLICK') .properties.name = 'ARMORED_MT_PIE_select'
 
         self.add(km, 'wm.context_toggle',  'W', 'PRESS', shift=True).properties.data_path = 'space_data.overlay.show_wireframes'
         self.add(km, 'wm.context_toggle',  'W', 'PRESS', alt=True  ).properties.data_path = 'space_data.overlay.show_overlays'
 
-        self.add(km, 'view3d.armored_toggle_tool', 'W', 'PRESS').properties.name = 'builtin.move'
-        # self.add(km, 'view3d.armored_toggle_tool', 'W', 'PRESS').properties.name = 'tool.gizmo_pro'
+        # self.add(km, 'view3d.armored_toggle_tool', 'W', 'PRESS').properties.name = 'builtin.move'
+        self.add(km, 'view3d.armored_toggle_tool', 'W', 'PRESS').properties.name = 'tool.gizmo_pro'
 
         self.add(km, 'view3d.armored_autosmooth',        'A', 'PRESS', ctrl=True, shift=True)
         self.add(km, 'view3d.armored_open_most_recent',  'R', 'PRESS', alt=True,  shift=True)
@@ -280,6 +280,8 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         Global_Keys()
 
         self.add(km, 'object.delete', 'X', 'PRESS').properties.confirm = False
+        
+        self.add(km, 'object.armored_export_fbx', 'E', 'PRESS', ctrl=True)
 
         kmi = self.add(km, 'object.move_to_collection', 'N', 'PRESS', shift=True)
         kmi_props(kmi.properties, 'collection_index', 0)
@@ -329,9 +331,17 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         self.add(km, 'mesh.region_to_loop', 'FIVE',         'PRESS', alt=True)
         self.add(km, 'mesh.region_to_loop', 'BUTTON5MOUSE', 'PRESS')
 
-        self.add(km, 'mesh.armored_subd_toggle', 'ONE',   'PRESS', alt=True).properties.mode = 'OFF'
-        self.add(km, 'mesh.armored_subd_toggle', 'TWO',   'PRESS', alt=True).properties.mode = 'HYBRID'
-        self.add(km, 'mesh.armored_subd_toggle', 'THREE', 'PRESS', alt=True).properties.mode = 'FULL'
+        kmi = self.add(km, 'mesh.armored_subd_view_in_edit', 'ONE',   'PRESS', alt=True)
+        kmi.properties.mode = 'OFF'
+        kmi.properties.only_affect_last = False
+
+        kmi = self.add(km, 'mesh.armored_subd_view_in_edit', 'TWO',   'PRESS', alt=True)
+        kmi.properties.mode = 'HYBRID'
+        kmi.properties.only_affect_last - False
+
+        kmi = self.add(km, 'mesh.armored_subd_view_in_edit', 'THREE', 'PRESS', alt=True)
+        kmi.properties.mode = 'FULL'
+        kmi.properties.only_affect_last = False
 
         self.add(km, 'mesh.armored_center_vertices', 'X', 'PRESS', ctrl=True, alt=True).properties.axis = 'X'
         self.add(km, 'mesh.armored_center_vertices', 'Y', 'PRESS', ctrl=True, alt=True).properties.axis = 'Y'
