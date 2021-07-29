@@ -1,8 +1,8 @@
-# v1.1
+# v2.0
 
 import bpy, bmesh
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty
-from math import radians
+
 
 
 class ARMORED_OT_cube(bpy.types.Operator):
@@ -21,26 +21,28 @@ class ARMORED_OT_cube(bpy.types.Operator):
                 ('CURSOR', 'Cursor', 'Align to Cursor')
     )
     
-    subdivisions   : IntProperty   ( name='Subdivisions', default=0, min=0, max=30 )
-    size           : FloatProperty ( name='Size',         default=2, min=0.001 )
-    align_rotation : EnumProperty  ( name='Align', items=align_options, default='WORLD' )
+    subdivisions    : IntProperty   (name='Subdivisions', default=0, min=0, max=30, options={'SKIP_SAVE'})
+    size            : FloatProperty (name='Size',         default=2, min=0.001)
+    align_rotation  : EnumProperty  (name='Align', items=align_options, default='WORLD')
 
 
     @classmethod
     def poll(cls, context):
         return context.mode in {'OBJECT', 'EDIT_MESH'}
-
-    def execute(self, context):
+    
+    def invoke(self, context, event):
         bpy.ops.mesh.primitive_cube_add(size=self.size, align=self.align_rotation)
-        mode = bpy.context.mode
 
-        if mode == 'OBJECT':
+        if context.mode == 'OBJECT':
             bpy.ops.object.mode_set(mode='EDIT')
 
+        return context.window_manager.invoke_props_popup(self, event)
+
+    def execute(self, context):
         if self.subdivisions > 0:
             bpy.ops.mesh.subdivide(number_cuts=self.subdivisions, smoothness=0)
-
-        bpy.ops.mesh.select_all(action='DESELECT')
+        
+        # bpy.ops.mesh.select_all(action='DESELECT')
 
         return {'FINISHED'}
 

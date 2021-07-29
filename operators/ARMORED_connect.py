@@ -25,11 +25,7 @@ class ARMORED_OT_connect(bpy.types.Operator):
 
         sub = layout.row()
         sub.prop(self, 'stretch')
-
-        if self.edge_count > 1:
-            sub.enabled = True 
-        else:
-            sub.enabled = False
+        sub.enabled = self.edge_count > 1 
 
         layout.prop(self, 'grid_fill')
     
@@ -46,7 +42,7 @@ class ARMORED_OT_connect(bpy.types.Operator):
 
         # VERTEX MODE
         if sel_mode[0]:
-            vert_sel = set(v for v in bm.verts if v.select)
+            vert_sel = {v for v in bm.verts if v.select}
 
             if not vert_sel or len(vert_sel) == 1:
                 bpy.ops.mesh.knife_tool('INVOKE_DEFAULT')
@@ -102,8 +98,8 @@ class ARMORED_OT_connect(bpy.types.Operator):
             
         # FACE MODE
         elif sel_mode[2]:
-            face_sel = set(f for f in bm.faces if f.select)
-            edge_sel = set(e for e in bm.edges if e.select)
+            face_sel = {f for f in bm.faces if f.select}
+            edge_sel = {e for e in bm.edges if e.select}
 
             if not face_sel:
                 bpy.ops.mesh.knife_tool('INVOKE_DEFAULT')
@@ -114,7 +110,7 @@ class ARMORED_OT_connect(bpy.types.Operator):
                 return {'FINISHED'}
 
             elif len(face_sel) > 1:
-                face_sel = set(f for f in bm.faces if f.select)
+                # face_sel = {f for f in bm.faces if f.select}
 
                 bpy.ops.mesh.region_to_loop()
                 perimeter_edges = set(e for e in bm.edges if e.select)
