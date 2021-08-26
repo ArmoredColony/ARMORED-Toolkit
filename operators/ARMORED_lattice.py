@@ -1,9 +1,18 @@
 # v1.3
 
 import bpy
-from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty
+from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, EnumProperty
 
 from mathutils import Matrix
+
+
+
+def set_lattice_interpolation(lattice_ob, interpolation_type):
+    lattice_ob.data.interpolation_type_u = interpolation_type
+    lattice_ob.data.interpolation_type_v = interpolation_type
+    lattice_ob.data.interpolation_type_w = interpolation_type
+    
+
 
 
 class ARMORED_OT_lattice(bpy.types.Operator):
@@ -90,7 +99,8 @@ class ARMORED_OT_lattice_modal(bpy.types.Operator):
         # self.lattice.matrix_world = self.target.matrix_world
         self.lattice.dimensions = context.object.dimensions
         self.lattice.location = context.object.location
-        self.lattice.rotation_euler  = context.object.rotation_euler 
+        self.lattice.rotation_euler  = context.object.rotation_euler
+        set_lattice_interpolation(self.lattice, interpolation_type='KEY_CATMULL_ROM')
 
         context.collection.objects.link(self.lattice)
 

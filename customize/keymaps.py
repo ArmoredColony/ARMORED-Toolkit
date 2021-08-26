@@ -297,7 +297,7 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
 
         self.add(km, 'mesh.armored_custom_orientation', 'D', 'PRESS')
 
-        self.add(km, 'mesh.shortest_path_pick', 'LEFTMOUSE', 'PRESS', ctrl=True, shift=True).properties.use_fill = False
+        # self.add(km, 'mesh.shortest_path_pick', 'LEFTMOUSE', 'PRESS', ctrl=True, shift=True).properties.use_fill = False
 
         self.add(km, 'mesh.armored_extract',    'E', 'PRESS', ctrl=True, shift=True)
         self.add(km, 'mesh.armored_duplicate',  'D', 'PRESS', ctrl=True, shift=True)
