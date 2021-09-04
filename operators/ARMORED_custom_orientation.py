@@ -37,7 +37,7 @@ def set_custom_orientation(self):
     try:
         bpy.ops.transform.create_orientation(name=self.orientation_name, use_view=False, use=True, overwrite=True)
     except RuntimeError:
-        self.report({'WARNING'}, 'ARMORED Toolkit: Custom orientations require a selection')
+        self.report({'WARNING'}, 'ARMORED Toolkit: Runtime Error when creating custom orientation')
 
     return {'FINISHED'}
     
