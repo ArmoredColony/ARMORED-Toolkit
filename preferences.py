@@ -16,6 +16,9 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
     def update_maya_navigation(self, context):
         addon.update(prop='maya_navigation', category='keymap')
 
+    # def update_maya_extrude(self, context):
+    #     addon.update(prop='maya_extrude', category='keymap')
+
     def update_loop_selection(self, context):
         addon.update(prop='loop_selection', category='keymap')
 
@@ -52,8 +55,10 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
 
     maya_navigation: BoolProperty(name='Maya Navigation', default=False,
-            description='Maya style navigation (ALT + Mouse Buttons)',
-            update=update_maya_navigation)
+            description='Maya style navigation (ALT + Mouse Buttons)', update=update_maya_navigation)
+
+    # maya_extrude: BoolProperty(name='Maya Extrude', default=False,
+    #         description='Extrude faces along their individual normals (like Maya)', update=update_maya_extrude)
 
     loop_selection: BoolProperty(name='Double Click to Select Loops', default=False,
             description='Double Click to select component loops', update=update_loop_selection,)
@@ -216,6 +221,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         box = col1.box()
         box.label(text='Keymap Overrides')
         prop_line(prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
+        # prop_line(prop='maya_extrude',          icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='focus_selected_with_f', icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')

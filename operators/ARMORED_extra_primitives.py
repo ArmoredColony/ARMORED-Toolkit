@@ -1,8 +1,72 @@
-# v2.0
+# v2.2
 
 import bpy, bmesh
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty
 
+
+
+class MESH_OT_armored_modal_cube(bpy.types.Operator):
+    '''Modal Cube Primitive with adjustable segments.
+
+(www.armoredColony.com)'''
+
+    bl_idname = 'mesh.armored_modal_cube'
+    bl_label  = 'ARMORED Modal Cube'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    align_options = (
+            ('WORLD',  'World',  'Align to World'), 
+            ('VIEW',   'View',   'Align to View'),
+            ('CURSOR', 'Cursor', 'Align to Cursor')
+    )
+    
+    subdivisions    : IntProperty   (name='Subdivisions', default=0, min=0, max=30, options={'SKIP_SAVE'})
+    size            : FloatProperty (name='Size',         default=2, min=0.001)
+    align_rotation  : EnumProperty  (name='Align', items=align_options, default='WORLD')
+
+    def invoke(self, context, event):
+        bpy.ops.mesh.primitive_cube_add(size=self.size, align=self.align_rotation)
+        self.cube = context.active_object
+        self.report({'INFO'}, 'SCROLL to add segments')
+
+        if context.mode == 'OBJECT':
+            bpy.ops.object.mode_set(mode='EDIT')
+
+        context.window_manager.modal_handler_add(self)
+        
+        bpy.ops.ed.undo_push()
+        bpy.ops.ed.undo_push()
+        return {'RUNNING_MODAL'}
+
+    def modal(self, context, event):
+        context.area.tag_redraw()
+
+        if event.type in {'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
+            if event.type in {'WHEELUPMOUSE'}:
+                self.subdivisions += 1
+            else:
+                self.subdivisions -= 1
+
+            bpy.ops.ed.undo()
+            if self.subdivisions != 0:
+                bpy.ops.mesh.subdivide(number_cuts=self.subdivisions, smoothness=0)
+            bpy.ops.ed.undo_push()
+
+
+        elif event.type == 'LEFTMOUSE' and event.value == 'PRESS':
+            self.report({'INFO'}, 'Your cube is ready')
+            bpy.ops.mesh.select_all(action='DESELECT')
+            return {'FINISHED'}
+
+        elif event.type == 'RIGHTMOUSE' and event.value == 'PRESS':
+            bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.data.objects.remove(self.cube, do_unlink=True)
+            return {'CANCELLED'}
+
+        elif event.type in {'MIDDLEMOUSE'}:
+            return {'PASS_THROUGH'}
+
+        return {'RUNNING_MODAL'}
 
 
 class ARMORED_OT_cube(bpy.types.Operator):
@@ -42,7 +106,7 @@ class ARMORED_OT_cube(bpy.types.Operator):
         if self.subdivisions > 0:
             bpy.ops.mesh.subdivide(number_cuts=self.subdivisions, smoothness=0)
         
-        # bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.mesh.select_all(action='DESELECT')
 
         return {'FINISHED'}
 
@@ -120,13 +184,16 @@ class ARMORED_OT_single_vertex(bpy.types.Operator):
 
 
 def draw_menu(self, context):
-    self.layout.separator()
-    self.layout.operator(ARMORED_OT_cube.bl_idname,          text='Maya Cube',     icon='CUBE')
-    self.layout.operator(ARMORED_OT_quadsphere.bl_idname,    text='Quad Sphere',   icon='SPHERE')
-    self.layout.operator(ARMORED_OT_single_vertex.bl_idname, text='Single Vertex', icon='DOT')
+    layout = self.layout
+    layout.separator()
+    # layout.operator(ARMORED_OT_cube.bl_idname,          text='Maya Cube',     icon='CUBE')
+    layout.operator(MESH_OT_armored_modal_cube.bl_idname,          text='Maya Cube',     icon='CUBE')
+    layout.operator(ARMORED_OT_quadsphere.bl_idname,    text='Quad Sphere',   icon='SPHERE')
+    layout.operator(ARMORED_OT_single_vertex.bl_idname, text='Single Vertex', icon='DOT')
 
 
 classes = (
+    MESH_OT_armored_modal_cube,
     ARMORED_OT_cube,
     ARMORED_OT_quadsphere,
     ARMORED_OT_single_vertex,

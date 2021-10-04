@@ -28,8 +28,8 @@ class ARMORED_OT_toggle_cavity(bpy.types.Operator):
         
         # World Cavity (AO) Options >>
         context.scene.display.matcap_ssao_samples = 64          # The sample number updates but the viewport does NOT?
-        context.space_data.shading.cavity_ridge_factor  = 1.5
-        context.space_data.shading.cavity_valley_factor = 1.5
+        # context.space_data.shading.cavity_ridge_factor  = 1.5
+        # context.space_data.shading.cavity_valley_factor = 1.5
         bpy.context.preferences.studio_lights.refresh()
 
         return {'FINISHED'}

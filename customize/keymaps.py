@@ -1,11 +1,13 @@
 import bpy
 from abc import ABC, abstractmethod
+# import sys, inspect
 
 from .. utils import addon
 
 
 keymap_names = [
     'maya_navigation',
+    # 'maya_extrude',
     'loop_selection',
     'focus_selected_with_f',
     'deselect_with_ctrl',
@@ -72,6 +74,16 @@ class MAYA_NAVIGATION(KeymapGroup):
             print('ENABLED Maya Navigation')
 
 
+# class MAYA_EXTRUDE(KeymapGroup):
+#     def register(self):
+#         km = kc.keymaps.new(name='Mesh')
+
+#         self.add(km, 'mesh.armored_extrude', 'E', 'PRESS', alt=True)
+
+#         if addon.debug():
+#             print('ENABLED Maya Extrude')
+
+
 class LOOP_SELECTION(KeymapGroup):
     def register(self):
         km = kc.keymaps.new(name='Mesh')
@@ -102,7 +114,7 @@ class FOCUS_SELECTED_WITH_F(KeymapGroup):
     def register(self):
         '''
         Some keymaps work with the global km = kc.keymaps.new('Window') (space_type defaults to EMPTY)
-        ...but others get overriden by more specific category names, not sure how space_type affects priority.
+        ...but others get overriden by more specific category names. Not sure how space_type affects priority.
         Individual KMs is ugly but it guarantees priority
         '''
 
@@ -112,11 +124,13 @@ class FOCUS_SELECTED_WITH_F(KeymapGroup):
         # km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D')
         # self.add(km, 'view3d.view_selected',    'F', 'PRESS')
 
-        km = kc.keymaps.new('Object Mode')  # Not sure why these sub-categories require EMPTY as space_type, which is the default.
-        self.add(km, 'view3d.view_selected',    'F', 'PRESS')
+        km = kc.keymaps.new('Object Mode')  # DEFAULT space_type is 'EMPTY'
+        # self.add(km, 'view3d.view_selected',    'F', 'PRESS')
+        self.add(km, 'mesh.armored_focus', 'F', 'PRESS')
 
         km = kc.keymaps.new('Mesh')
-        self.add(km, 'view3d.view_selected',    'F', 'PRESS')
+        # self.add(km, 'view3d.view_selected',    'F', 'PRESS')
+        self.add(km, 'mesh.armored_focus', 'F', 'PRESS')
         
         km = kc.keymaps.new('Curve')
         self.add(km, 'view3d.view_selected',    'F', 'PRESS')
@@ -189,6 +203,7 @@ class ALLOW_GIZMO_CLICK(KeymapGroup):
 
 class SMART_TAB(KeymapGroup):
     def register(self):
+        # return
         km = kc.keymaps.new('Object Non-modal')
         self.add(km, 'armored.mode_toggle', 'TAB', 'PRESS')
 
@@ -297,7 +312,7 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
 
         self.add(km, 'mesh.armored_custom_orientation', 'D', 'PRESS')
 
-        # self.add(km, 'mesh.shortest_path_pick', 'LEFTMOUSE', 'PRESS', ctrl=True, shift=True).properties.use_fill = False
+        self.add(km, 'mesh.armored_extrude', 'E', 'PRESS', alt=True)
 
         self.add(km, 'mesh.armored_extract',    'E', 'PRESS', ctrl=True, shift=True)
         self.add(km, 'mesh.armored_duplicate',  'D', 'PRESS', ctrl=True, shift=True)
@@ -392,5 +407,8 @@ def unregister():
     for cls in keymap_classes.values():
         cls.unregister()
 
-# Does nothing except init classes (no methods are run).
+# Create an instance of each class so we can loop through them when we register/unregister.
 keymap_classes = {name: eval(name.upper())() for name in keymap_names}
+
+# clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+# print(f'CLS MEMBERS {clsmembers}')

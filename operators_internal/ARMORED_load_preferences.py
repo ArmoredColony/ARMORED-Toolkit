@@ -1,8 +1,7 @@
-# v1.0
+# v1.1
 
 import bpy
 import os
-from bpy.props import StringProperty
 
 from .. utils import addon
 
@@ -44,7 +43,7 @@ class ARMORED_OT_load_custom_preferences(bpy.types.Operator):
             'Invert Mouse Zoom ON',
             'Undo Steps 90',
         ]
-        return 'Loads my custom system preferences\n NOTE: these settings persist even if the addon is disabled:\n' + ' \u2022 ' + ('\n\u2022 '.join(list_description))
+        return 'Loads my custom system preferences\n NOTE: these settings persist even if the addon is disabled:\n' + '\u2022 ' + ('\n\u2022 '.join(list_description))
 
     def execute(self, context):
         load_system_preferences(context)
@@ -65,7 +64,7 @@ class ARMORED_OT_unload_custom_preferences(bpy.types.Operator):
             'Invert Mouse Zoom Off',
             'Undo Steps 32',
         ]
-        return 'Set the following preferences back to factory Blender values:\n' + ' \u2022 ' + ('\n\u2022 '.join(list_description))
+        return 'Set the following preferences back to factory Blender values:\n' + '\u2022 ' + ('\n\u2022 '.join(list_description))
 
     def execute(self, context):
         unload_system_preferences(context)

@@ -1,7 +1,15 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
-## v0.1.3 (LATEST)
+## v0.2.0 (LATEST)
+*(21/Sep/21)*
+
+**NEW**
+- Keymap Override/Operator: *Maya Extrude*/*Armored Extrude* replace the default Extrude operator *E* with a "new" one that extrudes faces along their individual normals (like Maya) --avoids having to Extrude Cancel and Shrink Fatten aftwerards--.
+- Operator: *Delete and Grid Fill* combines Delete Faces and Fill Grid into a single operator. This new operator appears in the *X* panel automatically.
+
+
+## v0.1.3
 *(16/Jul/21)*
 
 **NEW**

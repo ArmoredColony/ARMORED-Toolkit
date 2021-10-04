@@ -2,7 +2,7 @@ bl_info = {
     'name'        : 'Toolkit',
     'description' : 'A collection of Scripts, Hotkeys and more',
     'author'      : 'Armored Colony',
-    'version'     : (0, 1, 3),
+    'version'     : (0, 2, 0),
     'blender'     : (2, 90),
     'location'    : 'Search Menu (ARMORED prefix)',
     # 'warning'     : 'Whatever', # Used for warning icon and text in addons panel.
@@ -53,6 +53,6 @@ def register():
 
 
 def unregister():
-    preferences.unregister()
     for mod in reversed(ALL_MODULES):
         mod.unregister()
+    preferences.unregister()
