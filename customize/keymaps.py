@@ -253,8 +253,8 @@ class OPERATOR_SHORTCUTS(KeymapGroup):
         def Global_Keys():
             self.add(km, 'screen.userpref_show', 'COMMA', 'PRESS', ctrl=True)
 
-        km = kc.keymaps.new('Window', space_type='EMPTY')
-        self.add(km, 'script.reload', 'F5', 'PRESS')
+        # km = kc.keymaps.new('Window', space_type='EMPTY')
+        # self.add(km, 'script.reload', 'F5', 'PRESS')
 
 
         # Generic (doesn't work unless separate from 3D View)
