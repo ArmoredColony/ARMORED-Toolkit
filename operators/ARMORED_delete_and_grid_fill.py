@@ -45,7 +45,7 @@ class ARMORED_OT_delete_and_grid_fill(bpy.types.Macro):
     
 
 def draw(self, context):
-    self.layout.operator(ARMORED_OT_delete_and_grid_fill.bl_idname, text='Delete and Grid Fill', icon='FAKE_USER_OFF')
+    self.layout.operator(ARMORED_OT_delete_and_grid_fill.bl_idname, text='Delete and Grid Fill',)
 
 
 classes = (

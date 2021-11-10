@@ -2,21 +2,28 @@
 
 
 ## v0.2.0 (LATEST)
-*(21/Sep/21)*
+*(unreleased)*
 
-**NEW**
-- Keymap Override/Operator: *Maya Extrude*/*Armored Extrude* replace the default Extrude operator *E* with a "new" one that extrudes faces along their individual normals (like Maya) --avoids having to Extrude Cancel and Shrink Fatten aftwerards--.
-- Operator: *Delete and Grid Fill* combines Delete Faces and Fill Grid into a single operator. This new operator appears in the *X* panel automatically.
+### Added ###
+- Operator *Delete and Grid Fill* combines Delete Faces and Fill Grid into a single operator. This new operator appears in the [X] (delete) panel automatically.
+- *Smart TAB* is now exposed to users in the addon preferences
+
+### Changed ###
+- *Maya Cube* primitive is now a modal and allows adding segments with [MOUSESCROLL].
+- *Armored Focus* is now bound to the F key again when *Operator Keymaps* are enabled.
+- *Armored Focus* operator was simplified and performance was increased.
+- [ALT+E] now activates *Extrude along normals* when *Operator Keymaps* are enabled instead of displaying the extrude menu.
+- Updated the *Armored Colony* theme preset to be more consistent (red UI highlights have black text whenever possible).
 
 
 ## v0.1.3
 *(16/Jul/21)*
 
-**NEW**
+### Added ###
 - Keymap Override: *Focus with F* creates all the necessary keymaps 'fit view to selection' can also be done with F and not just NUMPAD_PERIOD (works for most of the main spaces such as Viewport, Outliner, Geometry Nodes, etc).
 - Operator: *Set Custom Orientation* creates a temporaty orientation based on your selection, running the script from an empty area of the viewport goes back to Global pivot orientation (bound to D if *Operator Shurtcuts* is enabled).
 
-**CHANGES**
+### Changed ###
 - Operator: Toggle Transform now goes back to the previous tool instead of defaulting to Box Select.
 - Operator: Toggle Transform (renamed to Toggle) now toggles any tool with the input *idname* when creating a custom KMI.
 - Customize: System preferences now load once with a button instead of being a toggle, preventing my preferences from overriding the user's preferences un.expectedly.

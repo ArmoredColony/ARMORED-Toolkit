@@ -1,7 +1,7 @@
 import bpy
 from bpy.props import EnumProperty, BoolProperty, StringProperty
 
-from . utils import (
+from .. utils import (
     addon,
     extrapy,
 )
@@ -235,16 +235,16 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
         col1.separator()
 
-        box = col2.box()
+        box = col1.box()
+        box.label(text='Extra Matcaps')
+        prop_line(prop='matcaps', icon='MATERIAL', url='www.youtube.com')
+        col1.separator()
+        
+        box = col1.box()
         box.label(text='Smart TAB')
         prop_line(prop='smart_tab', icon='FILE_MOVIE', url='www.youtube.com')
         if self.smart_tab:
             box.prop(self, 'tab_undo_mode', text='', expand=False)
-        col2.separator()
-        
-        box = col1.box()
-        box.label(text='Extra Matcaps')
-        prop_line(prop='matcaps', icon='MATERIAL', url='www.youtube.com')
         col1.separator()
 
         box = col2.box()

@@ -56,17 +56,17 @@ class ARMORED_OT_subdivide(bpy.types.Operator):
         original_active = context.object
 
         if mode == 'SCULPT':
-            bpy.ops.object.mode_set(mode='OBJECT')
+            # bpy.ops.object.mode_set(mode='OBJECT')
 
             mod = next((mod for mod in reversed(context.object.modifiers) if mod.type == 'MULTIRES' and mod.show_viewport), None)
             if mod is None:
                 mod = context.object.modifiers.new(name='Multires', type='MULTIRES')
 
             bpy.ops.object.multires_subdivide(modifier='Multires', mode='CATMULL_CLARK')
-            mod.sculpt_levels += 1
-            mod.levels = mod.sculpt_levels
+            # mod.sculpt_levels += 1
+            # mod.levels = mod.sculpt_levels
             
-            bpy.ops.object.mode_set(mode=mode)
+            # bpy.ops.object.mode_set(mode=mode)
             return {'FINISHED'}
 
         if mode == 'EDIT':
