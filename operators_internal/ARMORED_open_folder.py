@@ -1,9 +1,10 @@
 import bpy
 import os
+import subprocess
 
 
 class ARMORED_OT_open_folder(bpy.types.Operator):
-    '''Open Folder'''
+    '''Open Folder or File'''
     
     bl_idname = 'armored.open_folder'
     bl_label = 'ARMORED Open Folder'
@@ -12,8 +13,10 @@ class ARMORED_OT_open_folder(bpy.types.Operator):
     path : bpy.props.StringProperty()
 
     def execute(self, context):
-        # path = os.path.join(dirname(dirname(__file__)), self.sub_folder)
-        os.startfile(self.path)
+        try:
+            os.startfile(self.path)
+        except Exception: 
+            subprocess.Popen(['xdg-open', self.path])
         return {'FINISHED'}
 
 

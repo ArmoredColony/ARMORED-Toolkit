@@ -5,6 +5,7 @@ import os
 import shutil
 
 from .. utils import addon
+from .. utils import resources
 
 
 debug = False
@@ -15,12 +16,12 @@ debug = False
 #     return os.listdir(matcap_source_path)
 
 
-def makedir(pathstring):
+def makedir(path):
     import os
     
-    if not os.path.exists(pathstring):
-        os.makedirs(pathstring)
-    return pathstring
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path
 
 
 def load_matcaps():
@@ -72,12 +73,15 @@ def register():
     state = addon.preferences().matcaps
 
     if state:
-        load_matcaps()
+        # load_matcaps()
+        resources.Matcaps.load()
     else:
-        unload_matcaps()
+        # unload_matcaps()
+        resources.Matcaps.unload()
 
 
 def unregister():
 
     if isinstance(bpy.context.space_data, bpy.types.SpacePreferences):
-        unload_matcaps()
+        # unload_matcaps()
+        resources.Matcaps.unload()

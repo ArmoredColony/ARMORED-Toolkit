@@ -2,73 +2,97 @@ import bpy
 import os
 
 from .. customize import matcaps, keymaps, themes, system
+from . import resources, paths
 from configparser import ConfigParser
 
 
 config = ConfigParser()
-filename = 'ARMORED_toolkit_prefs.ini'
-config_path = os.path.join(bpy.utils.user_resource('SCRIPTS', create=True), filename)
+filename = 'ARMORED_Toolkit_Prefs.ini'
+config_path = os.path.join(paths.BlenderPaths.config, filename)
 
 config.add_section('keymap')
 config.add_section('matcap')
+config.add_section('hdri')
+config.add_section('studio_light')
 config.add_section('theme')
 config.add_section('system')
 config.add_section('operator_refresh')
+
+# name = __package__.split(".")[0]
 
 
 def update_config_file():
     with open(config_path, 'w') as configfile:
         config.write(configfile)
 
+class Addon():
+    @classmethod
+    @property
+    def name(cls):
+        return __package__.split(".")[0]
+
+    @classmethod
+    @property
+    def path(cls):
+        return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+    @classmethod
+    @property
+    def prefs(cls):
+        # import bpy
+        return bpy.context.preferences.addons[cls.name].preferences
+
+    @classmethod
+    @property
+    def debug(cls):
+        return cls.prefs.debug
+        # bpy.context.preferences.addons[get_name()].preferences.debug
+
 
 def get_path():
-    return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    return Addon.path
+    # return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 
 def get_name():
-    return __package__.split(".")[0]
+    return Addon.name
+    # return __package__.split(".")[0]
     # return os.path.basename(get_path())
 
 
 def preferences():
-    return bpy.context.preferences.addons[get_name()].preferences
+    return Addon.prefs
+    # return bpy.context.preferences.addons[get_name()].preferences
 
 
 def debug():
-    return preferences().debug
+    return Addon.debug
+    # return preferences().debug
 
 
-class FolderPaths():
-    datafiles = bpy.utils.user_resource('DATAFILES', create=True)
-    scripts   = bpy.utils.user_resource('SCRIPTS', create=True)
-    startup   = bpy.utils.user_resource('SCRIPTS', path='startup', create=True)
-    themes    = bpy.utils.user_resource('SCRIPTS',   path=os.path.join('presets', 'interface_theme'), create=True)
-    matcaps   = bpy.utils.user_resource('DATAFILES', path=os.path.join('studiolights', 'matcap'), create=True)
-    operators = os.path.join(get_path(), 'operators')
-    keymaps   = os.path.join(get_path(), 'customize', 'keymaps.py')
+def update_resource(prop, category):
+# def update(prop, category):
+    '''Load or Unload different resources based on the Addon Preferences'''
 
-
-def update(prop, category):
-    '''Enable or Disable different aspects of the Addon based on the Preferences'''
-
-    # state = True if getattr(preferences(), prop) == 'ENABLED' else False
-    # state = getattr(preferences(), prop) == 'ENABLED'
     state = getattr(preferences(), prop)
-    
-    # state = getattr(AddonClass.preferences(), prop)
-    # print(f'STATE: {state}')
 
     if category == 'keymap':
-        cls = keymaps.keymap_classes[prop]
+        cls = getattr(keymaps, prop.upper())
 
-        if state:   
-            cls.register()
-        else:       
-            cls.unregister()
+        if state:   cls.register()
+        else:       cls.unregister()
 
     elif category == 'matcap':
-        if state:   matcaps.load_matcaps()
-        else:       matcaps.unload_matcaps()
+        if state:   resources.Matcaps.load()
+        else:       resources.Matcaps.unload()
+
+    elif category == 'hdri':
+        if state:   resources.HDRI.load()
+        else:       resources.HDRI.unload()
+
+    elif category == 'studio_light':
+        if state:   resources.StudioLights.load()
+        else:       resources.StudioLights.unload()
 
     elif category == 'theme':
         if state:   themes.apply_theme()

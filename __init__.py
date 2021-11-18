@@ -11,10 +11,10 @@ bl_info = {
 }
 
 
-debug = True
+debug = False
 
 
-# FOLDERS WITH CLASSES THAT NEED TO BE REGISTERED IN BLENDER (operators, panels, etc)
+# FOLDERS WITH MODULES THAT CONTAIN <register> AND <unregister> FUNCTIONS (Operators, Panels, etc).
 sub_folders = [
     'ui',  # Contains the addon preferences class (register first, unregister last).
     'operators_internal',
