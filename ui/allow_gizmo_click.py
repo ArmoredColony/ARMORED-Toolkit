@@ -4,7 +4,7 @@ from .. utils import addon
 
 def draw(self, context):
     layout = self.layout
-    layout.prop(addon.preferences(), 'allow_gizmo_click')
+    layout.prop(addon.prefs(), 'allow_gizmo_click')
 
 
 def register():

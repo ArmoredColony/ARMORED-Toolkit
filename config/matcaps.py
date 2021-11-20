@@ -5,14 +5,14 @@ import os
 import shutil
 
 from .. utils import addon
-from .. utils import resources
+from .. config import resources
 
 
 debug = False
 
 
 # def get_source_matcaps():
-#     matcap_source_path = os.path.join(addon.get_path(), 'resources', 'matcaps')
+#     matcap_source_path = os.path.join(addon.path(), 'resources', 'matcaps')
 #     return os.listdir(matcap_source_path)
 
 
@@ -28,7 +28,7 @@ def load_matcaps():
     data_files_path = bpy.utils.user_resource('DATAFILES', create=True)
     matcap_target_path = makedir(os.path.join(data_files_path, 'studiolights', 'matcap'))
     
-    matcap_source_path = os.path.join(addon.get_path(), 'resources', 'matcaps')
+    matcap_source_path = os.path.join(addon.path(), 'resources', 'matcaps')
     source_matcaps = os.listdir(matcap_source_path)
 
     installed_matcaps = set(os.listdir(matcap_target_path))
@@ -70,7 +70,7 @@ def unload_matcaps():
 
 
 def register():
-    state = addon.preferences().matcaps
+    state = addon.prefs().matcaps
 
     if state:
         # load_matcaps()

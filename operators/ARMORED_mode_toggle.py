@@ -93,9 +93,7 @@ class ARMORED_OT_mode_toggle_none(bpy.types.Operator):
 
 
 def register():
-    undo_mode = addon.preferences().tab_undo_mode
-    # undo_mode = addon.Addon.preferences.tab_undo_mode
-    # print(f'TAB Undo History Mode: {undo_mode}')
+    undo_mode = addon.prefs().tab_undo_mode
 
     if undo_mode == 'GROUPED':
         bpy.utils.register_class(ARMORED_OT_mode_toggle_grouped)
@@ -108,7 +106,6 @@ def register():
 
 
 def unregister():
-
     try:
         bpy.utils.unregister_class(ARMORED_OT_mode_toggle_grouped)
     except RuntimeError: pass

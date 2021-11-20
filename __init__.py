@@ -2,8 +2,8 @@ bl_info = {
     'name'        : 'Toolkit',
     'description' : 'A collection of Scripts, Hotkeys and more',
     'author'      : 'Armored Colony',
-    'version'     : (0, 2, 0),
-    'blender'     : (2, 90),
+    'version'     : (0, 3, 0),
+    'blender'     : (2, 83),
     'location'    : 'Search Menu (ARMORED prefix)',
     # 'warning'     : 'Whatever', # Used for warning icon and text in addons panel.
     # 'wiki_url'    : 'www.armoredColony.com', # This should be for Documentation.
@@ -14,12 +14,16 @@ bl_info = {
 debug = False
 
 
-# FOLDERS WITH MODULES THAT CONTAIN <register> AND <unregister> FUNCTIONS (Operators, Panels, etc).
+from . utils import config
+config.new_config()
+
+
+# FOLDERS WITH MODULES THAT CONTAIN <register> AND <unregister> FUNCTIONS (Operators, UI Panels, etc).
 sub_folders = [
     'ui',  # Contains the addon preferences class (register first, unregister last).
     'operators_internal',
     'operators',
-    'customize',
+    'config',
 ]
 
 from . utils import mod_utils

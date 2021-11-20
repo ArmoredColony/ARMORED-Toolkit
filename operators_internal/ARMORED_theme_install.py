@@ -1,12 +1,14 @@
 import bpy
-import os
 from bpy.props import StringProperty
-from .. utils.addon import get_path
+import os
+from .. utils import(
+    paths,
+)
 
-# v1.0
+# v1.1
 
 class ARMORED_OT_theme_install(bpy.types.Operator):
-    '''Install my personal theme: "Armored Pink", cuz it\'s not quite red but sometimes feels like pink.
+    '''Install my personal theme, not quite red but sometimes feels like pink.
 
 www.armoredColony.com'''
     
@@ -17,11 +19,10 @@ www.armoredColony.com'''
     filename: StringProperty(name='Theme File Name', default='armored_colony.xml')
     
     def execute(self, context):
-        path = os.path.join(get_path(), 'resources', 'themes', self.filename)
-        bpy.ops.preferences.theme_install(filepath=path, overwrite=True)
+        file_path = os.path.join(paths.ResourcePaths.themes, self.filename)    # The source, not the target.
+        bpy.ops.preferences.theme_install(filepath=file_path, overwrite=True)
         
         self.report({'INFO'}, 'LOADED Armored Theme')
-        # print('LOADED Armored Theme.')
         return {'FINISHED'}
 
 

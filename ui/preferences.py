@@ -3,7 +3,7 @@ from bpy.props import EnumProperty, BoolProperty, StringProperty
 
 import sys
 
-from .. utils.addon import Addon
+# from .. utils.addon import Addon
 from .. utils import (
     addon,
     descriptions,
@@ -17,14 +17,13 @@ def update(self, context, prop='', category=''):
 
 
 class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
-#     bl_idname = addon.get_name()
-    bl_idname = Addon.name
+    bl_idname = addon.name()
 
     def closure(prop, category):
         return lambda a, b: update(a, b, prop, category)   # a, b = self, context
     
 
-    maya_navigation: BoolProperty(name='Maya Navigation', default=False,
+    maya_navigation: BoolProperty(name='Maya Poop', default=False,
             description='Maya style navigation (ALT + Mouse Buttons)', update=closure(prop='maya_navigation', category='keymap'))
 
     # maya_extrude: BoolProperty(name='Maya Extrude', default=False,
@@ -77,23 +76,17 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         layout = self.layout
         layout.use_property_split = False
 
-        def prop_line(prop, icon, url, text=''):
+        def prop_line(prop, icon, url='www.youtube.com/armoredcolony', text=''):
             row = box.column(align=True).row()
 
             row.label(text=text or extrapy.format_string(prop))
             row.separator()
             row.prop(self, prop, text='On' if getattr(self, prop) else 'Off', toggle=True);
-            # row.separator()
             row.operator('wm.url_open', icon=icon, text='').url = url
         
-        layout.label(text= Addon.name)
-
         box = layout.box()
         col = box.column(align=True)
         col.label(text='This addon automatically enables developer extras', icon='ERROR')
-
-        # layout.label(text=('Python ' + '.'.join(map(str, sys.version_info[:3]))))
-        # layout.label(text=('Python ' + sys.version))
 
         split = layout.split(factor=0.6)
         col1 = split.column(align=True)

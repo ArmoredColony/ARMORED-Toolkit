@@ -21,7 +21,7 @@ class ARMORED_OT_load_materials(bpy.types.Operator):
     def execute(self, context):
         # directory = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop') 
         filename = 'Armored Materials.blend'
-        filepath = os.path.join(addon.get_path(), 'resources', 'materials', filename)
+        filepath = os.path.join(addon.path(), 'resources', 'materials', filename)
 
         local_materials = {mat.name for mat in bpy.data.materials}
         

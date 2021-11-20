@@ -19,9 +19,9 @@ import os
 
 
 def apply_theme(filename='armored_colony.xml'):
-    from .. utils.update_preferences import get_path
+    from .. utils.update_preferences import path
 
-    path = os.path.join(get_path(), 'resources', 'themes', filename)
+    path = os.path.join(path(), 'resources', 'themes', filename)
 
     bpy.ops.preferences.theme_install(filepath=path, overwrite=True)
 
@@ -35,7 +35,7 @@ def reset_theme():
 
 def register():
     return
-    # state = True if preferences().themes == 'ENABLED' else False
+    # state = True if prefs().themes == 'ENABLED' else False
 
     # if state:
     #     handlers.load_post.append(apply_theme_delay)
