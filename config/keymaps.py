@@ -25,7 +25,6 @@ wm = bpy.context.window_manager
 kc = wm.keyconfigs.addon
 
 class MAYA_NAVIGATION(keymap_utils.KeymapGroup):
-    # @classmethod
     def register(self):
         km = kc.keymaps.new('3D View', space_type='VIEW_3D')
 
@@ -47,7 +46,6 @@ class MAYA_NAVIGATION(keymap_utils.KeymapGroup):
 
 
 class LOOP_SELECTION(keymap_utils.KeymapGroup):
-    # @classmethod
     def register(self):
         km = kc.keymaps.new(name='Mesh')
 
@@ -73,7 +71,6 @@ class LOOP_SELECTION(keymap_utils.KeymapGroup):
 
 
 class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
-    # @classmethod
     def register(self):
         '''
         Some keymaps work with the global km = kc.keymaps.new('Window') (space_type defaults to EMPTY)
@@ -126,7 +123,6 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
 
     
 class DESELECT_WITH_CTRL(keymap_utils.KeymapGroup):
-    # @classmethod
     def register(self):
         km = kc.keymaps.new(name='Object Mode')
         self.add(km, 'armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
@@ -141,7 +137,6 @@ class DESELECT_WITH_CTRL(keymap_utils.KeymapGroup):
 
 
 class TRANSFORM_WITH_GIZMOS(keymap_utils.KeymapGroup):
-    # @classmethod
     def register(self):
         km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D')
         # self.add(km, 'wm.tool_set_by_id', 'G', 'PRESS').properties.name = 'builtin.move'
@@ -155,7 +150,6 @@ class TRANSFORM_WITH_GIZMOS(keymap_utils.KeymapGroup):
 
 
 class ALLOW_GIZMO_CLICK(keymap_utils.KeymapGroup):
-    # @classmethod
     def register(self):
         km = kc.keymaps.new('Generic Gizmo Maybe Drag', space_type='EMPTY')     # Makes Gizmos activate on click instead of drag.
         self.add(km, 'gizmogroup.gizmo_tweak', 'LEFTMOUSE', 'PRESS')
@@ -164,7 +158,6 @@ class ALLOW_GIZMO_CLICK(keymap_utils.KeymapGroup):
 
 
 class TAB_HISTORY(keymap_utils.KeymapGroup):
-    # @classmethod
     def register(self):
         # return
         km = kc.keymaps.new('Object Non-modal')
@@ -174,7 +167,6 @@ class TAB_HISTORY(keymap_utils.KeymapGroup):
 
 
 class SCULPTING_SETUP(keymap_utils.KeymapGroup):
-    # @classmethod
     def register(self):
         km = kc.keymaps.new(name='Sculpt')
 
@@ -210,7 +202,6 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
 
 
 class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
-    # @classmethod
     def register(self):
 
         def Global_Keys():
@@ -351,10 +342,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.enabled_message()
 
 
-# classes = mod_utils.get_module_classes(sys.modules[__name__])
-
 def register():
-    # return
     '''Not sure if loading properties from config.ini file automatically triggers their update function
     and registration, but I still have to check them anyway in case some properties have not been
     written to config.ini in the first place'''
@@ -362,34 +350,25 @@ def register():
     # from .. utils import addon 
     # addon.load_config()
 
-    for name, cls_instance in keymap_groups.items():
-        if getattr(addon.prefs(), name.lower()):
+    for cls_name, cls_instance in keymap_groups.items():
+        if getattr(addon.prefs(), cls_name.lower()):
             cls_instance.register()
 
 
 def unregister():
-    # return
-    for name, cls_instance in keymap_groups.items():
-        # if not cls_instance.keymap_list:
-            # continue
-        # print(f'{name} has {len(cls_instance.keymap_list)} elements')
-        # for km, kmi in cls_instance.keymap_list:
-        #     print(kmi.idname)
+    for cls_instance in keymap_groups.values():
         cls_instance.unregister()
 
-# Create an instance of each class so we can loop through them when we register/unregister.
-# keymap_classes = {name: eval(name.upper())() for name in keymap_names}
 
-# clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
-# print(f'CLS MEMBERS {clsmembers}')
+# By instancing the classes we can keep track of the individual keymaps they might register.
 
+# returns list of (cls_name, cls_obj) tuples.
 classes = mod_utils.get_module_classes(sys.modules[__name__])
-# for cls in classes:
-    # print(cls)
 
+# Instance each class and store them.
 keymap_groups = {cls[0].lower(): cls[1](name=cls[0]) for cls in classes}
-# keymap_groups = dict(classes)
-# print(f'items {keymap_groups.items()}')
 
-for key, value in keymap_groups.items():
-    print(key.title().ljust(22, ' '), value)
+# DEBUGGING
+# addon.debug doesnt exist yet, so reference the config file (Not Implemented yet).
+# for cls_name, cls_instance in keymap_groups.items():
+    # print(cls_name.title().ljust(22, ' '), cls_instance)
