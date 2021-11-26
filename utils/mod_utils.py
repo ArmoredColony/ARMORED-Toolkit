@@ -1,6 +1,5 @@
 import importlib
 import os
-# import sys
 import inspect
 
 from .. utils import addon
@@ -18,15 +17,15 @@ def import_modules(folder, debug=False):
 
 def register_modules(modules, action='register', debug=False):
     if debug:
-        print(f'\n{action.upper()}ING {addon.name()}...')
+        print(f'\n{action.upper()}ING: {addon.name()}...')
 
     for module in modules:
-        method = getattr(module, action, None)
+        if debug:
+            print(f'  {action.title()}ing: {module.__name__}')
 
+        method = getattr(module, action, None)
         if method is not None:
             method()
-            if debug: 
-                print(f'  {action.title()}ed: {module.__name__}')
 
 
 def reload_modules(modules, debug=False):

@@ -6,7 +6,8 @@
 
 ### Added ###
 - Operator *Delete and Grid Fill* combines Delete Faces and Fill Grid into a single operator. This new operator appears in the [X] (delete) panel automatically.
-- *Smart TAB* is now exposed to users in the addon preferences
+- *TAB History* is now exposed to users in the addon preferences
+- HDRIs and Studio Lights to the resources you can install along with Matcaps.
 
 ### Changed ###
 - *Maya Cube* primitive is now a modal and allows adding segments with [MOUSESCROLL].

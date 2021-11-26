@@ -1,27 +1,14 @@
 import bpy
 import os
 
-from .. config import matcaps, keymaps, themes, system, resources
-from . import paths
-from configparser import ConfigParser
+from .. customize import keymaps, resources
+from . import(
+    config,
+)
+# from configparser import ConfigParser
 
 
-config = ConfigParser()
-filename = 'ARMORED_Toolkit_Prefs.ini'
-config_path = os.path.join(paths.BlenderPaths.config, filename)
 
-config.add_section('keymap')
-config.add_section('matcap')
-config.add_section('hdri')
-config.add_section('studio_light')
-config.add_section('theme')
-config.add_section('system')
-config.add_section('operator_refresh')
-
-
-def update_config_file():
-    with open(config_path, 'w') as configfile:
-        config.write(configfile)
 
 
 def path():
@@ -43,28 +30,28 @@ def update_resource(prop, category):
 
     state = getattr(prefs(), prop)
 
-    if category == 'keymap':
+    if category == 'keymaps':
         # cls = getattr(keymaps, prop.upper())
-        cls = keymaps.keymap_groups[prop]
+        keymap_group = keymaps.keymap_groups[prop]
 
-        if state:   cls.register()
-        else:       cls.unregister()
+        if state:   keymap_group.register()
+        else:       keymap_group.unregister()
 
-    elif category == 'matcap':
+    elif category == 'matcaps':
         if state:   resources.Matcaps.load()
         else:       resources.Matcaps.unload()
 
-    elif category == 'hdri':
-        if state:   resources.HDRI.load()
-        else:       resources.HDRI.unload()
+    elif category == 'hdris':
+        if state:   resources.HDRIs.load()
+        else:       resources.HDRIs.unload()
 
-    elif category == 'studio_light':
+    elif category == 'studio_lights':
         if state:   resources.StudioLights.load()
         else:       resources.StudioLights.unload()
 
-    elif category == 'theme':
-        if state:   themes.apply_theme()
-        else:       themes.reset_theme()
+    # elif category == 'theme':
+    #     if state:   themes.apply_theme()
+    #     else:       themes.reset_theme()
 
     # elif category == 'system':
     #     if state:   system.apply_system_preferences()
@@ -77,32 +64,9 @@ def update_resource(prop, category):
         ARMORED_mode_toggle.register()
 
     if category != 'operator_refresh':
-        config.set(category, prop, str(state))
-        update_config_file()
+        config.set_config(prop, category, str(state))
 
 
-def load_config():
-    config.read(config_path)
-
-    for section in config.sections():
-        for (prop, _) in config.items(section):
-            attr = getattr(prefs(), prop, None)
-
-            if attr is None:
-                config.remove_option(section, prop)
-                update_config_file()
-                if debug():
-                    print(f'ARM-TK Config: Removed KEY {prop} from SECTION {section}')
-                continue
-
-            state = config.getboolean(section, prop)
-            if state != attr:
-                setattr(prefs(), prop, state)
-                if debug():
-                    print(f'ARM-TK Config: KEY {prop} different from blender')
-
-            elif debug():
-                print(f'ARM-TK Config: KEY {prop} matches blender')
 
 
 # def write_config():
@@ -125,4 +89,3 @@ def load_config():
 #     with open(config_path, 'w') as configfile:
 #         config.write(configfile)
 #     pass
-

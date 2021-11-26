@@ -18,7 +18,7 @@ class BlenderPaths():
     studiolights = bpy.utils.user_resource('DATAFILES', path=os.path.join('studiolights', 'studio'), create=True)
     
     operators    = os.path.join(addon, 'operators')
-    keymaps      = os.path.join(addon, 'config', 'keymaps.py')
+    keymaps      = os.path.join(addon, 'customize', 'keymaps.py')
 
 
 class ResourcePaths():

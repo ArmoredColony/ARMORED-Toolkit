@@ -6,6 +6,7 @@ import sys
 # from .. utils.addon import Addon
 from .. utils import (
     addon,
+    config,
     descriptions,
     extrapy,
     paths,
@@ -13,6 +14,8 @@ from .. utils import (
 
 
 def update(self, context, prop='', category=''):
+    if not category:
+        category = prop
     addon.update_resource(prop, category)
 
 
@@ -23,50 +26,60 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         return lambda a, b: update(a, b, prop, category)   # a, b = self, context
     
 
-    maya_navigation: BoolProperty(name='Maya Poop', default=False,
-            description='Maya style navigation (ALT + Mouse Buttons)', update=closure(prop='maya_navigation', category='keymap'))
-
-    # maya_extrude: BoolProperty(name='Maya Extrude', default=False,
-    #         description='Extrude faces along their individual normals (like Maya)', update=closure(prop='maya_extrude', category='keymap'))
+    maya_navigation: BoolProperty(name='Maya Navigation', default=False,
+            description='Maya style navigation (ALT + Mouse Buttons)', 
+            update=closure(prop='maya_navigation', category='keymaps'))
 
     loop_selection: BoolProperty(name='Double Click to Select Loops', default=False,
-            description='Double Click to select component loops', update=closure(prop='loop_selection', category='keymap'),)
+            description='Double Click to select component loops', 
+            update=closure(prop='loop_selection', category='keymaps'),)
         
     focus_selected_with_f: BoolProperty(name='Focus Selected with F', default=False,
-            description='Frame your selection with the F key (NUMPAD_PERIOD can still be used)', update=closure(prop='focus_selected_with_f', category='keymap'),)
+            description='Frame your selection with the F key (NUMPAD_PERIOD can still be used)', 
+            update=closure(prop='focus_selected_with_f', category='keymaps'),)
 
     deselect_with_ctrl: BoolProperty(name='Deselect with CTRL', default=False,
-            description='CTRL Click now deselects stuff (both in Edit and Object mode)', update=closure(prop='deselect_with_ctrl', category='keymap'),)
+            description='CTRL Click now deselects stuff (both in Edit and Object mode)', 
+            update=closure(prop='deselect_with_ctrl', category='keymaps'),)
 
     transform_with_gizmos: BoolProperty(name='Transform with Gizmos', default=False,
-            description='Use the Gizmo version of the Move, Rotate and Scale Tools', update=closure(prop='transform_with_gizmos', category='keymap'),)
+            description='Use the Gizmo version of the Move, Rotate and Scale Tools', 
+            update=closure(prop='transform_with_gizmos', category='keymaps'),)
 
     allow_gizmo_click: BoolProperty(name='Allow Gizmo Click', default=False,
-            description='Activate Gizmos on Click instead of waiting for a Drag event', update=closure(prop='allow_gizmo_click', category='keymap'),)
+            description='Activate Gizmos on Click instead of waiting for a Drag event', 
+            update=closure(prop='allow_gizmo_click', category='keymaps'),)
 
     sculpting_setup: BoolProperty(name='Sculpting Setup', default=False,
-            description='Enables number row keymaps for brushes and more.\n\n' + descriptions.sculpting_keymaps, update=closure(prop='sculpting_setup', category='keymap'),)
+            description='Enables number row keymaps for brushes and more.\n\n' + descriptions.sculpting_keymaps, 
+            update=closure(prop='sculpting_setup', category='keymaps'),)
 
     operator_shortcuts: BoolProperty(name='Operator Keymaps', default=False, 
-            description='Enables predefined keymaps for a bunch of my operators (scripts) in the Armored Toolkit.\n\n' + descriptions.operator_keymaps, update=closure(prop='operator_shortcuts', category='keymap'),)
+            description='Enables predefined keymaps for some operators in the Armored Toolkit.\n\n' + descriptions.operator_keymaps, 
+            update=closure(prop='operator_shortcuts', category='keymaps'),)
 
     tab_history: BoolProperty(name='TAB History', default=False,
-            description='Use custom TAB functionality.\n\n' + descriptions.smart_tab_functions, update=closure(prop='tab_history', category='keymap'),)
+            description='Use custom TAB functionality.\n\n' + descriptions.smart_tab_functions, 
+            update=closure(prop='tab_history', category='keymaps'),)
 
     tab_undo_mode: EnumProperty(name='Undo behaviour for each TAB press', default='GROUPED',
-            description='TAB Undo Behaviour ', update=closure(prop='tab_undo_mode', category='operator_refresh'),
+            description='TAB Undo Behaviour ', 
+            update=closure(prop='tab_undo_mode', category='operator_refresh'),
             items=[ ('NORMAL',  'Blender Default',            'Create one undo step for each TAB press'), 
                     ('GROUPED', 'Grouped Undo (recommended)', 'Combine repeated TAB presses into a single Undo step'),
                     ('NONE',    'Skip Undo',                  'Pressing TAB does NOT generate undo history'), ])
 
     matcaps: BoolProperty(name='Matcaps', default=False,
-            description='Just some barely useful matcaps', update=closure(prop='matcaps', category='matcap'),)
+            description='Just some barely useful matcaps', 
+            update=closure(prop='matcaps', category='matcaps'),)
 
     hdris: BoolProperty(name='HDRIs', default=False,
-            description='Just some barely useful HDRI', update=closure(prop='hdris', category='hdri'),)
+            description='Just some barely useful HDRIs', 
+            update=closure(prop='hdris', category='hdris'),)
 
     studio_lights: BoolProperty(name='Studio Lights', default=False,
-            description='Just some barely useful Studio Lights', update=closure(prop='studio_lights', category='studio_light'),)
+            description='Just some barely useful Studio Lights', 
+            update=closure(prop='studio_lights', category='studio_lights'),)
 
     debug: BoolProperty(name='Debug', default=False,
             description='Prints developer oriented information in the console window. Not really meant for end users.')
@@ -162,7 +175,7 @@ classes = (
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-    
+    config.load_config()
 
 def unregister():
     for cls in classes:

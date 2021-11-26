@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from . import addon
+from . import debug
 
 
 def make_dir(path):
@@ -16,8 +16,7 @@ def copy_files(source_path, target_path):
     for file in os.listdir(source_path):
         if file not in os.listdir(target_path):
             shutil.copy(os.path.join(source_path, file), target_path)
-            if addon.debug(): 
-                print(f'Added {file}')
+            debug.msg(f'Added {file}')
 
 def delete_files(file_names: list, target_path):
     if not os.path.exists(target_path):
@@ -26,5 +25,4 @@ def delete_files(file_names: list, target_path):
     for file in file_names:
         if file in os.listdir(target_path):
             os.remove(os.path.join(target_path, file))
-            if addon.debug(): 
-                print(f'Removed {file}')
+            debug.msg(f'Removed {file}')
