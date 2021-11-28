@@ -1,10 +1,10 @@
 import bpy
 import os
 
+from . import addon
+
 
 class BlenderPaths():
-    addon = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-
     config       = bpy.utils.user_resource('CONFIG', create=True)
 
     scripts      = bpy.utils.user_resource('SCRIPTS', create=True)
@@ -17,15 +17,16 @@ class BlenderPaths():
     hdri         = bpy.utils.user_resource('DATAFILES', path=os.path.join('studiolights', 'world'), create=True)
     studiolights = bpy.utils.user_resource('DATAFILES', path=os.path.join('studiolights', 'studio'), create=True)
     
-    operators    = os.path.join(addon, 'operators')
-    keymaps      = os.path.join(addon, 'customize', 'keymaps.py')
 
 
-class ResourcePaths():
-    resources = os.path.join(BlenderPaths.addon, 'resources')
+class AddonPaths():
+    resources = os.path.join(addon.path(), 'resources')
 
     matcaps      = os.path.join(resources, 'matcaps')
     hdri         = os.path.join(resources, 'hdri')
     studiolights = os.path.join(resources, 'studiolights')
     themes       = os.path.join(resources, 'themes')
     materials    = os.path.join(resources, 'materials')
+
+    operators    = os.path.join(addon.path(), 'operators')
+    keymaps      = os.path.join(addon.path(), 'customize', 'keymaps.py')

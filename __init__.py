@@ -14,10 +14,6 @@ bl_info = {
 debug = False
 
 
-from . utils import config
-# config.new_config()
-
-
 # FOLDERS WITH MODULES THAT CONTAIN <register> OR <unregister> FUNCTIONS (Operators, UI Panels, etc).
 sub_folders = [
     'config',   # Contains the addon preferences (register first and unregister last)

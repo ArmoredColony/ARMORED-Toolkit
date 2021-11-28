@@ -7,7 +7,7 @@
 ### Added ###
 - Operator *Delete and Grid Fill* combines Delete Faces and Fill Grid into a single operator. This new operator appears in the [X] (delete) panel automatically.
 - *TAB History* is now exposed to users in the addon preferences
-- HDRIs and Studio Lights to the resources you can install along with Matcaps.
+- HDRIS and Studio Lights to the resources you can install along with MATCAPS.
 
 ### Changed ###
 - *Maya Cube* primitive is now a modal and allows adding segments with [MOUSESCROLL].
@@ -15,6 +15,7 @@
 - *Armored Focus* operator was simplified and performance was increased.
 - [ALT+E] now activates *Extrude along normals* when *Operator Keymaps* are enabled instead of displaying the extrude menu.
 - Updated the *Armored Colony* theme preset to be more consistent (red UI highlights have black text whenever possible).
+- Polished a poop ton of code.
 
 
 ## v0.1.3

@@ -318,28 +318,25 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
 
 def register():
-    '''Not sure if loading properties from config.ini file automatically triggers their update function
-    and registration, but I still have to check them anyway in case some properties have not been
-    written to config.ini in the first place'''
-
-    # from .. utils import addon 
-    # addon.load_config()
-
     for cls_name, cls_instance in keymap_groups.items():
         if getattr(addon.prefs(), cls_name.lower()):
             cls_instance.register()
 
 
 def unregister():
+    # It's'safe to unregister everything. 
+    # Classes that never registered keymaps will "early return" from their <unregister> method.
     for cls_instance in keymap_groups.values():
         cls_instance.unregister()
 
 
-# returns list of (cls_name, cls_obj) tuples.
+# List of (cls_name, cls_obj) tuples. 
+# Experiment by putting this in <register> as a global variable.
 classes = mod_utils.get_module_classes(sys.modules[__name__])
 
-# Instance each class so they can keep track of the keymaps they register.
-keymap_groups = {cls[0].lower(): cls[1](name=cls[0]) for cls in classes}
+# Only need 1 instance per class. Each instance can keep track of the keymaps it registers.
+# Have to test if importing this module creates duplicate instances which resets the internal <registered_keymaps> list.
+keymap_groups = {cls[0].lower(): cls[1]() for cls in classes}
 
 # DEBUGGING
 # addon.debug doesnt exist yet, so reference the config file (Not Implemented yet).

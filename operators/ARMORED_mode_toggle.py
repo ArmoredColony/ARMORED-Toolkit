@@ -94,6 +94,7 @@ class ARMORED_OT_mode_toggle_none(bpy.types.Operator):
 
 def register():
     undo_mode = addon.prefs().tab_undo_mode
+    unregister_all()
 
     if undo_mode == 'GROUPED':
         bpy.utils.register_class(ARMORED_OT_mode_toggle_grouped)
@@ -101,19 +102,20 @@ def register():
     elif undo_mode == 'NORMAL':
         bpy.utils.register_class(ARMORED_OT_mode_toggle_normal)
 
-    elif undo_mode == 'NONE':
+    elif undo_mode == 'SKIP':
         bpy.utils.register_class(ARMORED_OT_mode_toggle_none)
 
 
 def unregister():
-    try:
-        bpy.utils.unregister_class(ARMORED_OT_mode_toggle_grouped)
-    except RuntimeError: pass
+    unregister_all()
 
-    try:
-        bpy.utils.unregister_class(ARMORED_OT_mode_toggle_normal)
-    except RuntimeError: pass
 
-    try:
-        bpy.utils.unregister_class(ARMORED_OT_mode_toggle_none)
-    except RuntimeError: pass
+def unregister_all():
+    try:    bpy.utils.unregister_class(ARMORED_OT_mode_toggle_grouped)
+    except  RuntimeError: pass
+
+    try:    bpy.utils.unregister_class(ARMORED_OT_mode_toggle_normal)
+    except  RuntimeError: pass
+
+    try:    bpy.utils.unregister_class(ARMORED_OT_mode_toggle_none)
+    except  RuntimeError: pass

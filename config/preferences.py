@@ -3,7 +3,6 @@ from bpy.props import EnumProperty, BoolProperty, StringProperty
 
 import sys
 
-# from .. utils.addon import Addon
 from .. utils import (
     addon,
     config,
@@ -12,11 +11,30 @@ from .. utils import (
     paths,
 )
 
+from .. customize import (
+    keymaps,
+    resources,
+)
 
+# This only seems to work out here so... whatever.
 def update(self, context, prop='', category=''):
-    if not category:
-        category = prop
-    addon.update_resource(prop, category)
+    state = getattr(addon.prefs(), prop)
+
+    if category == 'keymaps':
+        keymap_group = keymaps.keymap_groups[prop]
+        if state:   keymap_group.register()
+        else:       keymap_group.unregister()
+
+    elif category in {'matcaps', 'hdris', 'studio_lights', 'themes'}:
+        if state:   eval(f'resources.{category.upper()}.load()')
+        else:       eval(f'resources.{category.upper()}.unload()')
+
+    elif category == 'operator':
+        from .. operators import ARMORED_mode_toggle
+        ARMORED_mode_toggle.unregister()
+        ARMORED_mode_toggle.register()
+
+    config.set_config(prop, category, state)
 
 
 class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
@@ -24,8 +42,8 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
     def closure(prop, category):
         return lambda a, b: update(a, b, prop, category)   # a, b = self, context
-    
 
+    # KEYMAP GROUPS >>
     maya_navigation: BoolProperty(name='Maya Navigation', default=False,
             description='Maya style navigation (ALT + Mouse Buttons)', 
             update=closure(prop='maya_navigation', category='keymaps'))
@@ -64,23 +82,27 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
     tab_undo_mode: EnumProperty(name='Undo behaviour for each TAB press', default='GROUPED',
             description='TAB Undo Behaviour ', 
-            update=closure(prop='tab_undo_mode', category='operator_refresh'),
+            update=closure(prop='tab_undo_mode', category='operator'),
             items=[ ('NORMAL',  'Blender Default',            'Create one undo step for each TAB press'), 
                     ('GROUPED', 'Grouped Undo (recommended)', 'Combine repeated TAB presses into a single Undo step'),
-                    ('NONE',    'Skip Undo',                  'Pressing TAB does NOT generate undo history'), ])
+                    ('SKIP',    'Skip Undo',                  'Pressing TAB does NOT generate undo history'), ])
 
-    matcaps: BoolProperty(name='Matcaps', default=False,
+
+    # STUDIO LIGHTS >>
+    matcaps: BoolProperty(name='MATCAPS', default=False,
             description='Just some barely useful matcaps', 
             update=closure(prop='matcaps', category='matcaps'),)
 
-    hdris: BoolProperty(name='HDRIs', default=False,
-            description='Just some barely useful HDRIs', 
+    hdris: BoolProperty(name='HDRIS', default=False,
+            description='Just some barely useful HDRIS', 
             update=closure(prop='hdris', category='hdris'),)
 
     studio_lights: BoolProperty(name='Studio Lights', default=False,
             description='Just some barely useful Studio Lights', 
             update=closure(prop='studio_lights', category='studio_lights'),)
 
+
+    # DEBUGGING >>
     debug: BoolProperty(name='Debug', default=False,
             description='Prints developer oriented information in the console window. Not really meant for end users.')
 
@@ -108,7 +130,6 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         box = col1.box()
         box.label(text='Keymap Overrides')
         prop_line(prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
-        # prop_line(prop='maya_extrude',          icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='focus_selected_with_f', icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
@@ -117,16 +138,14 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         prop_line(prop='sculpting_setup',       icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='operator_shortcuts',    icon='FILE_MOVIE', url='www.youtube.com')
         
-        # for name in keymaps.keymap_names:
-            # prop_line(prop=name, icon='FILE_MOVIE', url='www.youtube.com')
-
         col1.separator()
 
         box = col1.box()
         box.label(text='Extra Resources')
-        prop_line(prop='matcaps', icon='MATERIAL', url='www.youtube.com')
-        prop_line(prop='hdris', icon='MATERIAL', url='www.youtube.com', text='HDRIs')
+        prop_line(prop='matcaps',       icon='MATERIAL', url='www.youtube.com')
+        prop_line(prop='hdris',         icon='MATERIAL', url='www.youtube.com', text='HDRIS')
         prop_line(prop='studio_lights', icon='MATERIAL', url='www.youtube.com')
+        
         col1.separator()
         
         box = col1.box()
@@ -154,10 +173,10 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         col2.separator()
         box = col2.box()
         box.label(text='Useful Directories')
-        box.operator('armored.open_folder', text='Operators Folder', icon='ERROR')      .path = paths.BlenderPaths.operators
-        box.operator('armored.open_folder', text='Keymaps File',     icon='FILE_SCRIPT').path = paths.BlenderPaths.keymaps
+        box.operator('armored.open_folder', text='Operators Folder', icon='ERROR')      .path = paths.AddonPaths.operators
+        box.operator('armored.open_folder', text='Keymaps File',     icon='FILE_SCRIPT').path = paths.AddonPaths.keymaps
         box.operator('armored.open_folder', text='Startup Folder',   icon='FILE_FOLDER').path = paths.BlenderPaths.startup
-        box.operator('armored.open_folder', text='Matcaps Folder',   icon='MATERIAL')   .path = paths.BlenderPaths.matcaps
+        box.operator('armored.open_folder', text='MATCAPS Folder',   icon='MATERIAL')   .path = paths.BlenderPaths.matcaps
         box.operator('armored.open_folder', text='Themes Folder',    icon='TOPBAR')     .path = paths.BlenderPaths.themes
 
         col2.separator()

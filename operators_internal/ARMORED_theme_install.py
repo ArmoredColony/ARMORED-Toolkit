@@ -19,7 +19,7 @@ www.armoredColony.com'''
     filename: StringProperty(name='Theme File Name', default='armored_colony.xml')
     
     def execute(self, context):
-        file_path = os.path.join(paths.ResourcePaths.themes, self.filename)    # The source, not the target.
+        file_path = os.path.join(paths.AddonPaths.themes, self.filename)    # The source, not the target.
         bpy.ops.preferences.theme_install(filepath=file_path, overwrite=True)
         
         self.report({'INFO'}, 'LOADED Armored Theme')
