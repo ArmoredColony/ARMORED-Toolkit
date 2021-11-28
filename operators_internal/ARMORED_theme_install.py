@@ -16,7 +16,7 @@ www.armoredColony.com'''
     bl_label = 'ARMORED Theme Install'
     bl_options = {'REGISTER', 'INTERNAL'}
 
-    filename: StringProperty(name='Theme File Name', default='armored_colony.xml')
+    filename: StringProperty(name='Theme File Name', default='Armored_Colony.xml')
     
     def execute(self, context):
         file_path = os.path.join(paths.AddonPaths.themes, self.filename)    # The source, not the target.

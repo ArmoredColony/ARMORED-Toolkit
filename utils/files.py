@@ -18,6 +18,7 @@ def copy_files(source_path, target_path):
             shutil.copy(os.path.join(source_path, file), target_path)
             debug.msg(f'Added {file}')
 
+
 def delete_files(file_names: list, target_path):
     if not os.path.exists(target_path):
         return

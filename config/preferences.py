@@ -90,16 +90,22 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
     # STUDIO LIGHTS >>
     matcaps: BoolProperty(name='MATCAPS', default=False,
-            description='Just some barely useful matcaps', 
+            description='Some of my favorite matcaps.\n' + descriptions.matcap_files, 
             update=closure(prop='matcaps', category='matcaps'),)
 
     hdris: BoolProperty(name='HDRIS', default=False,
-            description='Just some barely useful HDRIS', 
+            description='Just some barely useful HDRIS.\n' + descriptions.hdri_files,
             update=closure(prop='hdris', category='hdris'),)
 
     studio_lights: BoolProperty(name='Studio Lights', default=False,
-            description='Just some barely useful Studio Lights', 
+            description='Just some barely useful Studio Lights.\n' + descriptions.studio_light_files,
             update=closure(prop='studio_lights', category='studio_lights'),)
+
+
+    # THEMES >>
+    themes: BoolProperty(name='Themes', default=False,
+            description='Mostly personal themes of mine.\n' + descriptions.theme_files, 
+            update=closure(prop='themes', category='themes'),)
 
 
     # DEBUGGING >>
@@ -145,6 +151,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         prop_line(prop='matcaps',       icon='MATERIAL', url='www.youtube.com')
         prop_line(prop='hdris',         icon='MATERIAL', url='www.youtube.com', text='HDRIS')
         prop_line(prop='studio_lights', icon='MATERIAL', url='www.youtube.com')
+        prop_line(prop='themes',        icon='MATERIAL', url='www.youtube.com')
         
         col1.separator()
         
@@ -176,7 +183,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         box.operator('armored.open_folder', text='Operators Folder', icon='ERROR')      .path = paths.AddonPaths.operators
         box.operator('armored.open_folder', text='Keymaps File',     icon='FILE_SCRIPT').path = paths.AddonPaths.keymaps
         box.operator('armored.open_folder', text='Startup Folder',   icon='FILE_FOLDER').path = paths.BlenderPaths.startup
-        box.operator('armored.open_folder', text='MATCAPS Folder',   icon='MATERIAL')   .path = paths.BlenderPaths.matcaps
+        box.operator('armored.open_folder', text='Matcaps Folder',   icon='MATERIAL')   .path = paths.BlenderPaths.matcaps
         box.operator('armored.open_folder', text='Themes Folder',    icon='TOPBAR')     .path = paths.BlenderPaths.themes
 
         col2.separator()

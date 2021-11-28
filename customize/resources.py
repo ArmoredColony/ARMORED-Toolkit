@@ -46,13 +46,13 @@ class MATCAPS(StudioResources):
 
 
 class HDRIS(StudioResources):
-    SOURCE_PATH = paths.AddonPaths.hdri
-    TARGET_PATH = paths.BlenderPaths.hdri
+    SOURCE_PATH = paths.AddonPaths.hdris
+    TARGET_PATH = paths.BlenderPaths.hdris
 
 
 class STUDIO_LIGHTS(StudioResources):
-    SOURCE_PATH = paths.AddonPaths.studiolights
-    TARGET_PATH = paths.BlenderPaths.studiolights
+    SOURCE_PATH = paths.AddonPaths.studio_lights
+    TARGET_PATH = paths.BlenderPaths.studio_lights
 
 
 def register():
@@ -61,7 +61,7 @@ def register():
     MATCAPS.load()       if prefs.matcaps       else MATCAPS.unload()
     HDRIS.load()         if prefs.hdris         else HDRIS.unload()
     STUDIO_LIGHTS.load() if prefs.studio_lights else STUDIO_LIGHTS.unload()
-    # THEMES.load()       if prefs.themes        else THEMES.unload()
+    THEMES.load()        if prefs.themes        else THEMES.unload()
 
 
 def unregister():
@@ -69,4 +69,4 @@ def unregister():
         MATCAPS.unload()
         HDRIS.unload()
         STUDIO_LIGHTS.unload()
-        # THEMES.unload()
+        THEMES.unload()
