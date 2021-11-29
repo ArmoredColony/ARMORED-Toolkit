@@ -7,6 +7,7 @@ from .. utils import (
     paths,
 )
 
+
 class Resources():
     SOURCE_PATH = NotImplemented
     TARGET_PATH = NotImplemented
@@ -17,7 +18,7 @@ class Resources():
 
     @classmethod
     def unload(cls):
-        files.delete_files(os.listdir(cls.SOURCE_PATH), cls.TARGET_PATH)
+        files.delete_files(cls.TARGET_PATH, file_names=os.listdir(cls.SOURCE_PATH))
 
 
 class StudioResources(Resources):

@@ -19,7 +19,7 @@ def copy_files(source_path, target_path):
             debug.msg(f'Added {file}')
 
 
-def delete_files(file_names: list, target_path):
+def delete_files(target_path, file_names: list,):
     if not os.path.exists(target_path):
         return
 
