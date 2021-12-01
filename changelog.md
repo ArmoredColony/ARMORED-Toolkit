@@ -2,7 +2,7 @@
 
 
 ## v0.2.0 (LATEST)
-*(unreleased)*
+*(29/Nov/21)*
 
 ### Added ###
 - Operator *Delete and Grid Fill* combines Delete Faces and Fill Grid into a single operator. This new operator appears in the [X] (delete) panel automatically.
