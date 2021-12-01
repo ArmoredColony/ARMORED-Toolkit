@@ -8,6 +8,7 @@
 - Operator *Delete and Grid Fill* combines Delete Faces and Fill Grid into a single operator. This new operator appears in the [X] (delete) panel automatically.
 - *TAB History* is now exposed to users in the addon preferences
 - HDRIS, Studio Lights, and Themes to the resources you can install along with MATCAPS.
+- Keymap Override *Allow Gizmo Click*. Activate gizmos the instance you click on them instead of waiting for a [MOUSEDRAG] event.
 
 ### Changed ###
 - *Maya Cube* primitive is now a modal and allows adding segments with [MOUSESCROLL].
