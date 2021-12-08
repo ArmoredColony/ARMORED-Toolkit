@@ -13,7 +13,7 @@ class ARMORED_OT_open_most_recent(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
-        recent_files_path = bpy.utils.user_resource('CONFIG', 'recent-files.txt')
+        recent_files_path = bpy.utils.user_resource('CONFIG', path='recent-files.txt')
 
         try:
             with open(recent_files_path) as file:
