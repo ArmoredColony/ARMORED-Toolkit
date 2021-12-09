@@ -172,6 +172,34 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
 
         self.add('wm.context_toggle',  'W', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
 
+        self.add('wm.radial_control',  'F', 'PRESS');
+        self.prop('data_path_primary',   'tool_settings.sculpt.brush.size.size')
+        self.prop('data_path_secondary', 'tool_settings.unified_paint_settings.size')
+        self.prop('use_secondary',       'tool_settings.unified_paint_settings.use_unified_size')
+        self.prop('rotation_path',       'tool_settings.sculpt.brush.texture_slot.angle')
+        self.prop('color_path',          'tool_settings.sculpt.brush.cursor_color_add')
+        self.prop('fill_color_path', '')
+        self.prop('fill_color_override_path', '')
+        self.prop('fill_color_override_test_path', '')
+        self.prop('zoom_path', '')
+        self.prop('image_id', 'tool_settings.sculpt.brush')
+        self.prop('secondary_tex', False)
+        self.prop('release_confirm', True)
+
+        self.add('wm.radial_control',  'F', 'PRESS', shift=True);
+        self.prop('data_path_primary',   'tool_settings.sculpt.brush.size.strength')
+        self.prop('data_path_secondary', 'tool_settings.unified_paint_settings.strength')
+        self.prop('use_secondary',       'tool_settings.unified_paint_settings.use_unified_strength')
+        self.prop('rotation_path',       'tool_settings.sculpt.brush.texture_slot.angle')
+        self.prop('color_path',          'tool_settings.sculpt.brush.cursor_color_add')
+        self.prop('fill_color_path', '')
+        self.prop('fill_color_override_path', '')
+        self.prop('fill_color_override_test_path', '')
+        self.prop('zoom_path', '')
+        self.prop('image_id', 'tool_settings.sculpt.brush')
+        self.prop('secondary_tex', False)
+        self.prop('release_confirm', True)
+
         self.enabled_message()
 
 
