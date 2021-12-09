@@ -172,6 +172,7 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
 
         self.add('wm.context_toggle',  'W', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
 
+        # BRUSH SIZE
         self.add('wm.radial_control',  'F', 'PRESS');
         self.prop('data_path_primary',   'tool_settings.sculpt.brush.size.size')
         self.prop('data_path_secondary', 'tool_settings.unified_paint_settings.size')
@@ -184,8 +185,9 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
         self.prop('zoom_path', '')
         self.prop('image_id', 'tool_settings.sculpt.brush')
         self.prop('secondary_tex', False)
-        self.prop('release_confirm', True)
+        self.prop('release_confirm', True)  # Only setting that was changed.
 
+        # BRUSH STRENGTH
         self.add('wm.radial_control',  'F', 'PRESS', shift=True);
         self.prop('data_path_primary',   'tool_settings.sculpt.brush.size.strength')
         self.prop('data_path_secondary', 'tool_settings.unified_paint_settings.strength')
@@ -198,7 +200,7 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
         self.prop('zoom_path', '')
         self.prop('image_id', 'tool_settings.sculpt.brush')
         self.prop('secondary_tex', False)
-        self.prop('release_confirm', True)
+        self.prop('release_confirm', True)  # Only setting that was changed.
 
         self.enabled_message()
 
