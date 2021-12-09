@@ -147,6 +147,7 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
     def register(self):
         self.km = kc.keymaps.new(name='Sculpt')
 
+        self.add('object.transfer_mode', 'D', 'PRESS')
         self.add('view3d.view_center_pick', 'F', 'PRESS', alt=True)
         self.add('view3d.armored_subdivide', 'D', 'PRESS', ctrl=True)
 
