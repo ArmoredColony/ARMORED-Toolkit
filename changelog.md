@@ -9,6 +9,9 @@
 - *TAB History* is now exposed to users in the addon preferences
 - HDRIS, Studio Lights, and Themes to the resources you can install along with MATCAPS.
 - Keymap Override *Allow Gizmo Click*. Activate gizmos the instance you click on them instead of waiting for a [MOUSEDRAG] event.
+- [D] keymap for switching objets in sculpt mode.
+- [F] keymap for sculpt mode with confirm on release Enabled.
+- [SHIFT][F] keymap for sculpt mode with confirm on release Enabled.
 
 ### Changed ###
 - *Maya Cube* primitive is now a modal and allows adding segments with [MOUSESCROLL].
