@@ -171,6 +171,7 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
         self.add('wm.tool_set_by_id', 'FIVE',  'PRESS', alt=True); self.prop('name', 'builtin_brush.Inflate')
 
         self.add('wm.context_toggle',  'W', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
+        self.add('wm.context_toggle',  'T', 'PRESS', ctrl=True);  self.prop('data_path', 'space_data.overlay.show_fade_inactive')
 
         # BRUSH SIZE
         self.add('wm.radial_control',  'F', 'PRESS');
