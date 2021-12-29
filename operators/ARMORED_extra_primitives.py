@@ -1,7 +1,50 @@
-# v2.2
+# v2.3
 
-import bpy, bmesh
+import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty
+
+
+# class ModalPrimitive():
+#     align_options = (
+#         ('WORLD',  'World',  'Align to World'), 
+#         ('VIEW',   'View',   'Align to View'),
+#         ('CURSOR', 'Cursor', 'Align to Cursor'),
+#     )
+
+#     number_events = {
+#         'ONE'   : 1,
+#         'TWO'   : 2,
+#         'THREE' : 3,
+#         'FOUR'  : 4,
+#         'FIVE'  : 5,
+#         'SIX'   : 6,
+#         'SEVEN' : 7,
+#         'EIGHT' : 8,
+#         'NINE'  : 9,
+#         'ZERO'  : 0,
+
+#         'NUMPAD_1' : 1,
+#         'NUMPAD_2' : 2,
+#         'NUMPAD_3' : 3,
+#         'NUMPAD_4' : 4,
+#         'NUMPAD_5' : 5,
+#         'NUMPAD_6' : 6,
+#         'NUMPAD_7' : 7,
+#         'NUMPAD_8' : 8,
+#         'NUMPAD_9' : 9,
+#         'NUMPAD_0' : 0,
+#     }
+
+#     subdivisions = NotImplemented
+#     size = NotImplemented
+#     alignment = NotImplemented
+
+#     @classmethod
+#     def subdivide_primitive(cls):
+#         bpy.ops.ed.undo()
+#         if cls.subdivisions != 0:
+#             bpy.ops.mesh.subdivide(number_cuts=self.subdivisions, smoothness=0)
+#         bpy.ops.ed.undo_push()
 
 
 
@@ -22,12 +65,42 @@ class MESH_OT_armored_modal_cube(bpy.types.Operator):
     
     subdivisions    : IntProperty   (name='Subdivisions', default=0, min=0, max=30, options={'SKIP_SAVE'})
     size            : FloatProperty (name='Size',         default=2, min=0.001)
-    align_rotation  : EnumProperty  (name='Align', items=align_options, default='WORLD')
+    alignment  : EnumProperty  (name='Align',        default='WORLD', items=align_options, )
+
+    number_events = {
+        'ONE'   : 1,
+        'TWO'   : 2,
+        'THREE' : 3,
+        'FOUR'  : 4,
+        'FIVE'  : 5,
+        'SIX'   : 6,
+        'SEVEN' : 7,
+        'EIGHT' : 8,
+        'NINE'  : 9,
+        'ZERO'  : 0,
+
+        'NUMPAD_1' : 1,
+        'NUMPAD_2' : 2,
+        'NUMPAD_3' : 3,
+        'NUMPAD_4' : 4,
+        'NUMPAD_5' : 5,
+        'NUMPAD_6' : 6,
+        'NUMPAD_7' : 7,
+        'NUMPAD_8' : 8,
+        'NUMPAD_9' : 9,
+        'NUMPAD_0' : 0,
+    }
+
+    def subdivide_cube(self):
+        bpy.ops.ed.undo()
+        if self.subdivisions != 0:
+            bpy.ops.mesh.subdivide(number_cuts=self.subdivisions, smoothness=0)
+        bpy.ops.ed.undo_push()
 
     def invoke(self, context, event):
-        bpy.ops.mesh.primitive_cube_add(size=self.size, align=self.align_rotation)
+        bpy.ops.mesh.primitive_cube_add(size=self.size, align=self.alignment)
         self.cube = context.active_object
-        self.report({'INFO'}, 'SCROLL to add segments')
+        self.report({'INFO'}, 'SCROLL or NUMBER_KEYS to add segments')
 
         if context.mode == 'OBJECT':
             bpy.ops.object.mode_set(mode='EDIT')
@@ -41,30 +114,31 @@ class MESH_OT_armored_modal_cube(bpy.types.Operator):
     def modal(self, context, event):
         context.area.tag_redraw()
 
-        if event.type in {'WHEELUPMOUSE', 'WHEELDOWNMOUSE'}:
-            if event.type in {'WHEELUPMOUSE'}:
-                self.subdivisions += 1
-            else:
-                self.subdivisions -= 1
+        if event.type in {'WHEELUPMOUSE', 'NUMPAD_PLUS', 'PAGE_UP', 'UP_ARROW'} and event.value == 'PRESS':
+            self.subdivisions += 1
+            self.subdivide_cube()
 
-            bpy.ops.ed.undo()
-            if self.subdivisions != 0:
-                bpy.ops.mesh.subdivide(number_cuts=self.subdivisions, smoothness=0)
-            bpy.ops.ed.undo_push()
+        elif event.type in {'WHEELDOWNMOUSE', 'NUMPAD_MINUS', 'PAGE_DOWN', 'DOWN_ARROW'} and event.value == 'PRESS':
+            self.subdivisions -= 1
+            self.subdivide_cube()
+        
+        elif event.type in self.number_events and event.value == 'PRESS':
+            self.subdivisions = self.number_events[event.type]
+            self.subdivide_cube()
 
-
-        elif event.type == 'LEFTMOUSE' and event.value == 'PRESS':
+        elif event.type in {'LEFTMOUSE', 'SPACE', 'RET', 'NUMPAD_ENTER'} and event.value == 'PRESS':
             self.report({'INFO'}, 'Your cube is ready')
             bpy.ops.mesh.select_all(action='DESELECT')
             return {'FINISHED'}
 
-        elif event.type == 'RIGHTMOUSE' and event.value == 'PRESS':
+        elif event.type in {'RIGHTMOUSE', 'ESC'} and event.value == 'PRESS':
             bpy.ops.object.mode_set(mode='OBJECT')
             bpy.data.objects.remove(self.cube, do_unlink=True)
             return {'CANCELLED'}
 
-        elif event.type in {'MIDDLEMOUSE'}:
+        elif event.type in {'MIDDLEMOUSE', 'F', 'NUMPAD_PERIOD'}:
             return {'PASS_THROUGH'}
+        
 
         return {'RUNNING_MODAL'}
 

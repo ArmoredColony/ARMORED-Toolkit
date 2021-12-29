@@ -59,46 +59,46 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
         Individual KMs is ugly but it guarantees priority
         '''
 
-        self.km = kc.keymaps.new('Outliner', space_type='OUTLINER')
-        self.add('outliner.show_active',  'F', 'PRESS')
+        key = 'F'
 
-        # self.km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D')
-        # self.add('view3d.view_selected',    'F', 'PRESS')
+        self.km = kc.keymaps.new('Outliner', space_type='OUTLINER')
+        self.add('outliner.show_active', key, 'PRESS')
 
         self.km = kc.keymaps.new('Object Mode')  # DEFAULT space_type is 'EMPTY'
-        # self.add('view3d.view_selected',    'F', 'PRESS')
-        self.add('mesh.armored_focus', 'F', 'PRESS')
+        # self.add('view3d.view_selected', key, 'PRESS')
+        self.add('mesh.armored_focus', key, 'PRESS')
 
         self.km = kc.keymaps.new('Mesh')
-        # self.add('view3d.view_selected',    'F', 'PRESS')
-        self.add('mesh.armored_focus', 'F', 'PRESS')
+        # self.add('view3d.view_selected', key, 'PRESS')
+        self.add('mesh.armored_focus', key, 'PRESS')
         
         self.km = kc.keymaps.new('Curve')
-        self.add('view3d.view_selected',    'F', 'PRESS')
+        # self.add('view3d.view_selected', key, 'PRESS')
+        self.add('mesh.armored_focus', key, 'PRESS')
 
         self.km = kc.keymaps.new('Graph Editor', space_type='GRAPH_EDITOR')
-        self.add('graph.view_selected',     'F', 'PRESS')
+        self.add('graph.view_selected', key, 'PRESS')
 
         self.km = kc.keymaps.new('Image', space_type='IMAGE_EDITOR')
-        self.add('image.view_selected',     'F', 'PRESS')
+        self.add('image.view_selected', key, 'PRESS')
 
         self.km = kc.keymaps.new('Node Editor', space_type='NODE_EDITOR')
-        self.add('node.view_selected',      'F', 'PRESS')
+        self.add('node.view_selected', key, 'PRESS')
 
         self.km = kc.keymaps.new('File Browser Main', space_type='FILE_BROWSER')
-        self.add('file.view_selected',      'F', 'PRESS')
+        self.add('file.view_selected', key, 'PRESS')
 
         self.km = kc.keymaps.new('Dopesheet', space_type='DOPESHEET_EDITOR')
-        self.add('action.view_selected',    'F', 'PRESS')
+        self.add('action.view_selected', key, 'PRESS')
 
         self.km = kc.keymaps.new('NLA Editor', space_type='OUTLINER')
-        self.add('nla.view_selected',       'F', 'PRESS')
+        self.add('nla.view_selected', key, 'PRESS')
 
         self.km = kc.keymaps.new('Sequencer', space_type='SEQUENCE_EDITOR')
-        self.add('sequencer.view_selected', 'F', 'PRESS')
+        self.add('sequencer.view_selected', key, 'PRESS')
 
         self.km = kc.keymaps.new('Outliner', space_type='OUTLINER')
-        self.add('clip.view_selected',      'F', 'PRESS')
+        self.add('clip.view_selected', key, 'PRESS')
 
         self.enabled_message()
 
@@ -148,6 +148,7 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
         self.km = kc.keymaps.new(name='Sculpt')
 
         self.add('object.transfer_mode', 'D', 'PRESS')
+        self.add('view3d.view_center_pick', 'F', 'PRESS')
         self.add('view3d.view_center_pick', 'F', 'PRESS', alt=True)
         self.add('view3d.armored_subdivide', 'D', 'PRESS', ctrl=True)
 
@@ -174,7 +175,7 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
         self.add('wm.context_toggle',  'T', 'PRESS', ctrl=True);  self.prop('data_path', 'space_data.overlay.show_fade_inactive')
 
         # BRUSH SIZE
-        self.add('wm.radial_control',  'F', 'PRESS');
+        self.add('wm.radial_control',  'S', 'PRESS');
         self.prop('data_path_primary',   'tool_settings.sculpt.brush.size.size')
         self.prop('data_path_secondary', 'tool_settings.unified_paint_settings.size')
         self.prop('use_secondary',       'tool_settings.unified_paint_settings.use_unified_size')
@@ -189,7 +190,7 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
         self.prop('release_confirm', True)  # Only setting that was changed.
 
         # BRUSH STRENGTH
-        self.add('wm.radial_control',  'F', 'PRESS', shift=True);
+        self.add('wm.radial_control',  'S', 'PRESS', shift=True);
         self.prop('data_path_primary',   'tool_settings.sculpt.brush.size.strength')
         self.prop('data_path_secondary', 'tool_settings.unified_paint_settings.strength')
         self.prop('use_secondary',       'tool_settings.unified_paint_settings.use_unified_strength')

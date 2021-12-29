@@ -1,7 +1,6 @@
 import bpy
-from bpy.props import EnumProperty
 
-# v1.5
+# v1.6
 
 class ARMORED_OT_toggle_cavity(bpy.types.Operator):
     '''Toggle Cavity On/Off (Optional: set specific cavity type to be used. Defaults to 'SCREEN')
@@ -18,7 +17,19 @@ class ARMORED_OT_toggle_cavity(bpy.types.Operator):
                 ('BOTH',    'Screen',  'Screen + World Space Cavities'),
                 ('CURRENT', 'Current', 'Use the current type'),
     ]
-    cavity_type : bpy.props.EnumProperty (name='cavity_type', items=cavity_type_items, default='CURRENT')
+    cavity_type : bpy.props.EnumProperty(name='cavity_type', default='CURRENT', items=cavity_type_items)
+
+    def edit_cavity_settings(self, context):
+        # World Cavity (AO) Options >>
+        context.scene.display.matcap_ssao_samples = 64          # The sample number updates but the viewport does NOT?
+        # context.space_data.shading.cavity_ridge_factor  = 1.5
+        # context.space_data.shading.cavity_valley_factor = 1.5
+    
+    def report_cavity_type(self, context):
+        if context.space_data.shading.show_cavity:
+            self.report({'INFO'}, f'Cavity Type: {context.space_data.shading.cavity_type}')
+        else:
+            self.report({'INFO'}, 'Cavity Type: NONE')
    
     def execute(self, context):
         context.space_data.shading.show_cavity = not context.space_data.shading.show_cavity
@@ -26,11 +37,8 @@ class ARMORED_OT_toggle_cavity(bpy.types.Operator):
         if self.cavity_type != 'CURRENT':
             context.space_data.shading.cavity_type = self.cavity_type
         
-        # World Cavity (AO) Options >>
-        context.scene.display.matcap_ssao_samples = 64          # The sample number updates but the viewport does NOT?
-        # context.space_data.shading.cavity_ridge_factor  = 1.5
-        # context.space_data.shading.cavity_valley_factor = 1.5
-        bpy.context.preferences.studio_lights.refresh()
+        self.edit_cavity_settings(context)
+        self.report_cavity_type(context)
 
         return {'FINISHED'}
 
@@ -45,7 +53,6 @@ class ARMORED_OT_cycle_cavity_type(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
-
         def switch(context):
             switcher = {
                 'SCREEN': 'WORLD',
@@ -70,6 +77,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
     
+
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
