@@ -19,7 +19,7 @@ class ARMORED_OT_open_most_recent(bpy.types.Operator):
         try:
             with open(recent_files_path) as file:
                 recent_files = file.read().splitlines()
-        except (OSError):
+        except OSError:
             return {'FINISHED'}
 
         if not recent_files:
