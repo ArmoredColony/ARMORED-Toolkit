@@ -1,4 +1,4 @@
-# v1.1
+# v1.2
 
 import bpy
 
@@ -14,19 +14,21 @@ class ARMORED_OT_open_most_recent(bpy.types.Operator):
 
     def execute(self, context):
         recent_files_path = bpy.utils.user_resource('CONFIG', path='recent-files.txt')
+        recent_files = []
 
         try:
             with open(recent_files_path) as file:
                 recent_files = file.read().splitlines()
+        except (OSError):
+            return {'FINISHED'}
 
-        except (IOError, OSError, FileNotFoundError):
-            recent_files = []
+        if not recent_files:
+            return {'FINISHED'}
 
-        if recent_files:
-            most_recent = recent_files[0]
-
-            # load_ui ensures the the viewport location/angle is loaded as well
-            bpy.ops.wm.open_mainfile(filepath=most_recent, load_ui=True)
+        try:
+            bpy.ops.wm.open_mainfile(filepath=recent_files[0], load_ui=True)
+        except RuntimeError as e:
+            self.report({'ERROR'}, f'{e}')
 
         return {'FINISHED'}
 

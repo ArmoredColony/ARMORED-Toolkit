@@ -3,11 +3,6 @@ from bpy.props import StringProperty
 import os
 
 
-# folder = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop') 
-# filename = 'temp.fbx'
-# desktop_path = os.environ['HOMEPATH'], 'Desktop'
-
-
 class ARMORED_OT_export_FBX(bpy.types.Operator):
     '''Export selected as FBX.
 
@@ -18,20 +13,19 @@ class ARMORED_OT_export_FBX(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     directory = StringProperty(subtype='DIR_PATH')
-    filename = StringProperty(subtype='FILE_NAME')
-
-    # @classmethod
-    # def poll(cls, context):
-    #     return context.mode == 'EDIT_MESH'
+    filename = StringProperty(subtype='FILE_NAME')  # will not work if you set the default here.
 
     def execute(self, context):
         sel = context.selected_objects
         if not sel:
             self.report({'WARNING'}, 'Select the objects you want to export')
             return {'CANCELLED'}
+        
+        self.directory = 'D:/Desktop'
+        if not os.path.exists(self.directory):
+            self.directory = os.path.expanduser("~/Desktop")
 
-        self.directory = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop') 
-        # self.directory = os.path.join(os.environ['HOMEPATH'], 'Desktop')
+        # if self.filename is None:
         self.filename = 'temp.fbx'
 
         path = os.path.join(self.directory, self.filename)

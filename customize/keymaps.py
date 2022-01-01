@@ -76,6 +76,10 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
         # self.add('view3d.view_selected', key, 'PRESS')
         self.add('mesh.armored_focus', key, 'PRESS')
 
+        self.km = kc.keymaps.new('Sculpt')
+        # self.add('view3d.view_selected', key, 'PRESS')
+        self.add('mesh.armored_focus', key, 'PRESS')
+
         self.km = kc.keymaps.new('Graph Editor', space_type='GRAPH_EDITOR')
         self.add('graph.view_selected', key, 'PRESS')
 
@@ -148,8 +152,11 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
         self.km = kc.keymaps.new(name='Sculpt')
 
         self.add('object.transfer_mode', 'D', 'PRESS')
-        self.add('view3d.view_center_pick', 'F', 'PRESS')
-        self.add('view3d.view_center_pick', 'F', 'PRESS', alt=True)
+        # self.add('view3d.view_center_pick', 'F', 'PRESS')
+        self.add('view3d.armored_focus', 'F', 'PRESS')
+        self.add('view3d.view_all', 'F', 'PRESS', shift=True)
+        self.add('view3d.armored_silhouette_mode', 'V', 'PRESS')
+        # self.add('view3d.view_center_pick', 'F', 'PRESS', alt=True)
         self.add('view3d.armored_subdivide', 'D', 'PRESS', ctrl=True)
 
         # Invert brush stroke (set to ALT instead of CTRL)
@@ -216,7 +223,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
         self.km = kc.keymaps.new('Window', space_type='EMPTY')
         self.add('screen.userpref_show', 'COMMA', 'PRESS', ctrl=True)
-        # self.add('script.reload', 'F5', 'PRESS')  # best to create this keymap manually in blender's keymap editor, otherwise you wont be able to use it if something crashes.
+        self.add('script.reload', 'F5', 'PRESS')  # best to create this keymap manually in blender's keymap editor, otherwise you wont be able to use it if something crashes.
 
 
         # Generic (doesn't work unless separate from 3D View)

@@ -201,7 +201,7 @@ classes = (
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-    config.load_config()
+    # config.load_config()
 
 def unregister():
     for cls in classes:
