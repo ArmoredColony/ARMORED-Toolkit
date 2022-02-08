@@ -9,6 +9,7 @@
 - [CTRL][R] keymap for the new remesh operator.
 - Operator *Isolate Cycle* (Outliner): based on your outliner selections, isolate 1 object and cycle to the next/previous one using the SCROll wheel. Also works with entire collections.
 - Operator *Scale Unmasked (Sculpt Mode)* is a macro than sets pivot to unmasked (while in sculpt mode) and activates the default modal resize operator.
+- Operator *Node Stats* (Geometry Nodes Workspace): Currently only prints the node location.
 
 ### Changed ###
 - *Armored Focus* now used in sculpt mode too. While hovering the mesh, runs **view3d.view_center_pick**; while hovering empty canvas space, runs **view3d.view_all**, 
