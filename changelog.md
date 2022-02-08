@@ -1,7 +1,29 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
-## v0.2.0 (LATEST)
+## v0.2.1 (LATEST)
+*(unreleased)*
+
+### Added ###
+- Operator *Remesh* (Sculpt Mode): Same as regular voxel remesh but with vertex color preservation.
+- [CTRL][R] keymap for the new remesh operator.
+- Operator *Isolate Cycle* (Outliner): based on your outliner selections, isolate 1 object and cycle to the next/previous one using the SCROll wheel. Also works with entire collections.
+- Operator *Scale Unmasked (Sculpt Mode)* is a macro than sets pivot to unmasked (while in sculpt mode) and activates the default modal resize operator.
+
+### Changed ###
+- *Armored Focus* now used in sculpt mode too. While hovering the mesh, runs **view3d.view_center_pick**; while hovering empty canvas space, runs **view3d.view_all**, 
+- Sculpting Setup keymaps:
+    + [S] to scale.
+    + [F] to focus).
+    + Brush scale and Brush intensity now have **release_confirm** enabled.
+    + Probably other stuff.
+    - [D] to switch objects.
+    - [*] trivial stuff I never used.
+- *Toggle Cavity* now reports the current cavity mode when toggled on.
+- Fixed some descriptions and class names.
+
+
+## v0.2.0
 *(29/Nov/21)*
 
 ### Added ###
@@ -9,7 +31,7 @@
 - *TAB History* is now exposed to users in the addon preferences
 - HDRIS, Studio Lights, and Themes to the resources you can install along with MATCAPS.
 - Keymap Override *Allow Gizmo Click*. Activate gizmos the instance you click on them instead of waiting for a [MOUSEDRAG] event.
-- [D] keymap for switching objets in sculpt mode.
+- [D] keymap for switching objects in sculpt mode.
 - [F] keymap for sculpt mode with confirm on release Enabled.
 - [SHIFT][F] keymap for sculpt mode with confirm on release Enabled.
 

@@ -8,8 +8,8 @@ from bpy.props import IntProperty, BoolProperty
 import math
 
 
-class ARMORED_OT_delete_faces_and_select_border(bpy.types.Operator):
-    '''Creates a temporary custom orientation from your selection (reset by running it again while hovering over an empty area of your viewport).
+class MESH_OT_armored_delete_faces_and_select_border(bpy.types.Operator):
+    '''Deletes the selected faces and selects the edge border that remains.
 
 (armoredColony.com)'''
  
@@ -39,17 +39,22 @@ class ARMORED_OT_switch_to_face_mode(bpy.types.Operator):
 
 
 class ARMORED_OT_delete_and_grid_fill(bpy.types.Macro):
+    '''Deletes the selected faces, selects the remaining edge border and runs the Grid Fill operator.
+
+(www.armoredColony.com)'''
+
     bl_idname = 'mesh.armored_delete_and_grid_fill'
     bl_label = 'ARMORED Delete and Grid Fill'
     bl_options = {'REGISTER', 'UNDO'}
     
 
 def draw(self, context):
+    self.layout.separator()
     self.layout.operator(ARMORED_OT_delete_and_grid_fill.bl_idname, text='Delete and Grid Fill',)
 
 
 classes = (
-    ARMORED_OT_delete_faces_and_select_border,
+    MESH_OT_armored_delete_faces_and_select_border,
     ARMORED_OT_switch_to_face_mode,
     ARMORED_OT_delete_and_grid_fill,
 )
