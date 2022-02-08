@@ -23,11 +23,22 @@ class NODE_OT_armored_node_stats(bpy.types.Operator):
 		stats = {
 			'name' : node.name,
 			'location' : node.location,
+			'inputs' : node.inputs[:],
+			'outputs' : node.outputs[:],
 		}
 			
 		print()
 		for key, val in stats.items():
-			print(f'{key}: {val}')
+			if isinstance(val, list):
+				print(f'{key}:')
+				if not val:
+					print('None')
+					continue
+
+				for idx, e in enumerate(val):
+					print(f'    [{idx}] {e.name}')
+			else:
+				print(f'{key}: {val}')
 
 		self.report({'INFO'}, f'Node Location {stats.get("location")}')
 		return {'FINISHED'}
