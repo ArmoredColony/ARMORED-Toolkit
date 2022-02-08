@@ -1,6 +1,7 @@
 # v1.1
 
 import bpy
+from bpy.types import Collection
 
 
 class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
@@ -125,6 +126,7 @@ class Cycle():
 def get_collection_type(self):
 	return 'COLLECTION'
 
+
 def menu_draw(self, context):
 	self.layout.operator(OUTLINER_OT_armored_isolate_cycle.bl_idname, text='Isolate Cycle')
 	self.layout.separator()
@@ -148,7 +150,9 @@ def register():
 	for menu in menus:
 		exec(f'bpy.types.{menu}.prepend(menu_draw)')
 
-	bpy.types.Collection.type = bpy.props.StringProperty(name='Type', get=get_collection_type)
+	if bpy.app.version < (3, 1, 0):
+		print('ARM-TK: created "COLLECTION" type')
+		bpy.types.Collection.type = bpy.props.StringProperty(name='Type', get=get_collection_type)
 
 
 def unregister():
@@ -158,4 +162,6 @@ def unregister():
 	for menu in menus:
 		exec(f'bpy.types.{menu}.remove(menu_draw)')
 
-	del bpy.types.Collection.type
+	if bpy.app.version < (3, 1, 0):
+		print('ARM-TK: removed "COLLECTION" type')
+		del bpy.types.Collection.type
