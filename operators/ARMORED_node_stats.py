@@ -50,13 +50,14 @@ class NODE_OT_armored_node_stats(bpy.types.Operator):
 	def _iterate_and_print(self, key: str, val: list):
 		print(f'{key}:')
 		for idx, e in enumerate(val):
-			print(f"    [{idx}] '{e.name}'")
+			# print(f"    [{idx}]: '{e.name}' - Linked: {e.is_linked}")
+			msg_tuple = ('    ', f'[{idx}]:', f"'{e.name}'", 'Linked' if e.is_linked else '')
+			print(*[str(element).ljust(7, ' ') for element in msg_tuple])
 	
 	def _print(self, key, val):
 		val = f"'{val}'" if type(val) is str else val
 		print(f'{key}: {val}')
-
-
+	
 classes = (
     NODE_OT_armored_node_stats,
 )
