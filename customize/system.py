@@ -16,5 +16,4 @@ def register():
 
 
 def unregister():
-    # handlers.load_post.remove(developer_extras_delay)
-    return
+    handlers.load_post.remove(developer_extras_delay)

@@ -228,6 +228,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
         self.km = kc.keymaps.new('Window', space_type='EMPTY')
         self.add('screen.userpref_show', 'COMMA', 'PRESS', ctrl=True)
+        self.add('view3d.armored_open_most_recent',  'R', 'PRESS', alt=True,  shift=True)
         self.add('script.reload', 'F5', 'PRESS')  # best to create this keymap manually in blender's keymap editor, otherwise you wont be able to use it if something crashes.
 
 
@@ -252,12 +253,10 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         # self.add('view3d.armored_toggle_tool', 'W', 'PRESS'); self.prop('name', 'tool.gizmo_pro')
 
         self.add('view3d.armored_autosmooth',        'A', 'PRESS', ctrl=True, shift=True)
-        self.add('view3d.armored_open_most_recent',  'R', 'PRESS', alt=True,  shift=True)
         self.add('object.armored_rest_on_ground',    'R', 'PRESS', ctrl=True)
 
         self.add('view3d.armored_toggle_cavity',     'C', 'PRESS', alt=True)
         self.add('view3d.armored_cycle_cavity_type', 'C', 'PRESS', alt=True, shift=True)
-        self.add('view3d.armored_smart_loopcut',     'C', 'PRESS')
         self.add('view3d.armored_subdivide',         'D', 'PRESS', ctrl=True)
 
         self.add('view3d.armored_single_subdivision_level', 'PAGE_UP',   'PRESS');  self.prop('action', 'INCREASE')
@@ -278,6 +277,8 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
         self.km = kc.keymaps.new(name='Mesh')
         Global_Keys()
+
+        self.add('mesh.loopcut_slide', 'C', 'PRESS'); self.prop('release_confirm', True)
 
         self.add('mesh.faces_select_linked_flat', 'F', 'PRESS', shift=True)
         self.add('mesh.edge_face_add',            'F', 'PRESS', alt=True)

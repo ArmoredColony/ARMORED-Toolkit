@@ -1,11 +1,11 @@
-# v1.4
-
 import bpy
 from bpy.props import FloatProperty
 
+from pprint import pprint
+
 
 class NODE_OT_armored_node_stats(bpy.types.Operator):
-	'''Get node stats (location, etc).
+	'''Get node stats (name, label, type, inputs, outputs, etc).
 
 	armoredColony.com '''
 
@@ -21,42 +21,24 @@ class NODE_OT_armored_node_stats(bpy.types.Operator):
 		node = context.active_node
 		
 		stats = {
-			'name ' : node.name,	# NOTE: I added an extra space in "name", just so it lines up with "label" when printed.
-			'label' : node.label,
-			'type' : node.type,
-			'location' : node.location,
-			'inputs' : node.inputs[:],
-			'outputs' : node.outputs[:],
+			'name  ': node.name,
+			'label ': node.label,
+			'type  ': node.type,
+			'bl_idname': node.bl_idname,
+			'parent': node.parent.name if node.parent else None,
+			'node_tree': node.node_tree.name if hasattr(node, 'node_tree') else None,
+			'location': node.location,
+			# 'inputs': node.inputs[:],
+			# 'outputs': node.outputs[:],
+			'inputs' : [(i, val.name) for i, val in enumerate(node.inputs)],
+			'outputs': [(i, val.name) for i, val in enumerate(node.outputs)],
 		}
-			
-		print()
-		for key, val in stats.items():
-			if type(val) is list:
-				if self._empty_list(val):
-					continue
-				self._iterate_and_print(key, val)
-			else:
-				self._print(key, val)
-				
 
-		# self.report({'INFO'}, f'Location {node.location}')
+		print('\nNODE STATS:')
+		pprint(stats, indent=3, sort_dicts=False)
+
 		return {'FINISHED'}
 	
-	def _empty_list(self, lst: list):
-		if not lst:
-			print(    'None')
-			return True
-
-	def _iterate_and_print(self, key: str, val: list):
-		print(f'{key}:')
-		for idx, e in enumerate(val):
-			# print(f"    [{idx}]: '{e.name}' - Linked: {e.is_linked}")
-			msg_tuple = ('    ', f'[{idx}]:', f"'{e.name}'", 'Linked' if e.is_linked else '')
-			print(*[str(element).ljust(7, ' ') for element in msg_tuple])
-	
-	def _print(self, key, val):
-		val = f"'{val}'" if type(val) is str else val
-		print(f'{key}: {val}')
 	
 classes = (
     NODE_OT_armored_node_stats,
