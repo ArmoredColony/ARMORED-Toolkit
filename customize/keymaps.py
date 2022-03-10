@@ -261,6 +261,9 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
         self.add('view3d.armored_single_subdivision_level', 'PAGE_UP',   'PRESS');  self.prop('action', 'INCREASE')
         self.add('view3d.armored_single_subdivision_level', 'PAGE_DOWN', 'PRESS');  self.prop('action', 'DECREASE')
+
+        self.add('view3d.localview', 'SLASH',        'PRESS'); self.prop('frame_selected', False)
+        self.add('view3d.localview', 'NUMPAD_SLASH', 'PRESS'); self.prop('frame_selected', False)
         
 
         self.km = kc.keymaps.new(name='Object Mode')
@@ -299,18 +302,18 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.add('mesh.armored_fast_bevel', 'B', 'PRESS')
         self.add('mesh.bridge_edge_loops',  'B', 'PRESS', shift=True)
 
-        self.add('object.armored_rest_on_ground', 'R', 'PRESS', ctrl=True)
+        # self.add('object.armored_rest_on_ground', 'R', 'PRESS', ctrl=True)
         self.add('mesh.loop_multi_select',        'R', 'PRESS', alt=True); self.prop('ring', True)  # Fallback for the next entry.
         # self.add('mesh.armored_select_edge_ring', 'R', 'PRESS', alt=True) 
 
         self.add('mesh.armored_connect',     'C',    'PRESS', shift=True)
         self.add('mesh.armored_align_verts', 'V',    'PRESS', shift=True)
 
-
-        self.add('mesh.armored_crease', 'BUTTON5MOUSE', 'PRESS', shift=True); self.prop('crease_mode', 'CREASE')
-        self.add('mesh.armored_crease', 'BUTTON4MOUSE', 'PRESS', shift=True); self.prop('crease_mode', 'UNCREASE')
-        self.add('mesh.armored_crease', 'NUMPAD_PLUS',  'PRESS', shift=True); self.prop('crease_mode', 'CREASE')
-        self.add('mesh.armored_crease', 'NUMPAD_MINUS', 'PRESS', shift=True); self.prop('crease_mode', 'UNCREASE')
+        self.add('mesh.armored_smart_crease', 'E', 'PRESS', shift=True)
+        self.add('mesh.armored_fast_crease', 'BUTTON5MOUSE', 'PRESS', shift=True); self.prop('crease_mode', 'CREASE')
+        self.add('mesh.armored_fast_crease', 'BUTTON4MOUSE', 'PRESS', shift=True); self.prop('crease_mode', 'UNCREASE')
+        self.add('mesh.armored_fast_crease', 'NUMPAD_PLUS',  'PRESS', shift=True); self.prop('crease_mode', 'CREASE')
+        self.add('mesh.armored_fast_crease', 'NUMPAD_MINUS', 'PRESS', shift=True); self.prop('crease_mode', 'UNCREASE')
 
         self.add('mesh.select_linked_pick', 'LEFTMOUSE', 'DOUBLE_CLICK', alt=True );            self.prop('deselect', False)
         self.add('mesh.select_linked_pick', 'LEFTMOUSE', 'DOUBLE_CLICK', alt=True, shift=True); self.prop('deselect', True)

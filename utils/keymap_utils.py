@@ -25,7 +25,7 @@ class KeymapGroup(ABC):
             setattr(self.kmi.properties, attr, val)
         except Exception as e:
             self.error_count += 1
-            print(f'    ARMORED-Toolkit WARNING: {e}, check for typos?')
+            print(f'    ARMORED-Toolkit WARNING: {e}')
 
     @abstractmethod
     def register():
@@ -49,6 +49,7 @@ class KeymapGroup(ABC):
                 self.error_count += 1
                 debug.msg(e, 'Probably an F2 Addon Exception')
 
+
     def enabled_message(self):
         debug.msg(f'Enabled {self._formatted_name} {self._error_msg()}\n')
     
@@ -60,6 +61,7 @@ class KeymapGroup(ABC):
 
     def _removing_kmi_message(self, kmi):
         debug.msg(f'    {kmi.idname}{" CTRL" if kmi.ctrl else ""}{" ALT" if kmi.alt else ""}{" SHIFT" if kmi.shift else ""} {kmi.type} {kmi.value}')
+
 
     def _empty_keymap_list(self):
         if not self.keymap_list:

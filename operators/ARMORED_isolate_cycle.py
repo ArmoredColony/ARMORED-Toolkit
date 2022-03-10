@@ -1,11 +1,10 @@
-# v1.1
+# v1.0
 
 import bpy
-from bpy.types import Collection
 
 
 class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
-	'''Based on your outliner selections, isolate 1 object and cycle to the next/previous one using the SCROll wheel. Cancel with RMB. Also works with entire collections.
+	'''Based on your outliner selections, isolate 1 elementject/collection and cycle to the next/previous one using the SCROll wheel. Cancel with RMB. Also works with entire collections.
 
 	armoredColony.com'''
 	
@@ -27,38 +26,29 @@ class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
 
 	def execute(self, context):
 		return self.invoke(context, event=None) 
-	# Whatever
+	
 	def invoke(self, context, event):
-		self.objects = context.selected_ids
-		self.original_state = {}
-		for ob in self.objects:
-			if ob.type == 'COLLECTION':
-				self.original_state[ob] = not context.view_layer.layer_collection.children[ob.name].hide_viewport
-			else:
-				self.original_state[ob] = ob.visible_get()
-			
-		if self.not_enough_objects():
-			self.report({'ERROR'}, f'ARM-TK: Select at least 2 objects cl: {len(self.objects)} < 2')
-			return {'FINISHED'}
+		self.selected_elements = context.selected_ids
+		self.save_original_visibility(context)
 		
-		self.report({'INFO'}, 'SCROLL to cycle and isolate each object')
+		self.report({'INFO'}, 'SCROLL to cycle and isolate each elementject/collection')
 		context.window.cursor_set('SCROLL_Y')
 
-		self.iter_objects = Cycle(self.objects)
-		self.hide_all_objects(context)
+		self.iter_elements = Cycle(self.selected_elements)
+		self.hide_all_elements(context)
 
-		self.current_ob = next(self.iter_objects)
-		self.set_visibility(context, self.current_ob, True)
+		self.current_element = next(self.iter_elements)
+		self.set_visibility(context, self.current_element, True)
 
 		context.window_manager.modal_handler_add(self)
 		return {'RUNNING_MODAL'}
 
 	def modal(self, context, event):
 		if event.type in self.next_events and event.value == 'PRESS':
-			self.isolate_next_object(context)
+			self.isolate_next_elementject(context)
 
 		elif event.type in self.previous_events and event.value == 'PRESS':
-			self.isolate_previous_object(context)
+			self.isolate_previous_elementject(context)
 
 		elif event.type in self.pass_through_events and event.value == 'PRESS':
 			return {'PASS_THROUGH'}
@@ -71,38 +61,49 @@ class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
 		# CANCEL OPERATOR
 		elif event.type in self.canceled_events and event.value == 'PRESS':
 			self.report({'INFO'}, 'CANCELLED')
-			self.set_original_object_visibility(context)
+			self.restore_original_visibility(context)
 			context.window.cursor_set('DEFAULT')
 			return {'FINISHED'}
 
 		return {'RUNNING_MODAL'}
 
-	def not_enough_objects(self):
-		return len(self.objects) < 2
+	
+	def hide_all_elements(self, context):
+		for element in self.selected_elements:
+			self.set_visibility(context, element, False)
 
-	def hide_all_objects(self, context):
-		for ob in self.objects:
-			self.set_visibility(context, ob, False)
+	def save_original_visibility(self, context):
+		self.original_visibility = {}
+		for element in self.selected_elements:
+			if element.type == 'COLLECTION':
+				self.original_visibility[element] = not context.view_layer.layer_collection.children[element.name].hide_viewport
+			else:
+				self.original_visibility[element] = element.visible_get()
 	
-	def set_original_object_visibility(self, context):
-		for ob, visible in self.original_state.items():
-			self.set_visibility(context, ob, visible)
+	def restore_original_visibility(self, context):
+		for element, visible in self.original_visibility.items():
+			self.set_visibility(context, element, visible)
 	
-	def isolate_next_object(self, context):
-		self.set_visibility(context, self.current_ob, False)
-		self.current_ob = next(self.iter_objects)
-		self.set_visibility(context, self.current_ob, True)
+	def isolate_next_elementject(self, context):
+		self.set_visibility(context, self.current_element, False)
+		self.current_element = next(self.iter_elements)
+		self.set_visibility(context, self.current_element, True)
 
-	def isolate_previous_object(self, context):
-		self.set_visibility(context, self.current_ob, False)
-		self.current_ob = self.iter_objects.previous()
-		self.set_visibility(context, self.current_ob, True)
+	def isolate_previous_elementject(self, context):
+		self.set_visibility(context, self.current_element, False)
+		self.current_element = self.iter_elements.previous()
+		self.set_visibility(context, self.current_element, True)
 	
-	def set_visibility(self, context, ob, visible):
-		if ob.type == 'COLLECTION':
-			context.view_layer.layer_collection.children[ob.name].hide_viewport = not visible
+
+	def set_visibility(self, context, element, visible):
+		if element.type == 'COLLECTION':
+			# This command imitates the user clicking in the outliner.
+			context.view_layer.layer_collection.children[element.name].hide_viewport = not visible
+
+			# Do not use this for collections (users cannot alter this state through the outliner):
+			# element.hide_viewport = not visible
 		else:
-			ob.hide_set(not visible)
+			element.hide_set(not visible)
 
 
 class Cycle():
@@ -150,7 +151,7 @@ def register():
 	for menu in menus:
 		exec(f'bpy.types.{menu}.prepend(menu_draw)')
 
-	if bpy.app.version < (3, 1, 0):
+	if not hasattr(bpy.types.Collection, 'type'):
 		print('ARM-TK: created "COLLECTION" type')
 		bpy.types.Collection.type = bpy.props.StringProperty(name='Type', get=get_collection_type)
 
@@ -161,7 +162,3 @@ def unregister():
 
 	for menu in menus:
 		exec(f'bpy.types.{menu}.remove(menu_draw)')
-
-	if bpy.app.version < (3, 1, 0):
-		print('ARM-TK: removed "COLLECTION" type')
-		del bpy.types.Collection.type

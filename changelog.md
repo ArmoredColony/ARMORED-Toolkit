@@ -13,10 +13,12 @@
 
 ### Changed ###
 - *Armored Focus* now used in sculpt mode too. While hovering the mesh, runs `view3d.view_center_pick`; while hovering empty canvas space, runs **view3d.view_all**, 
+- Operator Shortcuts keymaps:
+    + Local view (isolate) keymaps now have `frame_selected` set to False.
 - Sculpting Setup keymaps:
     + [S] to scale.
     + [F] to focus).
-    + Brush scale and Brush intensity now have **release_confirm** enabled.
+    + Brush scale and Brush intensity now have `release_confirm` enabled.
     + Probably other stuff.
     - [D] to switch objects.
     - [*] trivial stuff I never used.

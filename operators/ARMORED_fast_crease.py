@@ -4,12 +4,12 @@ import bpy, bmesh
 from bpy.props import EnumProperty, BoolProperty
 
 
-class ARMORED_OT_crease(bpy.types.Operator):
-    '''Crease/Uncrease selected edges (uncrease will apply to all edges if nothing is selected).
+class ARMORED_OT_fasst_crease(bpy.types.Operator):
+    '''Fully Crease/Uncrease selected edges (uncrease will apply to all edges if nothing is selected).
 
 (www.armoredColony.com)'''
     
-    bl_idname = 'mesh.armored_crease'
+    bl_idname = 'mesh.armored_fast_crease'
     bl_label = 'ARMORED Crease'
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -74,26 +74,26 @@ class ARMORED_OT_crease(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ARMORED_MT_crease(bpy.types.Menu):
+class ARMORED_MT_fast_crease(bpy.types.Menu):
     bl_label = 'Fast Crease'
-    bl_idname = 'ARMORED_MT_crease'
+    bl_idname = 'ARMORED_MT_fast_crease'
 
     def draw(self, context):
         layout = self.layout
 
         # layout.label(text = 'ARMORED Scripts')
-        layout.operator(ARMORED_OT_crease.bl_idname, text='ARMORED Crease').crease_mode = 'CREASE'
-        layout.operator(ARMORED_OT_crease.bl_idname, text='ARMORED Uncrease').crease_mode = 'UNCREASE'
+        layout.operator(ARMORED_OT_fasst_crease.bl_idname, text='ARMORED Crease').crease_mode = 'CREASE'
+        layout.operator(ARMORED_OT_fasst_crease.bl_idname, text='ARMORED Uncrease').crease_mode = 'UNCREASE'
 
 
 def draw_menu(self, context):
     self.layout.separator()
-    self.layout.menu(ARMORED_MT_crease.bl_idname, icon='FAKE_USER_OFF')
+    self.layout.menu(ARMORED_MT_fast_crease.bl_idname, icon='FAKE_USER_OFF')
 
 
 classes = (
-    ARMORED_OT_crease,
-    ARMORED_MT_crease,
+    ARMORED_OT_fasst_crease,
+    ARMORED_MT_fast_crease,
 )
 
 def register():
