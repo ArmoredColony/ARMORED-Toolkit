@@ -2,7 +2,7 @@
 
 
 ## v0.3.0 (LATEST)
-*(unreleased)*
+*(10/Mar/22)*
 
 ### Added ###
 - Operator *Remesh* (Sculpt Mode): Same as regular voxel remesh but with vertex color preservation.
