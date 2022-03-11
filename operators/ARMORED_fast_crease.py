@@ -4,7 +4,7 @@ import bpy, bmesh
 from bpy.props import EnumProperty, BoolProperty
 
 
-class ARMORED_OT_fasst_crease(bpy.types.Operator):
+class ARMORED_OT_fast_crease(bpy.types.Operator):
     '''Fully Crease/Uncrease selected edges (uncrease will apply to all edges if nothing is selected).
 
 (www.armoredColony.com)'''
@@ -82,8 +82,8 @@ class ARMORED_MT_fast_crease(bpy.types.Menu):
         layout = self.layout
 
         # layout.label(text = 'ARMORED Scripts')
-        layout.operator(ARMORED_OT_fasst_crease.bl_idname, text='ARMORED Crease').crease_mode = 'CREASE'
-        layout.operator(ARMORED_OT_fasst_crease.bl_idname, text='ARMORED Uncrease').crease_mode = 'UNCREASE'
+        layout.operator(ARMORED_OT_fast_crease.bl_idname, text='ARMORED Crease').crease_mode = 'CREASE'
+        layout.operator(ARMORED_OT_fast_crease.bl_idname, text='ARMORED Uncrease').crease_mode = 'UNCREASE'
 
 
 def draw_menu(self, context):
@@ -92,7 +92,7 @@ def draw_menu(self, context):
 
 
 classes = (
-    ARMORED_OT_fasst_crease,
+    ARMORED_OT_fast_crease,
     ARMORED_MT_fast_crease,
 )
 
