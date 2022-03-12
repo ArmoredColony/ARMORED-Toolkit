@@ -1,7 +1,16 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
-## v0.3.0 (LATEST)
+## v0.3.1 (LATEST)
+*(11/Mar/22)*
+
+### Changed ###
+- Operator *Focus* now has a dedicated operator for Edit Mode, which fixes some keymap priority issues with binding to [F].
+- Sculpting Setup keymaps:
+    + [TAB] enters local view instead of switching to edit mode.    
+
+
+## v0.3.0
 *(10/Mar/22)*
 
 ### Added ###

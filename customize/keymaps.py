@@ -66,19 +66,19 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
 
         self.km = kc.keymaps.new('Object Mode')  # DEFAULT space_type is 'EMPTY'
         # self.add('view3d.view_selected', key, 'PRESS')
-        self.add('mesh.armored_focus', key, 'PRESS')
+        self.add('view3d.armored_focus', key, 'PRESS')
 
         self.km = kc.keymaps.new('Mesh')
         # self.add('view3d.view_selected', key, 'PRESS')
-        self.add('mesh.armored_focus', key, 'PRESS')
+        self.add('mesh.armored_focus', key, 'PRESS')    # This requires mesh.op_name to take priority, view3d does not work
         
         self.km = kc.keymaps.new('Curve')
         # self.add('view3d.view_selected', key, 'PRESS')
-        self.add('mesh.armored_focus', key, 'PRESS')
+        self.add('view3d.armored_focus', key, 'PRESS')
 
         self.km = kc.keymaps.new('Sculpt')
         # self.add('view3d.view_selected', key, 'PRESS')
-        self.add('mesh.armored_focus', key, 'PRESS')
+        self.add('view3d.armored_focus', key, 'PRESS')
 
         self.km = kc.keymaps.new('Graph Editor', space_type='GRAPH_EDITOR')
         self.add('graph.view_selected', key, 'PRESS')
@@ -103,8 +103,6 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
 
         self.km = kc.keymaps.new('Outliner', space_type='OUTLINER')
         self.add('clip.view_selected', key, 'PRESS')
-
-        # self.add('outliner.armored_cycle', 'C', 'PRESS')
 
         self.enabled_message()
 
@@ -153,7 +151,9 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
     def register(self):
         self.km = kc.keymaps.new(name='Sculpt')
 
-        # self.add('view3d.armored_focus', 'C', 'PRESS')
+        self.add('view3d.localview', 'TAB', 'PRESS'); self.prop('frame_selected', False)
+
+        self.add('mesh.armored_focus', 'F', 'PRESS', alt=True)
         self.add('view3d.armored_silhouette', 'V', 'PRESS')
         self.add('view3d.armored_subdivide', 'D', 'PRESS', ctrl=True)
         self.add('sculpt.armored_remesh', 'R', 'PRESS', ctrl=True)
