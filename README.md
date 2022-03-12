@@ -1,6 +1,6 @@
 # ARMORED-Toolkit
 
-## What is this?
+## What is it?
 It's a FREE Blender Add-on containing my personal Scripts, Matcaps, Themes and Keymaps. 
 
 Everything is optional, except for the scripts which will immediately appear in the Search Menu (F3 or Spacebar) when typing "Armored", whether you want to or not muahaha.
