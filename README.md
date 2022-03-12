@@ -14,7 +14,7 @@ You can download as ZIP and install just like any other Blender Add-on, or you c
 
 Enable the "Armored Toolkit" add-on in your preferences and  select what resources you are interested in.
 
-## I only care about X script, can I steal it?
+## I only care about X script, can I take it?
 Sure!
 
 Inside the Armored-Toolkit folder there's a sub-folder called **Operators**. Everything there is self contained so you can easily extract individual scripts that interest you and disable/delete my add-on afterwards.
