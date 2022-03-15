@@ -28,6 +28,14 @@ Maybe. Feel free to share your ideas, just remember that this is a free add-on, 
 Let me know about it and I will probably fix it since I use these scripts too!
 
 ## How can I reach you?
-Email: armoredcolony@gmail.com
+armoredcolony@gmail.com
 
-Youtube: youtube.com/armoredcolony
+[Artstation]
+
+[Youtube]
+
+
+[Artstation]: https://armoredcolony.com
+[Email]: armoredcolony@gmail.com
+[Youtube]: https://youtube.com/armoredcolony
+
