@@ -3,7 +3,7 @@
 ## What is it?
 It's a FREE Blender Add-on containing my personal Scripts, Matcaps, Themes and Keymaps. 
 
-Everything is optional, except for the scripts which will immediately appear in the Search Menu (F3 or Spacebar) when typing "Armored", whether you want to or not muahaha.
+Everything is optional, except for the scripts which will automatically appear in the Search Menu (F3 or Spacebar) with the "ARMORED" prefix. I might make those optional too in the future.
 
 Note that some scripts are context sensitive, which means they will only appear under certain conditions (some only show up in Edit Mode, others in Object Mode, etc.
 
