@@ -78,7 +78,7 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
 
         self.km = kc.keymaps.new('Sculpt')
         # self.add('view3d.view_selected', key, 'PRESS')
-        self.add('view3d.armored_focus', key, 'PRESS')
+        # self.add('view3d.armored_focus', key, 'PRESS')
 
         self.km = kc.keymaps.new('Graph Editor', space_type='GRAPH_EDITOR')
         self.add('graph.view_selected', key, 'PRESS')
@@ -147,13 +147,92 @@ class TAB_HISTORY(keymap_utils.KeymapGroup):
         self.enabled_message()
 
 
+class ZBRUSH_SCULPTING(keymap_utils.KeymapGroup):
+    def register(self):
+        self.km = kc.keymaps.new(name='Sculpt')
+
+        self.add('view3d.localview', 'TAB', 'PRESS'); self.prop('frame_selected', False)
+
+        self.add('object.transfer_mode', 'Q', 'PRESS')
+        self.add('object.transfer_mode', 'D', 'PRESS')
+        self.add('object.armored_switch_and_focus', 'Q', 'DOUBLE_CLICK')
+        self.add('object.armored_switch_and_focus', 'D', 'DOUBLE_CLICK')
+
+        self.add('view3d.armored_focus', 'F', 'PRESS')
+        self.add('view3d.view_all',      'F', 'PRESS', alt=True)
+        self.add('wm.context_toggle',    'F', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
+
+        self.add('transform.resize', 'S', 'PRESS', alt=True)
+        self.add('view3d.armored_silhouette', 'V', 'PRESS')
+        self.add('view3d.armored_subdivide', 'D', 'PRESS', ctrl=True)
+        self.add('sculpt.armored_remesh', 'R', 'PRESS', ctrl=True)
+
+        # self.add('sculpt.armored_scale_unmasked', 'S', 'PRESS', alt=True)
+        self.add('transform.translate', 'G', 'PRESS')
+
+
+        # Invert brush stroke (set to ALT instead of CTRL)
+        self.add('sculpt.brush_stroke', 'LEFTMOUSE', 'PRESS', alt=True); self.prop('mode', 'INVERT')
+
+        # BRUSHES
+        self.add('wm.tool_set_by_id', 'ONE',   'PRESS'          ); self.prop('name', 'builtin_brush.Clay Strips')
+        self.add('wm.tool_set_by_id', 'ONE',   'PRESS', alt=True); self.prop('name', 'builtin_brush.Clay')
+
+        self.add('wm.tool_set_by_id', 'TWO',   'PRESS'          ); self.prop('name', 'builtin_brush.Draw Sharp')
+        self.add('wm.tool_set_by_id', 'TWO',   'PRESS', alt=True); self.prop('name', 'builtin_brush.Draw')
+
+        self.add('wm.tool_set_by_id', 'THREE', 'PRESS'          ); self.prop('name', 'builtin_brush.Scrape')
+        self.add('wm.tool_set_by_id', 'THREE', 'PRESS', alt=True); self.prop('name', 'builtin_brush.Flatten')
+
+        self.add('wm.tool_set_by_id', 'FOUR',  'PRESS'          ); self.prop('name', 'builtin_brush.Grab')
+        self.add('wm.tool_set_by_id', 'FOUR',  'PRESS', alt=True); self.prop('name', 'builtin_brush.Snake Hook')
+
+        self.add('wm.tool_set_by_id', 'FIVE',  'PRESS'          ); self.prop('name', 'builtin_brush.Crease')
+        self.add('wm.tool_set_by_id', 'FIVE',  'PRESS', alt=True); self.prop('name', 'builtin_brush.Inflate')
+
+        self.add('wm.context_toggle',  'W', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
+        self.add('wm.context_toggle',  'T', 'PRESS', ctrl=True);  self.prop('data_path', 'space_data.overlay.show_fade_inactive')
+
+        # BRUSH SIZE
+        self.add('wm.radial_control',  'S', 'PRESS')
+        self.prop('data_path_primary',   'tool_settings.sculpt.brush.size.size')
+        self.prop('data_path_secondary', 'tool_settings.unified_paint_settings.size')
+        self.prop('use_secondary',       'tool_settings.unified_paint_settings.use_unified_size')
+        self.prop('rotation_path',       'tool_settings.sculpt.brush.texture_slot.angle')
+        self.prop('color_path',          'tool_settings.sculpt.brush.cursor_color_add')
+        self.prop('fill_color_path', '')
+        self.prop('fill_color_override_path', '')
+        self.prop('fill_color_override_test_path', '')
+        self.prop('zoom_path', '')
+        self.prop('image_id', 'tool_settings.sculpt.brush')
+        self.prop('secondary_tex', False)
+        self.prop('release_confirm', True)  # Only setting that was changed.
+
+        # BRUSH STRENGTH
+        self.add('wm.radial_control',  'S', 'PRESS', shift=True)
+        self.prop('data_path_primary',   'tool_settings.sculpt.brush.size.strength')
+        self.prop('data_path_secondary', 'tool_settings.unified_paint_settings.strength')
+        self.prop('use_secondary',       'tool_settings.unified_paint_settings.use_unified_strength')
+        self.prop('rotation_path',       'tool_settings.sculpt.brush.texture_slot.angle')
+        self.prop('color_path',          'tool_settings.sculpt.brush.cursor_color_add')
+        self.prop('fill_color_path', '')
+        self.prop('fill_color_override_path', '')
+        self.prop('fill_color_override_test_path', '')
+        self.prop('zoom_path', '')
+        self.prop('image_id', 'tool_settings.sculpt.brush')
+        self.prop('secondary_tex', False)
+        self.prop('release_confirm', True)  # Only setting that was changed.
+
+        self.enabled_message()
+
+
 class SCULPTING_SETUP(keymap_utils.KeymapGroup):
     def register(self):
         self.km = kc.keymaps.new(name='Sculpt')
 
         self.add('view3d.localview', 'TAB', 'PRESS'); self.prop('frame_selected', False)
 
-        self.add('mesh.armored_focus', 'F', 'PRESS', alt=True)
+        self.add('view3d.armored_focus', 'F', 'PRESS', alt=True)
         self.add('view3d.armored_silhouette', 'V', 'PRESS')
         self.add('view3d.armored_subdivide', 'D', 'PRESS', ctrl=True)
         self.add('sculpt.armored_remesh', 'R', 'PRESS', ctrl=True)
@@ -187,7 +266,7 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
         self.add('wm.context_toggle',  'T', 'PRESS', ctrl=True);  self.prop('data_path', 'space_data.overlay.show_fade_inactive')
 
         # BRUSH SIZE
-        self.add('wm.radial_control',  'F', 'PRESS');
+        self.add('wm.radial_control',  'F', 'PRESS')
         self.prop('data_path_primary',   'tool_settings.sculpt.brush.size.size')
         self.prop('data_path_secondary', 'tool_settings.unified_paint_settings.size')
         self.prop('use_secondary',       'tool_settings.unified_paint_settings.use_unified_size')
@@ -202,7 +281,7 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
         self.prop('release_confirm', True)  # Only setting that was changed.
 
         # BRUSH STRENGTH
-        self.add('wm.radial_control',  'F', 'PRESS', shift=True);
+        self.add('wm.radial_control',  'F', 'PRESS', shift=True)
         self.prop('data_path_primary',   'tool_settings.sculpt.brush.size.strength')
         self.prop('data_path_secondary', 'tool_settings.unified_paint_settings.strength')
         self.prop('use_secondary',       'tool_settings.unified_paint_settings.use_unified_strength')

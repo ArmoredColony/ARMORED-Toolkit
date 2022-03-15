@@ -2,7 +2,7 @@ bl_info = {
     'name'        : 'Toolkit',
     'description' : 'A collection of Scripts, Hotkeys and more',
     'author'      : 'Armored Colony',
-    'version'     : (0, 3, 1),
+    'version'     : (0, 3, 2),
     'blender'     : (2, 83),
     'location'    : 'Search Menu (ARMORED prefix)',
     # 'warning'     : 'Whatever', # Used for warning icon and text in addons panel.
@@ -27,14 +27,14 @@ from . utils import mod_utils
 addon_modules = [module for folder in sub_folders for module in mod_utils.import_modules(folder)]
 
 if 'bpy' in locals():
-    mod_utils.reload_modules(addon_modules, debug)
+    mod_utils.reload_addon(debug)
 
 import bpy
 
 
 def register():
-    mod_utils.register_modules(addon_modules, 'register', debug)
+    mod_utils.register_modules(addon_modules, debug)
 
 
 def unregister():
-    mod_utils.register_modules(reversed(addon_modules), 'unregister', debug)
+    mod_utils.unregister_modules(reversed(addon_modules), debug)

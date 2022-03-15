@@ -72,6 +72,10 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             description='Enables number row keymaps for brushes and more.\n\n' + descriptions.sculpting_keymaps, 
             update=closure(prop='sculpting_setup', category='keymaps'),)
 
+    zbrush_sculpting: BoolProperty(name='ZBrush Sculpting', default=False,
+            description='Enables number row keymaps for brushes and more.\n\n' + descriptions.sculpting_keymaps, 
+            update=closure(prop='zbrush_sculpting', category='keymaps'),)
+
     operator_shortcuts: BoolProperty(name='Operator Keymaps', default=False, 
             description='Enables predefined keymaps for some operators in the Armored Toolkit.\n\n' + descriptions.operator_keymaps, 
             update=closure(prop='operator_shortcuts', category='keymaps'),)
@@ -141,7 +145,8 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         prop_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
         # prop_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='allow_gizmo_click',     icon='FILE_MOVIE', url='www.youtube.com')
-        prop_line(prop='sculpting_setup',       icon='FILE_MOVIE', url='www.youtube.com')
+        prop_line(prop='zbrush_sculpting',      icon='FILE_MOVIE', url='www.youtube.com')
+        # prop_line(prop='sculpting_setup',       icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='operator_shortcuts',    icon='FILE_MOVIE', url='www.youtube.com')
         
         col1.separator()

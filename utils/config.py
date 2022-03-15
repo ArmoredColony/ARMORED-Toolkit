@@ -7,7 +7,7 @@ from . import(
     paths,
 )
 
-file_name = 'ARM-TK_Config.ini'
+file_name = 'ARMORED-Toolkit_Config.ini'
 config_path = os.path.join(paths.BlenderPaths.config, file_name)
 parser = ConfigParser()
 
@@ -35,7 +35,7 @@ def load_config(config_path=config_path):
     if config_not_found(config_path):
         return
 
-    debug.msg('ARM-TK INFO: Loading Config from', config_path)
+    debug.msg('ARMORED-Toolkit INFO: Loading Config from', config_path)
     iterate_through_config()
 
 
@@ -57,7 +57,7 @@ def iterate_through_config():
                 update_addon_prop(section, prop)
                 continue
 
-            debug.msg(f'ARM-TK Config: KEY {prop}', '[Matches Blender]', spaces=43)
+            debug.msg(f'ARMORED-Toolkit Config: KEY {prop}', '[Matches Blender]', spaces=43)
 
 
 def property_value_mismatch(section, prop):
@@ -76,13 +76,13 @@ def property_not_found(prop):
 def remove_prop_from_config(section, prop):
     parser.remove_option(section, prop)
     write_config()
-    debug.msg(f'ARM-TK Config: Removed legacy KEY {prop} from SECTION {section}')
+    debug.msg(f'ARMORED-Toolkit Config: Removed legacy KEY {prop} from SECTION {section}')
 
 
 def update_addon_prop(section, prop):
     config_prop_val = get_val_from_config(section, prop)
     setattr(addon.prefs(), prop, config_prop_val)
-    debug.msg(f'ARM-TK Config: Updating {prop} to match config KEY')
+    debug.msg(f'ARMORED-Toolkit Config: Updating {prop} to match config KEY')
 
 
 def section_is_empty(section):
@@ -101,5 +101,5 @@ def  get_val_from_config(section, prop):
 
 def config_not_found(config_path=config_path):
     if not os.path.exists(config_path):
-        debug.msg(f'ARM-TK INFO: Specified Config Path {config_path} does not exist.\n')
+        debug.msg(f'ARMORED-Toolkit INFO: Specified Config Path {config_path} does not exist.\n')
         return True

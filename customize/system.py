@@ -12,7 +12,7 @@ def developer_extras_delay(*args):
 
 def register():
     handlers.load_post.append(developer_extras_delay)
-    debug.msg(f'ARM-TK System: LOAD_POST handlers in buffer:\n  {handlers.load_post[:]}')
+    debug.msg(f'ARMORED-Toolkit System: LOAD_POST handlers in buffer:\n  {handlers.load_post[:]}')
 
 
 def unregister():

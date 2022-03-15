@@ -25,7 +25,7 @@ class KeymapGroup(ABC):
             setattr(self.kmi.properties, attr, val)
         except Exception as e:
             self.error_count += 1
-            print(f'    ARMORED-Toolkit WARNING: {e}')
+            print(f'\tARMORED-Toolkit WARNING: {e}')
 
     @abstractmethod
     def register():

@@ -152,7 +152,7 @@ def register():
 		exec(f'bpy.types.{menu}.prepend(menu_draw)')
 
 	if not hasattr(bpy.types.Collection, 'type'):
-		print('ARM-TK: created "COLLECTION" type')
+		print('ARMORED-Toolkit: created "COLLECTION" type')
 		bpy.types.Collection.type = bpy.props.StringProperty(name='Type', get=get_collection_type)
 
 

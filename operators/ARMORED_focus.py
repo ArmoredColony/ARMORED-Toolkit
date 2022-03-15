@@ -1,4 +1,4 @@
-# v3.0
+# v3.1
 
 import bpy
 from bpy.types import Operator
@@ -11,9 +11,9 @@ class Focus:
 	bl_label = 'ARMORED Focus'
 	bl_options = {'REGISTER'}
 
-	def execute(self, context):
-		print('\nRan Execute\n')
-		return self.invoke(context, event=None) 
+	# def execute(self, context):
+	# 	print('\nRan Execute\n')
+	# 	return self.invoke(context, event=None) 
 
 	def invoke(self, context, event):
 		mode = context.mode
@@ -50,13 +50,26 @@ class Focus:
 			bpy.ops.mesh.select_all(action='DESELECT')
 
 	def sculpting_focus(self, context, event):
-		if self.raycast_hit(context, event):
-			bpy.ops.view3d.view_center_pick('INVOKE_DEFAULT')
+		if self._in_local_view(context):
+			bpy.ops.view3d.view_all('INVOKE_DEFAULT')
 			return
+		
+		bpy.ops.view3d.localview('INVOKE_DEFAULT', frame_selected=False)
+		bpy.ops.view3d.view_all('INVOKE_DEFAULT')
+		bpy.ops.view3d.localview('INVOKE_DEFAULT', frame_selected=False)
+		
+		# if self._raycast_hit(context, event):
+		# 	bpy.ops.view3d.localview('INVOKE_DEFAULT', frame_selected=False)
+		# 	bpy.ops.view3d.view_all('INVOKE_DEFAULT')
+		# 	bpy.ops.view3d.localview('INVOKE_DEFAULT', frame_selected=False)
+		# 	return
 
-		bpy.ops.view3d.view_all('INVOKE_DEFAULT', center=False) # False is already the default.
+		# bpy.ops.view3d.view_all('INVOKE_DEFAULT')
 	
-	def raycast_hit(self, context, event):
+	def _in_local_view(self, context):
+		return bool(context.space_data.local_view)
+	
+	def _raycast_hit(self, context, event):
 		scene = context.scene
 		region = context.region
 		rv3d = context.region_data
