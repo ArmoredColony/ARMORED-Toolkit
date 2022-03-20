@@ -1,7 +1,31 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
-## v0.3.1 (LATEST)
+## v0.3.2 (LATEST)
+*(20/Mar/22)*
+
+### Added ###
+- **PDF Keymap List** in the Addon Preferences
+
+### Removed ###
+- Video link buttons for the *Keymap Overrides* --at least until I have actual videos I can link to.
+
+### Changed ###
+- Transform with Gizmos keymaps:
+    + [G] to activate the Move Tool (this override used to only work for the Scale and Rotate tools but now affects all three).
+- Operator Shortcuts keymaps:
+    - [CTRL][R] to rest on ground in Edit Mode.
+    - [ALT][SHIFT][DOUBLE_LMB] to select linked toggle (it conflicted with Blender's loop selection or something.)
+
+
+
+### Changed ###
+- Operator *Focus* now has a dedicated operator for Edit Mode, which fixes some keymap priority issues with binding to [F].
+- Sculpting Setup keymaps:
+    + [TAB] enters local view instead of switching to edit mode.    
+
+
+## v0.3.1
 *(11/Mar/22)*
 
 ### Changed ###
@@ -37,7 +61,7 @@
 - `handler.load_post.remove(...)` was commented out from `system.unregister` for so reason. It's now enabled again.
 
 ### Removed ###
-- Operator *Smart Loopcut* (replaced with a keymap to the original Loopcut with **release_confirm** enabled)
+- Operator *Smart Loopcut* (replaced with a keymap to the original Loopcut with `release_confirm` enabled)
 
 
 ## v0.2.0

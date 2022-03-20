@@ -76,7 +76,7 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
         # self.add('view3d.view_selected', key, 'PRESS')
         self.add('view3d.armored_focus', key, 'PRESS')
 
-        self.km = kc.keymaps.new('Sculpt')
+        # self.km = kc.keymaps.new('Sculpt')
         # self.add('view3d.view_selected', key, 'PRESS')
         # self.add('view3d.armored_focus', key, 'PRESS')
 
@@ -124,7 +124,7 @@ class DESELECT_WITH_CTRL(keymap_utils.KeymapGroup):
 class TRANSFORM_WITH_GIZMOS(keymap_utils.KeymapGroup):
     def register(self):
         self.km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D')
-        # self.add('view3d.armored_toggle_tool', 'G', 'PRESS'); self.prop('name', 'builtin.move')
+        self.add('view3d.armored_toggle_tool', 'G', 'PRESS'); self.prop('name', 'builtin.move')
         self.add('view3d.armored_toggle_tool', 'R', 'PRESS'); self.prop('name', 'builtin.rotate')
         self.add('view3d.armored_toggle_tool', 'S', 'PRESS'); self.prop('name', 'builtin.scale')
 
@@ -332,7 +332,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         # self.add('view3d.armored_toggle_tool', 'W', 'PRESS'); self.prop('name', 'tool.gizmo_pro')
 
         self.add('view3d.armored_autosmooth',        'A', 'PRESS', ctrl=True, shift=True)
-        self.add('object.armored_rest_on_ground',    'R', 'PRESS', ctrl=True)
+        # self.add('object.armored_rest_on_ground',    'R', 'PRESS', ctrl=True)
 
         self.add('view3d.armored_toggle_cavity',     'C', 'PRESS', alt=True)
         self.add('view3d.armored_cycle_cavity_type', 'C', 'PRESS', alt=True, shift=True)
@@ -395,7 +395,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.add('mesh.armored_fast_crease', 'NUMPAD_MINUS', 'PRESS', shift=True); self.prop('crease_mode', 'UNCREASE')
 
         self.add('mesh.select_linked_pick', 'LEFTMOUSE', 'DOUBLE_CLICK', alt=True );            self.prop('deselect', False)
-        self.add('mesh.select_linked_pick', 'LEFTMOUSE', 'DOUBLE_CLICK', alt=True, shift=True); self.prop('deselect', True)
+        # self.add('mesh.select_linked_pick', 'LEFTMOUSE', 'DOUBLE_CLICK', alt=True, shift=True); self.prop('deselect', True)
         
         self.add('mesh.select_more','WHEELUPMOUSE',   'PRESS', shift=True)
         self.add('mesh.select_less','WHEELDOWNMOUSE', 'PRESS', shift=True)

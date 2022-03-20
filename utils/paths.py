@@ -28,6 +28,9 @@ class AddonPaths():
     studio_lights = os.path.join(resources, 'studio_lights')
     themes        = os.path.join(resources, 'themes')
     materials     = os.path.join(resources, 'materials')
+    
+    docs          = os.path.join(resources, 'docs')
+    docs_keymaps  = os.path.join(docs, 'ARMORED-Toolkit-Keymaps.pdf')
 
     operators    = os.path.join(addon.path(), 'operators')
     keymaps      = os.path.join(addon.path(), 'customize', 'keymaps.py')

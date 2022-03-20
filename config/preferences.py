@@ -53,7 +53,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             update=closure(prop='loop_selection', category='keymaps'),)
         
     focus_selected_with_f: BoolProperty(name='Focus Selected with F', default=False,
-            description='Frame your selection with the F key (NUMPAD_PERIOD can still be used)', 
+            description='Frame your selection with the F key (NUMPAD_PERIOD can still be used). This option does NOT affect Sculpt or similar modes where F is used to resize the brush. See the dedicated ZBrush Sculpting override for this functionality', 
             update=closure(prop='focus_selected_with_f', category='keymaps'),)
 
     deselect_with_ctrl: BoolProperty(name='Deselect with CTRL', default=False,
@@ -69,15 +69,15 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             update=closure(prop='allow_gizmo_click', category='keymaps'),)
 
     sculpting_setup: BoolProperty(name='Sculpting Setup', default=False,
-            description='Enables number row keymaps for brushes and more.\n\n' + descriptions.sculpting_keymaps, 
+            description='Enables number row keymaps for brushes and more.\n\n' + 'See PDF above for the full list of keymaps', 
             update=closure(prop='sculpting_setup', category='keymaps'),)
 
     zbrush_sculpting: BoolProperty(name='ZBrush Sculpting', default=False,
-            description='Enables number row keymaps for brushes and more.\n\n' + descriptions.sculpting_keymaps, 
+            description='Makes the Sculpt mode a bit more familiar to ZBrush users (does NOT include ZBrush navigation).\n\n' + 'See PDF above for the full list of keymaps', 
             update=closure(prop='zbrush_sculpting', category='keymaps'),)
 
     operator_shortcuts: BoolProperty(name='Operator Keymaps', default=False, 
-            description='Enables predefined keymaps for some operators in the Armored Toolkit.\n\n' + descriptions.operator_keymaps, 
+            description='Enables predefined keymaps for some operators/scripts in the Armored Toolkit.\n\n' + 'See PDF above for the full list of keymaps', 
             update=closure(prop='operator_shortcuts', category='keymaps'),)
 
     tab_history: BoolProperty(name='TAB History', default=False,
@@ -127,7 +127,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             row.label(text=text or extrapy.format_string(prop))
             row.separator()
             row.prop(self, prop, text='On' if getattr(self, prop) else 'Off', toggle=True);
-            row.operator('wm.url_open', icon=icon, text='').url = url
+        #     row.operator('wm.url_open', icon=icon, text='').url = url
         
         box = layout.box()
         col = box.column(align=True)
@@ -139,6 +139,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
         box = col1.box()
         box.label(text='Keymap Overrides')
+        box.operator('armored.open_folder', text='PDF Keymap List', icon='TEXT').path = paths.AddonPaths.docs_keymaps
         prop_line(prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='focus_selected_with_f', icon='FILE_MOVIE', url='www.youtube.com')
