@@ -4,7 +4,7 @@ import bpy
 
 
 class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
-	'''Based on your outliner selections, isolate 1 elementject/collection and cycle to the next/previous one using the SCROll wheel. Cancel with RMB. Also works with entire collections.
+	'''Based on your outliner selections, isolate 1 element/collection and cycle to the next/previous one using the SCROll wheel. Cancel with RMB. Also works with entire collections.
 
 	armoredColony.com'''
 	
@@ -31,7 +31,7 @@ class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
 		self.selected_elements = context.selected_ids
 		self.save_original_visibility(context)
 		
-		self.report({'INFO'}, 'SCROLL to cycle and isolate each elementject/collection')
+		self.report({'INFO'}, 'SCROLL to cycle and isolate each element/collection')
 		context.window.cursor_set('SCROLL_Y')
 
 		self.iter_elements = Cycle(self.selected_elements)
@@ -45,10 +45,10 @@ class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
 
 	def modal(self, context, event):
 		if event.type in self.next_events and event.value == 'PRESS':
-			self.isolate_next_elementject(context)
+			self.isolate_next_element(context)
 
 		elif event.type in self.previous_events and event.value == 'PRESS':
-			self.isolate_previous_elementject(context)
+			self.isolate_previous_element(context)
 
 		elif event.type in self.pass_through_events and event.value == 'PRESS':
 			return {'PASS_THROUGH'}
@@ -84,12 +84,12 @@ class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
 		for element, visible in self.original_visibility.items():
 			self.set_visibility(context, element, visible)
 	
-	def isolate_next_elementject(self, context):
+	def isolate_next_element(self, context):
 		self.set_visibility(context, self.current_element, False)
 		self.current_element = next(self.iter_elements)
 		self.set_visibility(context, self.current_element, True)
 
-	def isolate_previous_elementject(self, context):
+	def isolate_previous_element(self, context):
 		self.set_visibility(context, self.current_element, False)
 		self.current_element = self.iter_elements.previous()
 		self.set_visibility(context, self.current_element, True)
