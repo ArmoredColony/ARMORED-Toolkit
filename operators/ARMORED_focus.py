@@ -24,7 +24,7 @@ class Focus:
 		elif mode == 'EDIT_MESH':
 			self.edit_mesh_focus(context)
 		
-		elif mode == 'SCULPT':
+		elif mode == 'SCULPT' or 'VERTEX_PAINT':
 			self.sculpting_focus(context, event)
 		
 		return {'FINISHED'}

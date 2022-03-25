@@ -29,7 +29,7 @@ class AddonPaths():
     themes        = os.path.join(resources, 'themes')
     materials     = os.path.join(resources, 'materials')
     
-    docs          = os.path.join(resources, 'docs')
+    docs          = os.path.join(addon.path(), 'docs')
     docs_keymaps  = os.path.join(docs, 'ARMORED-Toolkit-Keymaps.pdf')
 
     operators    = os.path.join(addon.path(), 'operators')

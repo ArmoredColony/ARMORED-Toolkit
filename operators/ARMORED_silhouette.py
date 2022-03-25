@@ -33,7 +33,7 @@ class VIEW3D_OT_armored_silhouette(bpy.types.Operator):
 		self.last_cavity = space_data.shading.cavity_type
 		self.last_fade_inactive = space_data.overlay.show_fade_inactive
 
-	def set_last_mode(self, context):
+	def set_from_last_mode(self, context):
 		space_data = context.space_data
 		space_data.shading.light = self.last_mode
 		space_data.shading.color_type = self.last_color
@@ -42,7 +42,7 @@ class VIEW3D_OT_armored_silhouette(bpy.types.Operator):
 
 	def invoke(self, context, event):
 		if context.space_data.shading.light == 'FLAT':
-			self.set_last_mode(context)
+			self.set_from_last_mode(context)
 		else:
 			self.update_last_mode(context)
 			self.set_flat_mode(context)

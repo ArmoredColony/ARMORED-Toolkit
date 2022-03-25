@@ -73,7 +73,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             update=closure(prop='sculpting_setup', category='keymaps'),)
 
     zbrush_sculpting: BoolProperty(name='ZBrush Sculpting', default=False,
-            description='Makes the Sculpt mode a bit more familiar to ZBrush users (does NOT include ZBrush navigation).\n\n' + 'See PDF above for the full list of keymaps', 
+            description='Makes Sculpt AND Vertex Paint modes a bit more familiar to ZBrush users (does NOT include ZBrush navigation).\n\n' + 'See PDF above for the full list of keymaps', 
             update=closure(prop='zbrush_sculpting', category='keymaps'),)
 
     operator_shortcuts: BoolProperty(name='Operator Keymaps', default=False, 

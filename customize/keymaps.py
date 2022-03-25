@@ -154,16 +154,19 @@ class ZBRUSH_SCULPTING(keymap_utils.KeymapGroup):
         self.add('view3d.localview', 'TAB', 'PRESS'); self.prop('frame_selected', False)
 
         self.add('object.transfer_mode', 'Q', 'PRESS')
-        self.add('object.transfer_mode', 'D', 'PRESS')
+        # self.add('object.transfer_mode', 'D', 'PRESS')
         self.add('object.armored_switch_and_focus', 'Q', 'DOUBLE_CLICK')
-        self.add('object.armored_switch_and_focus', 'D', 'DOUBLE_CLICK')
+        # self.add('object.armored_switch_and_focus', 'D', 'DOUBLE_CLICK')
 
         self.add('view3d.armored_focus', 'F', 'PRESS')
         self.add('view3d.view_all',      'F', 'PRESS', alt=True)
         self.add('wm.context_toggle',    'F', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
 
         self.add('transform.resize', 'S', 'PRESS', alt=True)
-        self.add('view3d.armored_silhouette', 'V', 'PRESS')
+        self.add('view3d.armored_switch_color_modes', 'V', 'PRESS')
+        self.prop('mode_1', 'VERTEX')
+        self.prop('mode_2', 'OBJECT')
+        self.add('view3d.armored_silhouette', 'V', 'PRESS', alt=True)
         self.add('view3d.armored_subdivide', 'D', 'PRESS', ctrl=True)
         self.add('sculpt.armored_remesh', 'R', 'PRESS', ctrl=True)
 
@@ -223,6 +226,56 @@ class ZBRUSH_SCULPTING(keymap_utils.KeymapGroup):
         self.prop('secondary_tex', False)
         self.prop('release_confirm', True)  # Only setting that was changed.
 
+
+        #############################################################
+        # Similar mode to Sculpting, re-use some of the same hotkeys.
+
+        self.km = kc.keymaps.new(name='Vertex Paint')
+
+        self.add('view3d.localview', 'TAB', 'PRESS'); self.prop('frame_selected', False)
+
+        self.add('object.transfer_mode', 'Q', 'PRESS')
+        # self.add('object.transfer_mode', 'D', 'PRESS')
+        self.add('object.armored_switch_and_focus', 'Q', 'DOUBLE_CLICK')
+        # self.add('object.armored_switch_and_focus', 'D', 'DOUBLE_CLICK')
+
+        self.add('view3d.armored_focus', 'F', 'PRESS')
+        self.add('view3d.view_all',      'F', 'PRESS', alt=True)
+        self.add('wm.context_toggle',    'F', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
+
+        # Invert brush stroke (set to ALT instead of CTRL)
+        self.add('paint.vertex_paint', 'LEFTMOUSE', 'PRESS', alt=True); self.prop('mode', 'INVERT')
+
+        # BRUSH SIZE
+        self.add('wm.radial_control',  'S', 'PRESS')
+        self.prop('data_path_primary',             'tool_settings.vertex_paint.brush.size')
+        self.prop('data_path_secondary',           'tool_settings.unified_paint_settings.size')
+        self.prop('use_secondary',                 'tool_settings.unified_paint_settings.use_unified_size')
+        self.prop('rotation_path',                 'tool_settings.vertex_paint.brush.texture_slot.angle')
+        self.prop('color_path',                    'tool_settings.vertex_paint.brush.cursor_color_add')
+        self.prop('fill_color_path',               'tool_settings.vertex_paint.brush.color')
+        self.prop('fill_color_override_path',      'tool_settings.unified_paint_settings.color')
+        self.prop('fill_color_override_test_path', 'tool_settings.unified_paint_settings.use_unified_color')
+        self.prop('zoom_path', '')
+        self.prop('image_id', 'tool_settings.vertex_paint.brush')
+        self.prop('secondary_tex', False)
+        self.prop('release_confirm', True)  # Only setting that was changed.
+
+        # BRUSH STRENGTH
+        self.add('wm.radial_control',  'S', 'PRESS', shift=True)
+        self.prop('data_path_primary',             'tool_settings.vertex_paint.brush.strength')
+        self.prop('data_path_secondary',           'tool_settings.unified_paint_settings.strength')
+        self.prop('use_secondary',                 'tool_settings.unified_paint_settings.use_unified_strength')
+        self.prop('rotation_path',                 'tool_settings.vertex_paint.brush.texture_slot.angle')
+        self.prop('color_path',                    'tool_settings.vertex_paint.brush.cursor_color_add')
+        self.prop('fill_color_path',               'tool_settings.vertex_paint.brush.color')
+        self.prop('fill_color_override_path',      'tool_settings.unified_paint_settings.color')
+        self.prop('fill_color_override_test_path', 'tool_settings.unified_paint_settings.use_unified_color')
+        self.prop('zoom_path', '')
+        self.prop('image_id', 'tool_settings.vertex_paint.brush')
+        self.prop('secondary_tex', False)
+        self.prop('release_confirm', True)  # Only setting that was changed.
+
         self.enabled_message()
 
 
@@ -233,7 +286,7 @@ class SCULPTING_SETUP(keymap_utils.KeymapGroup):
         self.add('view3d.localview', 'TAB', 'PRESS'); self.prop('frame_selected', False)
 
         self.add('view3d.armored_focus', 'F', 'PRESS', alt=True)
-        self.add('view3d.armored_silhouette', 'V', 'PRESS')
+        self.add('view3d.armored_silhouette', 'V', 'PRESS', alt=True)
         self.add('view3d.armored_subdivide', 'D', 'PRESS', ctrl=True)
         self.add('sculpt.armored_remesh', 'R', 'PRESS', ctrl=True)
 
@@ -318,6 +371,9 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
         self.km = kc.keymaps.new('3D View', space_type='VIEW_3D')
         Global_Keys()
+        self.add('view3d.armored_switch_color_modes', 'V', 'PRESS')
+        self.prop('mode_1', 'MATERIAL')
+        self.prop('mode_2', 'RANDOM')
 
         self.add('view3d.zoom_border', 'F',            'PRESS', ctrl=True, shift=True)
         self.add('view3d.zoom_border', 'BUTTON4MOUSE', 'PRESS')

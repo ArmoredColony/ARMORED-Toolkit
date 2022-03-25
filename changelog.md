@@ -1,7 +1,17 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
-## v0.3.2 (LATEST)
+## v0.3.3
+*(unreleased)*
+
+### Added ###
+- Operator *Switch Color Modes*: Switches back and forth between two viewport color modes (Vertex color and Object color by default).
+
+### Changed ###
+- ZBrush Sculpting keymaps: Vertex Paint Mode now shares hotkeys with Sculpt mode, such as changing brush size with [S] with `release_confirm` enabled, isolating with [TAB] and focusing with [F].
+
+
+## v0.3.2
 *(20/Mar/22)*
 
 ### Added ###
@@ -18,20 +28,18 @@
     - [ALT][SHIFT][DOUBLE_LMB] to select linked toggle (it conflicted with Blender's loop selection or something.)
 
 
-
-### Changed ###
-- Operator *Focus* now has a dedicated operator for Edit Mode, which fixes some keymap priority issues with binding to [F].
-- Sculpting Setup keymaps:
-    + [TAB] enters local view instead of switching to edit mode.    
-
-
 ## v0.3.1
 *(11/Mar/22)*
 
 ### Changed ###
 - Operator *Focus* now has a dedicated operator for Edit Mode, which fixes some keymap priority issues with binding to [F].
-- Sculpting Setup keymaps:
-    + [TAB] enters local view instead of switching to edit mode.    
+- Sculpting Setup keymap override is renamed to ZBrush Sculpting an is focused on emulating my ZBrush hotkeys). Added some extra keymaps to achieve this (navigation not included):
+    + [S] to change brush size.
+    + [SHIFT][S] to change brush intensity.
+    + [Q] to switch active object (subtool).
+    + Double [Q] to switch active object and then frame it.
+    + [SHIFT][F] to toggle wireframe.
+    + [TAB] enters local view instead of switching to edit mode.
 
 
 ## v0.3.0
