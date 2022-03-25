@@ -2,13 +2,17 @@
 
 
 ## v0.3.3
-*(unreleased)*
+*25/Mar/22*
 
 ### Added ###
 - Operator *Switch Color Modes*: Switches back and forth between two viewport color modes (Vertex color and Object color by default).
 
 ### Changed ###
 - ZBrush Sculpting keymaps: Vertex Paint Mode now shares hotkeys with Sculpt mode, such as changing brush size with [S] with `release_confirm` enabled, isolating with [TAB] and focusing with [F].
+    + [V] Switch Color Modes.
+    + [ALT][V] Toggle Silhouette mode.
+- Operator Shortcuts keymaps:
+    + [V] Switch Color Modes.
 
 
 ## v0.3.2
@@ -17,15 +21,15 @@
 ### Added ###
 - **PDF Keymap List** in the Addon Preferences
 
-### Removed ###
-- Video link buttons for the *Keymap Overrides* --at least until I have actual videos I can link to.
-
 ### Changed ###
 - Transform with Gizmos keymaps:
     + [G] to activate the Move Tool (this override used to only work for the Scale and Rotate tools but now affects all three).
 - Operator Shortcuts keymaps:
     - [CTRL][R] to rest on ground in Edit Mode.
     - [ALT][SHIFT][DOUBLE_LMB] to select linked toggle (it conflicted with Blender's loop selection or something.)
+
+### Removed ###
+- Video link buttons for the *Keymap Overrides* --at least until I have actual videos I can link to.
 
 
 ## v0.3.1
