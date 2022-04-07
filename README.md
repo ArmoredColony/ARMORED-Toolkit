@@ -10,9 +10,12 @@ Note that some scripts are context sensitive, which means they will only appear 
 ![Armored Toolkit Preferences](https://i.imgur.com/lCKhYiV.jpg)
 
 ## How to install?
-You can download as ZIP and install just like any other Blender Add-on, or you can git pull directly into your addons folder.
+You can download as ZIP and install just like any other Blender Add-on:
+Edit>Preferences>Add-ons>Install>Select the .zip file>Enable the Checkbox.
 
-Enable the "Armored Toolkit" add-on in your preferences and  select what resources you are interested in.
+...or you can git pull directly into your addons folder.
+
+Afterwards, you can enable any extra resources that interest you. NOTE: the scripts are always installed no matter what.
 
 ## I only care about X script, can I take it?
 Sure!
