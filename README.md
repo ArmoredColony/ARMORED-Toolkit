@@ -15,7 +15,7 @@ Edit>Preferences>Add-ons>Install>Select the .zip file>Enable the Checkbox.
 
 ...or you can git pull directly into your addons folder.
 
-Afterwards, you can enable any extra resources that interest you. NOTE: the scripts are always installed no matter what.
+Afterwards, you can enable any specific resource that interest you. NOTE: the scripts are always installed no matter what.
 
 ## I only care about X script, can I take it?
 Sure!
