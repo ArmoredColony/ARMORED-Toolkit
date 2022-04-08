@@ -20,7 +20,7 @@ Afterwards, you can enable the specific resources that interest you. NOTE: the s
 ## I only care about X script, can I take it?
 Sure!
 
-Inside the Armored-Toolkit ZIP folder there's a sub-folder called **Operators**. Everything there is self contained so you can easily extract individual scripts that interest you. If you already installed the add-on, you can also click the 'Operators Folder' to open that directory.
+Inside the Armored-Toolkit ZIP folder there's a sub-folder called **Operators**. Everything there is self contained so you can easily extract any individual scripts that interest you. If you already installed the add-on, you can also click the 'Operators Folder' which takes you to the same directory.
 
 Learn from them, put them in your own add-on, whatever!
 
