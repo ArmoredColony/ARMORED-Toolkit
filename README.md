@@ -5,7 +5,9 @@ It's a FREE Blender Add-on containing my personal Scripts, Matcaps, Themes and K
 
 Everything is optional, except for the scripts which will automatically appear in the Search Menu (F3 or Spacebar) with the "ARMORED" prefix.
 
-Note: some scripts are context sensitive, which means they will only appear under certain conditions (some only show up in Edit Mode, others in Object Mode, etc. For a full list go to 'Useful Directories' in the add-on preferences and click 'Operators Folder' to browse the individual scripts.
+Note: some scripts are context sensitive, which means they will only appear under certain conditions (some only show up in Edit Mode, others in Object Mode, etc. 
+
+For a full list of included scripts check the 'Operators' directory.
 
 ![Armored Toolkit Preferences](https://i.imgur.com/lCKhYiV.jpg)
 
