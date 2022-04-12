@@ -3,20 +3,21 @@
 import bpy
 
 
-class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
-	'''Based on your outliner selections, isolate 1 element/collection and cycle to the next/previous one using the SCROll wheel. Cancel with RMB. Also works with entire collections.
-
-	armoredColony.com'''
+pass_through_events = {'MIDDLEMOUSE', 'V', 'NUMPAD_PERIOD', 'F'}
+next_events = {'DOWN_ARROW', 'RIGHT_ARROW', 'WHEELDOWNMOUSE'}
+previous_events = {'UP_ARROW', 'LEFT_ARROW', 'WHEELUPMOUSE'}
+finish_events = {'LEFTMOUSE', 'RET', 'NUMPAD_ENTER', 'SPACE'}
+cancel_events = {'RIGHTMOUSE', 'ESC'}
 	
-	bl_idname = 'outliner.armored_isolate_cycle'
-	bl_label = 'ARMORED Cycle'
-	bl_options = {'REGISTER','UNDO'}
 
-	pass_through_events = {'MIDDLEMOUSE', 'V'}
-	next_events = {'DOWN_ARROW', 'RIGHT_ARROW', 'WHEELDOWNMOUSE'}
-	previous_events = {'UP_ARROW', 'LEFT_ARROW', 'WHEELUPMOUSE'}
-	finished_events = {'LEFTMOUSE', 'RET', 'NUMPAD_ENTER', 'SPACE'}
-	canceled_events = {'RIGHTMOUSE', 'ESC'}
+class OUTLINER_OT_armored_compare(bpy.types.Operator):
+	'''Based on your outliner selections, isolate 1 element at a time. Useful for comparing changes between similar objects. NOTE: also works with collections.
+
+armoredColony.com'''
+	
+	bl_idname = 'outliner.armored_compare'
+	bl_label = 'ARMORED Compare'
+	bl_options = {'REGISTER','UNDO'}
 
 	@classmethod
 	def poll(cls, context):
@@ -28,10 +29,11 @@ class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
 		return self.invoke(context, event=None) 
 	
 	def invoke(self, context, event):
-		self.selected_elements = context.selected_ids
+		self.scene_collections = self.get_view_layer_collections(context)
+		self.selected_elements = context.selected_ids[:]
 		self.save_original_visibility(context)
 		
-		self.report({'INFO'}, 'SCROLL to cycle and isolate each element/collection')
+		self.report({'INFO'}, 'SCROLL to isolate one element at a time')
 		context.window.cursor_set('SCROLL_Y')
 
 		self.iter_elements = Cycle(self.selected_elements)
@@ -44,31 +46,37 @@ class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
 		return {'RUNNING_MODAL'}
 
 	def modal(self, context, event):
-		if event.type in self.next_events and event.value == 'PRESS':
+		if event.type in next_events and event.value == 'PRESS':
 			self.isolate_next_element(context)
 
-		elif event.type in self.previous_events and event.value == 'PRESS':
+		elif event.type in previous_events and event.value == 'PRESS':
 			self.isolate_previous_element(context)
 
-		elif event.type in self.pass_through_events and event.value == 'PRESS':
+		elif event.type in pass_through_events and event.value == 'PRESS':
 			return {'PASS_THROUGH'}
 
-		elif event.type in self.finished_events and event.value == 'PRESS':
+		elif event.type in finish_events and event.value == 'PRESS':
 			self.report({'INFO'}, 'FINISHED')
 			context.window.cursor_set('DEFAULT')
 			return {'FINISHED'}
 		
 		# CANCEL OPERATOR
-		elif event.type in self.canceled_events and event.value == 'PRESS':
+		elif event.type in cancel_events and event.value == 'PRESS':
 			self.report({'INFO'}, 'CANCELLED')
 			self.restore_original_visibility(context)
 			context.window.cursor_set('DEFAULT')
 			return {'FINISHED'}
 
 		return {'RUNNING_MODAL'}
+	
 
+	def get_view_layer_collections(self, context):
+		'''Stupid as it may seem, this is the fastest technique for our needs.'''
+
+		return {c.name : c for c in self.traverse_tree(context.view_layer.layer_collection) if c.name != 'Scene Collection'}
 	
 	def hide_all_elements(self, context):
+		'''Hide all selected'''
 		for element in self.selected_elements:
 			self.set_visibility(context, element, False)
 
@@ -76,7 +84,7 @@ class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
 		self.original_visibility = {}
 		for element in self.selected_elements:
 			if element.type == 'COLLECTION':
-				self.original_visibility[element] = not context.view_layer.layer_collection.children[element.name].hide_viewport
+				self.original_visibility[element] = not self.scene_collections[element.name].hide_viewport
 			else:
 				self.original_visibility[element] = element.visible_get()
 	
@@ -97,13 +105,14 @@ class OUTLINER_OT_armored_isolate_cycle(bpy.types.Operator):
 
 	def set_visibility(self, context, element, visible):
 		if element.type == 'COLLECTION':
-			# This command imitates the user clicking in the outliner.
-			context.view_layer.layer_collection.children[element.name].hide_viewport = not visible
-
-			# Do not use this for collections (users cannot alter this state through the outliner):
-			# element.hide_viewport = not visible
+			self.scene_collections[element.name].hide_viewport = not visible
 		else:
 			element.hide_set(not visible)
+	
+	def traverse_tree(self, tree):
+		yield tree
+		for child in tree.children:
+			yield from self.traverse_tree(child)
 
 
 class Cycle():
@@ -129,12 +138,13 @@ def get_collection_type(self):
 
 
 def menu_draw(self, context):
-	self.layout.operator(OUTLINER_OT_armored_isolate_cycle.bl_idname, text='Isolate Cycle')
+	self.layout.operator(OUTLINER_OT_armored_compare.bl_idname, text='Compare')
 	self.layout.separator()
 
 
 classes = (
-	OUTLINER_OT_armored_isolate_cycle,
+	# VIEW3D_OT_armored_compare_scenes,
+	OUTLINER_OT_armored_compare,
 )
 
 menus = (

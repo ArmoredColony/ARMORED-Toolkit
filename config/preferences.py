@@ -61,7 +61,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             update=closure(prop='deselect_with_ctrl', category='keymaps'),)
 
     transform_with_gizmos: BoolProperty(name='Transform with Gizmos', default=False,
-            description='Use the Gizmo version of the Move, Rotate and Scale Tools', 
+            description='Use the Gizmo version of the Move, Scale and Rotate Tools', 
             update=closure(prop='transform_with_gizmos', category='keymaps'),)
 
     allow_gizmo_click: BoolProperty(name='Allow Gizmo Click', default=False,
@@ -90,6 +90,10 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             items=[ ('NORMAL',  'Blender Default',            'Create one undo step for each TAB press'), 
                     ('GROUPED', 'Grouped Undo (recommended)', 'Combine repeated TAB presses into a single Undo step'),
                     ('SKIP',    'Skip Undo',                  'Pressing TAB does NOT generate undo history'), ])
+
+#     wireframe_selected: BoolProperty(name='Wireframe Selected', default=False,
+#             description='Display the wireframe of any objects you select (similar to Maya).\n\n', 
+#             update=closure(prop='wireframe_selected', category='keymaps'),)
 
 
     # STUDIO LIGHTS >>
@@ -138,13 +142,13 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         col2 = split.column(align=True)
 
         box = col1.box()
-        box.label(text='Keymap Overrides')
+        box.label(text='Keymap Overrides:')
         box.operator('armored.open_folder', text='PDF Keymap List', icon='TEXT').path = paths.AddonPaths.docs_keymaps
         prop_line(prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='focus_selected_with_f', icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
-        # prop_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
+        prop_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='allow_gizmo_click',     icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='zbrush_sculpting',      icon='FILE_MOVIE', url='www.youtube.com')
         # prop_line(prop='sculpting_setup',       icon='FILE_MOVIE', url='www.youtube.com')
@@ -153,7 +157,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         col1.separator()
 
         box = col1.box()
-        box.label(text='Extra Resources')
+        box.label(text='Extra Resources:')
         prop_line(prop='matcaps',       icon='MATERIAL', url='www.youtube.com')
         prop_line(prop='hdris',         icon='MATERIAL', url='www.youtube.com', text='HDRIS')
         prop_line(prop='studio_lights', icon='MATERIAL', url='www.youtube.com')
@@ -162,14 +166,19 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         col1.separator()
         
         box = col1.box()
-        box.label(text='TAB History')
+        box.label(text='TAB Override:')
         prop_line(prop='tab_history', icon='FILE_MOVIE', url='www.youtube.com')
         if self.tab_history:
             box.prop(self, 'tab_undo_mode', text='', expand=False)
         col1.separator()
 
+        # box = col1.box()
+        # box.label(text='EXPERIMENTAL', icon='ERROR')
+        # prop_line(prop='wireframe_selected', icon='MATERIAL', url='www.youtube.com')
+        # col1.separator()
+
         box = col2.box()
-        box.label(text='Armored Preferences')
+        box.label(text='Armored Preferences:')
         layout.use_property_split = True
         box.operator('armored.load_custom_preferences', text='Load Preferences')
         box.operator('armored.unload_custom_preferences', text='Unload Preferences')
@@ -178,14 +187,14 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         col2.separator()
         
         box = col2.box()
-        box.label(text='Custom Theme')
+        box.label(text='Custom Theme:')
         box.operator('armored.theme_install', text='Load Armored Theme')
         box.operator('preferences.reset_default_theme', text='Reset to Default Theme')
         col2.separator()
 
         col2.separator()
         box = col2.box()
-        box.label(text='Useful Directories')
+        box.label(text='Useful Directories:')
         box.operator('armored.open_folder', text='Operators Folder', icon='ERROR')      .path = paths.AddonPaths.operators
         box.operator('armored.open_folder', text='Keymaps File',     icon='FILE_SCRIPT').path = paths.AddonPaths.keymaps
         box.operator('armored.open_folder', text='Startup Folder',   icon='FILE_FOLDER').path = paths.BlenderPaths.startup
@@ -194,7 +203,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
         col2.separator()
         box = col2.box()
-        box.label(text='Developer Tools')
+        box.label(text='Developer Tools:')
         box.prop(self, 'debug', toggle=True)
 
         layout.label(text=('Python ' + sys.version))

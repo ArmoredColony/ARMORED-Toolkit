@@ -49,7 +49,10 @@ class ARMORED_OT_connect(bpy.types.Operator):
                 return {'FINISHED'}
 
             elif len(vert_sel) > 1:
-                bpy.ops.mesh.vert_connect_path()  
+                try:
+                    bpy.ops.mesh.vert_connect_path()  
+                except Exception:
+                    bpy.ops.mesh.vert_connect()  
                 return {'FINISHED'}
 
         # EDGE MODE

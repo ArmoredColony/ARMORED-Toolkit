@@ -2,14 +2,13 @@ bl_info = {
     'name'        : 'Toolkit',
     'description' : 'A collection of Scripts, Hotkeys and other goodies.',
     'author'      : 'Armored Colony',
-    'version'     : (0, 3, 3),
+    'version'     : (0, 3, 4),
     'blender'     : (2, 83),
     'location'    : 'Type "ARMORED" in the search menu.',
     # 'warning'     : 'Whatever', # Used for warning icon and text in addons panel.
     # 'wiki_url'    : 'www.armoredColony.com', # This should be for Documentation.
     'category'    : 'ARMORED',
 }
-
 
 debug = False
 

@@ -1,4 +1,4 @@
-# v3.1
+# v3.2
 
 import bpy
 from bpy.types import Operator
@@ -11,10 +11,8 @@ class Focus:
 	bl_label = 'ARMORED Focus'
 	bl_options = {'REGISTER'}
 
-	# def execute(self, context):
-	# 	print('\nRan Execute\n')
-	# 	return self.invoke(context, event=None) 
-
+	# Was using Invoke instead of execute because the raycast required 'event.mouse_region'.
+	# Not raycasting anymore so this is just a remnant.
 	def invoke(self, context, event):
 		mode = context.mode
 
@@ -24,8 +22,11 @@ class Focus:
 		elif mode == 'EDIT_MESH':
 			self.edit_mesh_focus(context)
 		
-		elif mode == 'SCULPT' or 'VERTEX_PAINT':
+		elif mode in {'SCULPT', 'VERTEX_PAINT'}:
 			self.sculpting_focus(context, event)
+		
+		else:
+			bpy.ops.view3d.view_selected('INVOKE_DEFAULT')
 		
 		return {'FINISHED'}
 
@@ -38,9 +39,10 @@ class Focus:
 		bpy.ops.view3d.view_all('INVOKE_DEFAULT')
 
 	def edit_mesh_focus(self, context):
-		obj = context.edit_object
-		selection = obj.data.total_vert_sel
-		
+		objects = context.objects_in_mode
+		selection = sum(obj.data.total_vert_sel for obj in objects)
+		print(selection)
+
 		if not selection: 
 			bpy.ops.mesh.select_all(action='SELECT')
 
@@ -88,7 +90,7 @@ class Focus:
 
 
 class MESH_OT_armored_focus(Operator, Focus):
-	'''Provides additional functionality to the view_selected operator.
+	'''Same as Blender's view_selected operator but can frame the entire object if no component is selected.
 
 armoredColony.com '''
 
@@ -100,7 +102,7 @@ armoredColony.com '''
 
 
 class VIEW_OT_armored_focus(Operator, Focus):
-	'''Provides additional functionality to the view_selected operator.
+	'''Same as Blender's view_selected operator but can frame the entire object if no component is selected.
 
 armoredColony.com '''
 	

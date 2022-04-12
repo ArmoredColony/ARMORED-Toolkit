@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from typing import Union
+from operator import attrgetter
 
 from . import(
     debug,
@@ -19,10 +21,19 @@ class KeymapGroup(ABC):
         self.kmi = self.km.keymap_items.new(idname, type, value, ctrl=ctrl, alt=alt, shift=shift)
         self.keymap_list.append((self.km, self.kmi))
         self._added_kmi_message(idname, type, value, ctrl, alt, shift)
+        return self.kmi
 
-    def prop(self, attr, val):
+    def prop(self, attr: str, val):
         try:
-            setattr(self.kmi.properties, attr, val)
+            split_attr = attr.split('.')
+            if len(split_attr) > 1:
+                last_attr = split_attr.pop()
+                join_attr = '.'.join(split_attr)
+                # print(f'self.kmi.properties.{join_attr}.{last_attr}')
+                setattr(eval(f'self.kmi.properties.{join_attr}'), last_attr, val)
+            else:
+                setattr(self.kmi.properties, attr, val)
+
         except Exception as e:
             self.error_count += 1
             print(f'\tARMORED-Toolkit WARNING: {e}')

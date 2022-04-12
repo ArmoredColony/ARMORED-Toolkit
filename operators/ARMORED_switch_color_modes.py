@@ -23,20 +23,20 @@ armoredColony.com '''
 	mode_1 : EnumProperty(name='Mode 1', default='MATERIAL', items=items)
 	mode_2 : EnumProperty(name='Mode 2', default='SINGLE', items=items)
 
-	# @classmethod
-	# def poll(cls, context):
-	# 	return bpy.context.space_data.shading.type == 'SOLID'
+	@classmethod
+	def poll(cls, context):
+		return context.area.type == 'VIEW3D' and context.space_data.shading.type == 'SOLID'
 
 
 	def invoke(self, context, event):
-		mode = bpy.context.space_data.shading.color_type
+		shading = context.space_data.shading
 
-		if mode == self.mode_1:
-			bpy.context.space_data.shading.color_type = self.mode_2
+		if shading.color_type == self.mode_1:
+			shading.color_type = self.mode_2
 		else:
-			bpy.context.space_data.shading.color_type = self.mode_1
+			shading.color_type = self.mode_1
 
-		self.report({'OPERATOR'}, f'Color Mode: {bpy.context.space_data.shading.color_type}')
+		self.report({'INFO'}, f'Color Mode: {shading.color_type}')
 		return {'FINISHED'}
 
 
