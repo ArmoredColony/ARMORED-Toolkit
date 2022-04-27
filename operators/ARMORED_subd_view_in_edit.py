@@ -54,10 +54,14 @@ class ARMORED_OT_subd_view_in_edit(bpy.types.Operator):
                 elif self.mode == 'HYBRID':
                     mod.show_on_cage = False
                     mod.show_in_editmode = True
+                    if mod.levels == 0:
+                        mod.levels = 1
 
                 elif self.mode == 'FULL':
                     mod.show_on_cage = True
                     mod.show_in_editmode = True
+                    if mod.levels == 0:
+                        mod.levels = 1
 
         return {'FINISHED'}
 

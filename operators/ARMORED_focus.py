@@ -1,4 +1,4 @@
-# v3.2
+# v3.3
 
 import bpy
 from bpy.types import Operator
@@ -41,7 +41,6 @@ class Focus:
 	def edit_mesh_focus(self, context):
 		objects = context.objects_in_mode
 		selection = sum(obj.data.total_vert_sel for obj in objects)
-		print(selection)
 
 		if not selection: 
 			bpy.ops.mesh.select_all(action='SELECT')

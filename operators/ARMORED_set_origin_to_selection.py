@@ -38,7 +38,7 @@ class ARMORED_OT_origin_to_selection(bpy.types.Operator):
 
 def draw_menu(self, context):
     self.layout.separator()
-    self.layout.operator(ARMORED_OT_origin_to_selection.bl_idname, text='Origin to Selection', icon='FAKE_USER_OFF')
+    self.layout.operator(ARMORED_OT_origin_to_selection.bl_idname, text='Origin to Selection')
 
 
 classes = (

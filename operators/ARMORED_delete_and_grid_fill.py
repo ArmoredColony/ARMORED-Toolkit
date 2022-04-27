@@ -1,11 +1,7 @@
-# v1.0
-
+# v1.1
 
 import bpy
 import bmesh
-from bpy.props import IntProperty, BoolProperty
-
-import math
 
 
 class MESH_OT_armored_delete_faces_and_select_border(bpy.types.Operator):
@@ -17,7 +13,10 @@ class MESH_OT_armored_delete_faces_and_select_border(bpy.types.Operator):
     bl_label   = 'ARMORED Delete faces and select Border'
 
     def execute(self, context):
-        bm = bmesh.from_edit_mesh(context.edit_object.data)
+        ob = context.edit_object
+        me = ob.data
+        bm = bmesh.from_edit_mesh(me)
+
         edge_border = {e for e in bm.edges if e.select and (e.is_boundary or not all(f.select for f in e.link_faces))}
         bpy.ops.mesh.delete(type='FACE')
         context.tool_settings.mesh_select_mode = (False, True, False)
@@ -50,7 +49,7 @@ class ARMORED_OT_delete_and_grid_fill(bpy.types.Macro):
 
 def draw(self, context):
     self.layout.separator()
-    self.layout.operator(ARMORED_OT_delete_and_grid_fill.bl_idname, text='Delete and Grid Fill',)
+    self.layout.operator(ARMORED_OT_delete_and_grid_fill.bl_idname, text='Delete & Grid Fill',)
 
 
 classes = (
@@ -62,6 +61,7 @@ classes = (
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
+
     ARMORED_OT_delete_and_grid_fill.define('MESH_OT_armored_delete_faces_and_select_border')
     ARMORED_OT_delete_and_grid_fill.define('MESH_OT_fill_grid')
     ARMORED_OT_delete_and_grid_fill.define('MESH_OT_armored_switch_to_face_mode')
@@ -71,4 +71,5 @@ def register():
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
+        
     bpy.types.VIEW3D_MT_edit_mesh_delete.remove(draw)

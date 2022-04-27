@@ -137,6 +137,15 @@ class TRANSFORM_WITH_GIZMOS(keymap_utils.KeymapGroup):
         self.enabled_message()
 
 
+class DELETE_WITHOUT_MENUS(keymap_utils.KeymapGroup):
+    def register(self):
+        self.km = kc.keymaps.new(name='Mesh')
+        self.add('mesh.armored_smart_delete', 'X', 'PRESS')
+        self.add('wm.call_menu', 'X', 'PRESS', alt=True); self.prop('name', 'VIEW3D_MT_edit_mesh_delete')
+
+        self.enabled_message()
+
+
 class ALLOW_GIZMO_CLICK(keymap_utils.KeymapGroup):
     def register(self):
         self.km = kc.keymaps.new('Generic Gizmo Maybe Drag', space_type='EMPTY')     # Makes Gizmos activate on click instead of drag.
@@ -303,90 +312,20 @@ class ZBRUSH_SCULPTING(keymap_utils.KeymapGroup):
         self.enabled_message()
 
 
-class SCULPTING_SETUP(keymap_utils.KeymapGroup):
-    def register(self):
-        self.km = kc.keymaps.new(name='Sculpt')
-
-        self.add('view3d.localview', 'TAB', 'PRESS'); self.prop('frame_selected', False)
-
-        self.add('view3d.armored_focus', 'F', 'PRESS', alt=True)
-        self.add('view3d.armored_silhouette', 'V', 'PRESS', alt=True)
-        self.add('view3d.armored_subdivide', 'D', 'PRESS', ctrl=True)
-        self.add('sculpt.armored_remesh', 'R', 'PRESS', ctrl=True)
-
-        # self.add('view3d.view_all', 'F', 'PRESS', shift=True)
-
-        # self.add('sculpt.armored_scale_unmasked', 'S', 'PRESS', alt=True)
-        self.add('transform.translate', 'G', 'PRESS')
-
-
-        # Invert brush stroke (set to ALT instead of CTRL)
-        self.add('sculpt.brush_stroke', 'LEFTMOUSE', 'PRESS', alt=True); self.prop('mode', 'INVERT')
-
-        # BRUSHES
-        self.add('wm.tool_set_by_id', 'ONE',   'PRESS'          ); self.prop('name', 'builtin_brush.Clay Strips')
-        self.add('wm.tool_set_by_id', 'ONE',   'PRESS', alt=True); self.prop('name', 'builtin_brush.Clay')
-
-        self.add('wm.tool_set_by_id', 'TWO',   'PRESS'          ); self.prop('name', 'builtin_brush.Draw Sharp')
-        self.add('wm.tool_set_by_id', 'TWO',   'PRESS', alt=True); self.prop('name', 'builtin_brush.Draw')
-
-        self.add('wm.tool_set_by_id', 'THREE', 'PRESS'          ); self.prop('name', 'builtin_brush.Scrape')
-        self.add('wm.tool_set_by_id', 'THREE', 'PRESS', alt=True); self.prop('name', 'builtin_brush.Flatten')
-
-        self.add('wm.tool_set_by_id', 'FOUR',  'PRESS'          ); self.prop('name', 'builtin_brush.Grab')
-        self.add('wm.tool_set_by_id', 'FOUR',  'PRESS', alt=True); self.prop('name', 'builtin_brush.Snake Hook')
-
-        self.add('wm.tool_set_by_id', 'FIVE',  'PRESS'          ); self.prop('name', 'builtin_brush.Crease')
-        self.add('wm.tool_set_by_id', 'FIVE',  'PRESS', alt=True); self.prop('name', 'builtin_brush.Inflate')
-
-        self.add('wm.context_toggle',  'W', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
-        self.add('wm.context_toggle',  'T', 'PRESS', ctrl=True);  self.prop('data_path', 'space_data.overlay.show_fade_inactive')
-
-        # BRUSH SIZE
-        self.add('wm.radial_control',  'F', 'PRESS')
-        self.prop('data_path_primary',   'tool_settings.sculpt.brush.size.size')
-        self.prop('data_path_secondary', 'tool_settings.unified_paint_settings.size')
-        self.prop('use_secondary',       'tool_settings.unified_paint_settings.use_unified_size')
-        self.prop('rotation_path',       'tool_settings.sculpt.brush.texture_slot.angle')
-        self.prop('color_path',          'tool_settings.sculpt.brush.cursor_color_add')
-        self.prop('fill_color_path', '')
-        self.prop('fill_color_override_path', '')
-        self.prop('fill_color_override_test_path', '')
-        self.prop('zoom_path', '')
-        self.prop('image_id', 'tool_settings.sculpt.brush')
-        self.prop('secondary_tex', False)
-        self.prop('release_confirm', True)  # Only setting that was changed.
-
-        # BRUSH STRENGTH
-        self.add('wm.radial_control',  'F', 'PRESS', shift=True)
-        self.prop('data_path_primary',   'tool_settings.sculpt.brush.size.strength')
-        self.prop('data_path_secondary', 'tool_settings.unified_paint_settings.strength')
-        self.prop('use_secondary',       'tool_settings.unified_paint_settings.use_unified_strength')
-        self.prop('rotation_path',       'tool_settings.sculpt.brush.texture_slot.angle')
-        self.prop('color_path',          'tool_settings.sculpt.brush.cursor_color_add')
-        self.prop('fill_color_path', '')
-        self.prop('fill_color_override_path', '')
-        self.prop('fill_color_override_test_path', '')
-        self.prop('zoom_path', '')
-        self.prop('image_id', 'tool_settings.sculpt.brush')
-        self.prop('secondary_tex', False)
-        self.prop('release_confirm', True)  # Only setting that was changed.
-
-        self.enabled_message()
-
-
 class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
     def register(self):
         self.km = kc.keymaps.new('Window', space_type='EMPTY')
         self.add('screen.userpref_show', 'COMMA', 'PRESS', ctrl=True)
-        self.add('view3d.armored_open_most_recent',  'R', 'PRESS', alt=True,  shift=True)
+        self.add('wm.armored_open_most_recent',  'R', 'PRESS', alt=True,  shift=True)
         self.add('script.reload', 'F5', 'PRESS')  # best to create this keymap manually in blender's keymap editor, otherwise you wont be able to use it if something crashes.
-
 
         # Generic (doesn't work unless separate from 3D View)
         self.km = kc.keymaps.new('3D View Generic', space_type='VIEW_3D')
         self.add('screen.redo_last', 'T', 'PRESS')
 
+
+        # ========================================================================================================
+        # VIEW 3D
 
         self.km = kc.keymaps.new('3D View', space_type='VIEW_3D')
         self.add('view3d.armored_switch_color_modes', 'V', 'PRESS')
@@ -400,7 +339,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.add('wm.call_menu_pie',            'Q', 'DOUBLE_CLICK'); self.prop('name', 'ARMORED_MT_PIE_select')
 
         self.add('wm.context_toggle',  'W', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
-        self.add('view3d.armored_toggle_overlays', 'W', 'PRESS', alt=True)
+        self.add('view3d.armored_toggle_overlays', 'W', 'PRESS', alt=True); self.prop('toggle_gizmos', False)
         # self.add('wm.context_toggle',  'W', 'PRESS', alt=True  ); self.prop('data_path', 'space_data.overlay.show_overlays')
         
         self.add('view3d.armored_toggle_tool', 'W', 'PRESS'); self.prop('name', 'builtin.move')
@@ -413,8 +352,8 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.add('view3d.armored_cycle_cavity_type', 'C', 'PRESS', alt=True, shift=True)
         self.add('view3d.armored_subdivide',         'D', 'PRESS', ctrl=True)
 
-        self.add('view3d.armored_single_subdivision_level', 'PAGE_UP',   'PRESS');  self.prop('action', 'INCREASE')
-        self.add('view3d.armored_single_subdivision_level', 'PAGE_DOWN', 'PRESS');  self.prop('action', 'DECREASE')
+        self.add('view3d.armored_increase_subd_mod_level', 'PAGE_UP',   'PRESS')
+        self.add('view3d.armored_decrease_subd_mod_level', 'PAGE_DOWN', 'PRESS')
 
         self.add('view3d.localview', 'SLASH',        'PRESS'); self.prop('frame_selected', False)
         self.add('view3d.localview', 'NUMPAD_SLASH', 'PRESS'); self.prop('frame_selected', False)
@@ -430,14 +369,23 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.prop('is_new', True)
 
 
-        self.km = kc.keymaps.new(name='Mesh')
-        kmi = self.add('mesh.loopcut_slide', 'C', 'PRESS'); self.prop('TRANSFORM_OT_edge_slide.release_confirm', True)
-        # kmi.properties.TRANSFORM_OT_edge_slide.release_confirm = True
+        # ========================================================================================================
+        # MESH
 
+        self.km = kc.keymaps.new(name='Mesh')
+
+        self.add('wm.tool_set_by_id', 'Y', 'PRESS'); self.prop('name', 'edit_mesh.merge_tool')
+        self.add('mesh.armored_symmetrize', 'X', 'PRESS', ctrl=True, alt=True); self.prop('axis', 'POSITIVE_X')
+
+        self.add('mesh.armored_vitaly_poke', 'V', 'PRESS', alt=True)
+        self.add('mesh.loopcut_slide', 'C', 'PRESS'); self.prop('TRANSFORM_OT_edge_slide.release_confirm', True)
 
         self.add('mesh.faces_select_linked_flat', 'F', 'PRESS', shift=True)
         self.add('mesh.edge_face_add',            'F', 'PRESS', alt=True)
-        self.add('mesh.f2',                       'F', 'PRESS', alt=True) # Same keymap as above, but seems to take prio if f2 is installed and viceversa.
+        # self.add('mesh.f2',                       'F', 'PRESS', alt=True) # Same keymap as above, but seems to take prio if f2 is installed and viceversa.
+        
+        self.add('mesh.armored_flatten', 'F', 'PRESS', ctrl=True, alt=True)
+        # self.add('wm.call_menu', 'X', 'PRESS', ctrl=True, alt=True); self.prop('name', 'MESH_MT_flatten')
 
         # self.add('mesh.armored_custom_orientation', 'D', 'PRESS')
 
@@ -488,22 +436,25 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.prop('mode', 'FULL')
         self.prop('only_affect_last', False)
 
-        self.add('mesh.armored_center_vertices', 'X', 'PRESS', ctrl=True, alt=True); self.prop('axis', 'X')
-        self.add('mesh.armored_center_vertices', 'Y', 'PRESS', ctrl=True, alt=True); self.prop('axis', 'Y')
-        self.add('mesh.armored_center_vertices', 'Z', 'PRESS', ctrl=True, alt=True); self.prop('axis', 'Z')
+        # self.add('mesh.armored_center_vertices', 'X', 'PRESS', ctrl=True, alt=True); self.prop('axis', 'X')
+        # self.add('mesh.armored_center_vertices', 'Y', 'PRESS', ctrl=True, alt=True); self.prop('axis', 'Y')
+        # self.add('mesh.armored_center_vertices', 'Z', 'PRESS', ctrl=True, alt=True); self.prop('axis', 'Z')
 
         # SubD Hotkeys for Edit Mode
-        self.add('object.subdivision_set', 'ZERO',  'PRESS', ctrl=True); self.prop('level', 0)
-        self.add('object.subdivision_set', 'ONE',   'PRESS', ctrl=True); self.prop('level', 1)
-        self.add('object.subdivision_set', 'TWO',   'PRESS', ctrl=True); self.prop('level', 2)
-        self.add('object.subdivision_set', 'THREE', 'PRESS', ctrl=True); self.prop('level', 3)
-        self.add('object.subdivision_set', 'FOUR',  'PRESS', ctrl=True); self.prop('level', 4)
-        self.add('object.subdivision_set', 'FIVE',  'PRESS', ctrl=True); self.prop('level', 5)
-        self.add('object.subdivision_set', 'SIX',   'PRESS', ctrl=True); self.prop('level', 6)
-        self.add('object.subdivision_set', 'SEVEN', 'PRESS', ctrl=True); self.prop('level', 7)
-        self.add('object.subdivision_set', 'EIGHT', 'PRESS', ctrl=True); self.prop('level', 8)
-        self.add('object.subdivision_set', 'NINE',  'PRESS', ctrl=True); self.prop('level', 9)
+        self.add('object.armored_subdivision_set', 'ZERO',  'PRESS', ctrl=True); self.prop('level', 0)
+        self.add('object.armored_subdivision_set', 'ONE',   'PRESS', ctrl=True); self.prop('level', 1)
+        self.add('object.armored_subdivision_set', 'TWO',   'PRESS', ctrl=True); self.prop('level', 2)
+        self.add('object.armored_subdivision_set', 'THREE', 'PRESS', ctrl=True); self.prop('level', 3)
+        self.add('object.armored_subdivision_set', 'FOUR',  'PRESS', ctrl=True); self.prop('level', 4)
+        self.add('object.armored_subdivision_set', 'FIVE',  'PRESS', ctrl=True); self.prop('level', 5)
+        self.add('object.armored_subdivision_set', 'SIX',   'PRESS', ctrl=True); self.prop('level', 6)
+        self.add('object.armored_subdivision_set', 'SEVEN', 'PRESS', ctrl=True); self.prop('level', 7)
+        self.add('object.armored_subdivision_set', 'EIGHT', 'PRESS', ctrl=True); self.prop('level', 8)
+        self.add('object.armored_subdivision_set', 'NINE',  'PRESS', ctrl=True); self.prop('level', 9)
 
+
+        # ========================================================================================================
+        # CURVE
 
         self.km = kc.keymaps.new('Curve', space_type='EMPTY')
         self.add('curve.shortest_path_pick', 'LEFTMOUSE', 'PRESS', ctrl=True, shift=True)

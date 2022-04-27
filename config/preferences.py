@@ -1,5 +1,5 @@
 import bpy
-from bpy.props import EnumProperty, BoolProperty, StringProperty
+from bpy.props import EnumProperty, BoolProperty
 
 import sys
 
@@ -13,7 +13,7 @@ from .. utils import (
 
 from .. customize import (
     keymaps,
-    resources,
+    resources,  # being used by eval
 )
 
 # This only seems to work out here so... whatever.
@@ -68,10 +68,6 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             description='Activate Gizmos on Click instead of waiting for a Drag event', 
             update=closure(prop='allow_gizmo_click', category='keymaps'),)
 
-    sculpting_setup: BoolProperty(name='Sculpting Setup', default=False,
-            description='Enables number row keymaps for brushes and more.\n\n' + 'See PDF above for the full list of keymaps', 
-            update=closure(prop='sculpting_setup', category='keymaps'),)
-
     zbrush_sculpting: BoolProperty(name='ZBrush Sculpting', default=False,
             description='Makes Sculpt AND Vertex Paint modes a bit more familiar to ZBrush users (does NOT include ZBrush navigation).\n\n' + 'See PDF above for the full list of keymaps', 
             update=closure(prop='zbrush_sculpting', category='keymaps'),)
@@ -91,8 +87,12 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
                     ('GROUPED', 'Grouped Undo (recommended)', 'Combine repeated TAB presses into a single Undo step'),
                     ('SKIP',    'Skip Undo',                  'Pressing TAB does NOT generate undo history'), ])
 
+    delete_without_menus: BoolProperty(name='Delete without Menus', default=False,
+            description='Delete components based on your selection mode (vertex, edge, face) without aditional menus.\nOriginal Menu moved to ALT+X', 
+            update=closure(prop='delete_without_menus', category='keymaps'),)
+
 #     wireframe_selected: BoolProperty(name='Wireframe Selected', default=False,
-#             description='Display the wireframe of any objects you select (similar to Maya).\n\n', 
+#             description='Display the wireframe of any objects you select (similar to Maya).', 
 #             update=closure(prop='wireframe_selected', category='keymaps'),)
 
 
@@ -147,11 +147,11 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         prop_line(prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='focus_selected_with_f', icon='FILE_MOVIE', url='www.youtube.com')
+        prop_line(prop='delete_without_menus',  icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='allow_gizmo_click',     icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='zbrush_sculpting',      icon='FILE_MOVIE', url='www.youtube.com')
-        # prop_line(prop='sculpting_setup',       icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='operator_shortcuts',    icon='FILE_MOVIE', url='www.youtube.com')
         
         col1.separator()

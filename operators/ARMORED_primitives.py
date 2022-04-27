@@ -1,5 +1,5 @@
 import bpy
-from bpy.props import IntProperty
+from bpy.props import IntProperty, FloatProperty
 from bpy.types import Operator
 from bl_ui.space_statusbar import STATUSBAR_HT_header
 import blf
@@ -12,7 +12,7 @@ pass_through_events = {'MIDDLEMOUSE', 'NUMPAD_PERIOD', 'F'}
 increase_events = {'WHEELUPMOUSE', 'NUMPAD_PLUS', 'PAGE_UP', 'UP_ARROW'}
 decrease_events = {'WHEELDOWNMOUSE', 'NUMPAD_MINUS', 'PAGE_DOWN', 'DOWN_ARROW'}
 reset_events = {'R'}
-# scale_events = {'S'}
+scale_events = {'S'}
 finish_events = {'LEFTMOUSE', 'RET', 'NUMPAD_ENTER', 'SPACE', 'TAB'}
 cancel_events = {'RIGHTMOUSE', 'ESC'}
 
@@ -115,11 +115,16 @@ class StatusBar:
 
 
 class ModalPrimitive(StatusBar):
+	scale : FloatProperty(name='Scale', default=1)
+	start_scale = 0
+	scaling = False
+
 	@classmethod
 	def poll(cls, context):
 		return context.mode in {'OBJECT'}
 	
 	def invoke(self, context, event):
+		self.alt_is_pressed = False
 		# self.set_active_property('Cuts')
 
 		self._set_text()
@@ -142,11 +147,34 @@ class ModalPrimitive(StatusBar):
 		context.window_manager.modal_handler_add(self)
 		return {'RUNNING_MODAL'}
 	
+	def _pressing_alt(self, context, event):
+		if self.alt_is_pressed:
+			return
+		self.alt_is_pressed = True
+		self.scaling = True
+		self.start_scale = event.mouse_region_x
+		print('pressed alt')
+
+	def _not_pressing_alt(self, context, event):
+		if not self.alt_is_pressed:
+			return
+		self.alt_is_pressed = False
+		self.scaling = False
+		print('released alt')
+
 	def modal(self, context, event):
 		# context.area.tag_redraw()
 
+		if event.alt:
+			self._pressing_alt(context, event)
+		else:
+			self._not_pressing_alt(context, event)
+		
+
 		if event.type == 'MOUSEMOVE':
 			self._set_mouse_positions(event)
+			if self.scaling:
+				self._scale(event)
 		
 		elif event.type in pass_through_events:
 			return {'PASS_THROUGH'}
@@ -162,6 +190,9 @@ class ModalPrimitive(StatusBar):
 		
 		elif event.type in reset_events and event.value == 'PRESS':
 			self._reset_method()
+
+		# elif event.type in scale_events and event.value == 'PRESS':
+			# self._scale()
 		
 		elif event.type in cancel_events and event.value == 'PRESS':
 			self._reset_method()
@@ -190,7 +221,7 @@ class ModalPrimitive(StatusBar):
 		context.window.cursor_set('DEFAULT')
 
 	def _create_node_container(self, context):
-		bpy.ops.mesh.primitive_cube_add()
+		bpy.ops.mesh.primitive_cube_add(align='CURSOR')
 		self.node_container = context.active_object
 	
 	def _create_geometry_nodes_modifier(self):
@@ -304,7 +335,12 @@ armoredColony.com '''
 	
 	def _reset_method(self):
 		self.cuts = 0
-		self._set_values()	
+		self._set_values()
+	
+	def _scale(self, event):
+		self.scale = (event.mouse_region_x - self.start_scale) / 100
+		print(self.scale)
+		self.inputs[0].default_value = ([self.scale]*3)
 
 # class MESH_OT_armored_plane(MESH_OT_armored_cube, Operator):
 # 	'''Modal Plane primitive.

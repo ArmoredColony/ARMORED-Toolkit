@@ -10,6 +10,8 @@ armoredColony.com '''
 	bl_label = 'ARMORED Toggle Overlays'
 	bl_options = {'REGISTER'}
 
+	toggle_gizmos : bpy.props.BoolProperty(name='Toggle Gizmos', default=False)
+	
 	# @classmethod
 	# def poll(cls, context):
 	# 	return context.active_object is not None
@@ -20,7 +22,8 @@ armoredColony.com '''
 		# n_panel = space_data.show_region_ui
 
 		space_data.overlay.show_overlays = not state
-		space_data.show_gizmo = not state
+		if self.toggle_gizmos:
+			space_data.show_gizmo = not state
 		
 		return {'FINISHED'}
 

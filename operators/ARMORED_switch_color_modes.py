@@ -25,7 +25,7 @@ armoredColony.com '''
 
 	@classmethod
 	def poll(cls, context):
-		return context.area.type == 'VIEW3D' and context.space_data.shading.type == 'SOLID'
+		return context.area.type == 'VIEW_3D' and context.space_data.shading.type == 'SOLID'
 
 
 	def invoke(self, context, event):

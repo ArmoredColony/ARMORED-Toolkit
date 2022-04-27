@@ -46,7 +46,7 @@ class ARMORED_OT_select_hard_edges(bpy.types.Operator):
 
 def draw_menu(self , context):
     self.layout.separator()
-    self.layout.operator('MESH_OT_armored_select_hard_edges', icon='FAKE_USER_OFF')
+    self.layout.operator('MESH_OT_armored_select_hard_edges', text='Select Hard Edges')
             
 
 classes = (

@@ -1,172 +1,144 @@
-# v1.3
+# v2.0
 
 import bpy
-from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, EnumProperty
+from bpy.props import IntProperty, BoolProperty, EnumProperty
 
-from mathutils import Matrix
-
-
-
-def set_lattice_interpolation(lattice_ob, interpolation_type):
-    lattice_ob.data.interpolation_type_u = interpolation_type
-    lattice_ob.data.interpolation_type_v = interpolation_type
-    lattice_ob.data.interpolation_type_w = interpolation_type
-    
-
+from mathutils import Vector
 
 
 class ARMORED_OT_lattice(bpy.types.Operator):
-    '''Creates a lattice that matches your object dimensions and transforms.
+	'''Creates a lattice that matches your object dimensions and transforms.
 
-(www.armoredColony.com)'''
+armoredColony.com '''
 
-    bl_idname = 'object.armored_lattice'
-    bl_label  = 'ARMORED Lattice'
-    bl_options = {'REGISTER', 'UNDO'}
+	bl_idname = 'object.armored_lattice'
+	bl_label  = 'ARMORED Lattice'
+	bl_options = {'REGISTER', 'UNDO'}
 
-    resolution : IntProperty (name='Resolution', default=2, min=2)
+	resolution: IntProperty(
+		name='Resolution', default=3, min=2)
 
-    @classmethod
-    def poll(cls, context):
-        return context.active_object is not None
-    
-    def execute(self, context):
-        self.target = context.object
+	lattice_center: EnumProperty(
+		name='Center', default='BOUNDS', 
+		description='Where to use as the lattice center point',
+		items=[ ('BOUNDS', 'Bounds', 'Object Bounding Box'),
+			('ORIGIN', 'Origin', 'Object Origin'), ])
+	
+	zero_mesh_transforms: BoolProperty(
+		name='Zero Mesh Transforms', default=False, 
+		description='Clear all mesh transforms and transfer them to the lattice instead')
+	
+	def draw(self, context):
+		layout = self.layout
+		layout.use_property_split = True
 
-        if self.target.type not in {'MESH', 'CURVE'}:
-            self.report({'ERROR'}, 'Lattice\n This operator only supports MESH types... for now.')
-            return {'CANCELLED'}
+		col = layout.column()
+		col.prop(self, 'resolution')
+		row = col.row()
+		row.prop(self, 'lattice_center', expand=True)
+		col.prop(self, 'zero_mesh_transforms')
+		col.separator()
+		col.operator('wm.operator_defaults', text='Reset')
 
-        if context.active_object.mode != 'OBJECT':
-            bpy.ops.object.mode_set(mode = 'OBJECT')
+	@classmethod
+	def poll(cls, context):
+		return context.active_object is not None
 
-        self.lattice_data = bpy.data.lattices.new('Lattice')
-        self.lattice = bpy.data.objects.new('Lattice', self.lattice_data)
-        # self.lattice.matrix_world = self.target.matrix_world
-        self.lattice.dimensions = context.object.dimensions
-        self.lattice.location = context.object.location
-        self.lattice.rotation_euler  = context.object.rotation_euler 
+		# This alternate poll return prevents operator for working correctly?!
+		# active = context.active_object
+		# return context.active_object is not None and context.active_object.type == 'MESH'
+	
+	def execute(self, context):
+		self.target = context.active_object
 
-        context.collection.objects.link(self.lattice)
+		if context.mode != 'OBJECT':
+			bpy.ops.object.mode_set(mode='OBJECT')
+		
+		if self.zero_mesh_transforms:
+			self._save_mesh_transforms()
+			self._zero_mesh_transforms()
 
-        bpy.ops.object.select_all(action='DESELECT')
+		self._create_lattice(context)
+		self._set_lattice_resolution()
+		self._set_lattice_transforms()
 
-        context.view_layer.objects.active = self.lattice
-        self.lattice.select_set(True)
-        
-        self.lattice_data.points_u = self.resolution
-        self.lattice_data.points_v = self.resolution
-        self.lattice_data.points_w = self.resolution
+		# Don't ask me why but we need something to trigger a scene update 
+		# or parent matrix inversion will not apply.
+		bpy.ops.object.select_all(action='DESELECT')
 
-        mod = self.target.modifiers.new('Lattice', 'LATTICE')
-        mod.object = self.lattice
-        
-        # This makes it so the mesh scale doesn't get multiplied by the latice scale after parenting.
-        self.target.parent = self.lattice
-        self.target.matrix_parent_inverse = self.lattice.matrix_world.inverted()
+		self._parent_mesh_to_lattice()
+		self._add_lattice_modifier()
 
-        bpy.ops.object.mode_set(mode = 'EDIT')
+		if self.zero_mesh_transforms:
+			self._set_lattice_transforms_from_saved()
 
-        return {'FINISHED'}
+		self._select_lattice(context)
+		bpy.ops.object.mode_set(mode='EDIT')
+		return {'FINISHED'}
+	
+	
+	def _save_mesh_transforms(self):
+		self.saved_location = self.target.location.copy()
+		self.saved_rotation_euler = self.target.rotation_euler.copy()
+		self.saved_dimensions = self.target.dimensions.copy()
+		self.saved_bounds_center = self._get_bounding_box_center(obj=self.target).copy()
 
+	def _zero_mesh_transforms(self):
+		bpy.ops.object.location_clear(clear_delta=False)
+		bpy.ops.object.rotation_clear(clear_delta=False)
+		bpy.ops.object.scale_clear(clear_delta=False)
 
-class ARMORED_OT_lattice_modal(bpy.types.Operator):
-    '''Creates a lattice that matches your object dimensions and transforms (control the modal by scrolling).
+	def _create_lattice(self, context):
+		bpy.ops.object.add(type='LATTICE')
+		self.lattice = context.active_object
 
-(www.armoredColony.com)'''
+	def _set_lattice_resolution(self):
+		data = self.lattice.data
+		data.points_u = self.resolution
+		data.points_v = self.resolution
+		data.points_w = self.resolution
+	
+	def _set_lattice_transforms(self):
+		self.lattice.location = self.target.location
+		self.lattice.rotation_euler = self.target.rotation_euler
+		self.lattice.dimensions = self.target.dimensions
 
-    bl_idname = 'object.armored_lattice_modal'
-    bl_label  = 'ARMORED Lattice (modal)'
-    bl_options = {'REGISTER', 'UNDO'}
+		if self.lattice_center == 'BOUNDS':
+			self.lattice.location = self._get_bounding_box_center(obj=self.target)
 
-    @classmethod
-    def poll(cls, context):
-        return context.active_object is not None
+	def _set_lattice_transforms_from_saved(self):
+		self.lattice.location = self.saved_location
+		self.lattice.rotation_euler = self.saved_rotation_euler
+		self.lattice.dimensions = self.saved_dimensions
 
-    def invoke(self, context, event):
-        self.target = context.object
+		if self.lattice_center == 'BOUNDS':
+			self.lattice.location = self.saved_bounds_center
+	
+	def _parent_mesh_to_lattice(self):
+		self.target.parent = self.lattice
+		self.target.matrix_parent_inverse = self.lattice.matrix_world.inverted()
+		
+	def _add_lattice_modifier(self):
+		mod = self.target.modifiers.new('Lattice', 'LATTICE')
+		mod.object = self.lattice
 
-        if self.target.type != 'MESH':
-            self.report({'ERROR'}, 'Lattice\n Cannot apply Lattice to non-mesh objects.')
-            return {'CANCELLED'}
-
-        if context.active_object.mode != 'OBJECT':
-            bpy.ops.object.mode_set(mode = 'OBJECT')
-
-
-        self.lattice_data = bpy.data.lattices.new('Lattice')
-        self.lattice = bpy.data.objects.new('Lattice', self.lattice_data)
-        # self.lattice.matrix_world = self.target.matrix_world
-        self.lattice.dimensions = context.object.dimensions
-        self.lattice.location = context.object.location
-        self.lattice.rotation_euler  = context.object.rotation_euler
-        set_lattice_interpolation(self.lattice, interpolation_type='KEY_CATMULL_ROM')
-
-        context.collection.objects.link(self.lattice)
-
-        bpy.ops.object.select_all(action='DESELECT')
-
-        context.view_layer.objects.active = self.lattice
-        self.lattice.select_set(True)
-
-        self.report({'INFO'}, 'Scroll Up or Down to add more divisions, LEFTMOUSE to apply.')
-
-        context.window_manager.modal_handler_add(self)
-
-        return {'RUNNING_MODAL'}
-
-
-    def modal(self, context, event):
-        context.area.tag_redraw()
-
-        if event.type == 'WHEELUPMOUSE':
-            if event.shift:
-                self.lattice_data.points_w += 1
-            else:
-                self.lattice_data.points_u += 1
-                self.lattice_data.points_v += 1
-                self.lattice_data.points_w += 1
-        
-        elif event.type == 'WHEELDOWNMOUSE':
-            if event.shift:
-                self.lattice_data.points_w -= 1
-            else:
-                self.lattice_data.points_u -= 1
-                self.lattice_data.points_v -= 1
-                self.lattice_data.points_w -= 1
-
-        elif event.type == 'LEFTMOUSE' and event.value == 'PRESS':
-            mod = self.target.modifiers.new('Lattice', 'LATTICE')
-            mod.object = self.lattice
-            
-            # This makes it so the mesh scale doesn't get multiplied by the latice scale after parenting.
-            self.target.parent = self.lattice
-            self.target.matrix_parent_inverse = self.lattice.matrix_world.inverted()
-
-            bpy.ops.object.mode_set(mode = 'EDIT')
-
-            self.report({'INFO'}, 'Your lattice is ready.')
-            return {'FINISHED'}
-
-        elif event.type == 'RIGHTMOUSE' and event.value == 'PRESS':
-            bpy.data.objects.remove(self.lattice, do_unlink=True)
-            return {'CANCELLED'}
-
-        elif event.type in {'MIDDLEMOUSE'}:
-            return {'PASS_THROUGH'}
-
-        return {'RUNNING_MODAL'}
+	def _select_lattice(self, context):
+		context.view_layer.objects.active = self.lattice
+		self.lattice.select_set(True)
+	
+	def _get_bounding_box_center(self, obj) -> Vector:
+		local_bbox_center = 0.125 * sum((Vector(b) for b in obj.bound_box), Vector())
+		return obj.matrix_world @ local_bbox_center # global bbox center
 
 
 classes = (
-    ARMORED_OT_lattice,
-    ARMORED_OT_lattice_modal,
+	ARMORED_OT_lattice,
 )
 
 def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
-    
+	for cls in classes:
+		bpy.utils.register_class(cls)
+	
 def unregister():
-    for cls in classes:
-        bpy.utils.unregister_class(cls)
+	for cls in classes:
+		bpy.utils.unregister_class(cls)
