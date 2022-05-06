@@ -1,4 +1,4 @@
-# v1.0
+# v1.1
 
 import bpy
 import bmesh
@@ -21,8 +21,9 @@ armoredColony.com '''
 		active = context.active_object
 		return (
 			active is not None and 
-			context.mode == 'EDIT_MESH' and 
-			active.type == 'MESH')
+			active.type == 'MESH' and
+			context.mode in {'OBJECT', 'EDIT_MESH'} 
+			)
 
 	def execute(self, context):
 		mod = context.active_object.modifiers.get('Mirror')
@@ -30,9 +31,18 @@ armoredColony.com '''
 			self.report({'WARNING'}, 'Object has no modifier named "Mirror"')
 			return {'CANCELLED'}
 		
-		ob = context.edit_object
-		me = ob.data
-		bm = bmesh.from_edit_mesh(me)
+		if context.mode == 'OBJECT':
+
+			ob = context.active_object
+			me = ob.data
+			bm = bmesh.new()
+			bm.from_mesh(me)
+			
+		elif context.mode == 'EDIT_MESH':
+
+			ob = context.edit_object
+			me = ob.data
+			bm = bmesh.from_edit_mesh(me)
 
 		use_axis = mod.use_axis
 		use_flip = mod.use_bisect_flip_axis
@@ -55,12 +65,16 @@ armoredColony.com '''
 			bm.verts.remove(v)
 			# v.select=True
 
-		bmesh.update_edit_mesh(me)
+		if context.mode == 'OBJECT':
+			bm.to_mesh(me)
+		elif context.mode == 'EDIT_MESH':
+			bmesh.update_edit_mesh(me)
+
 		return {'FINISHED'}
 
 
 def draw(self, context):
-#     self.layout.separator()
+    self.layout.separator()
     self.layout.operator(MESH_OT_armored_delete_mirrored.bl_idname, text='Delete Mirrored Geo',)
 
 

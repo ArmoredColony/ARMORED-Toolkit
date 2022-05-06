@@ -1,4 +1,4 @@
-# v1.2
+# v1.3
 
 import bpy
 
@@ -44,7 +44,7 @@ class ARMORED_OT_duplicate(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
         # bpy.ops.transform.shrink_fatten('INVOKE_DEFAULT', use_even_offset=True)
-        bpy.ops.wm.tool_set_by_id(name='builtin.move')
+        # bpy.ops.wm.tool_set_by_id(name='builtin.move')
 
         return {'FINISHED'}
 

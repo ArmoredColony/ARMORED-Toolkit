@@ -1,4 +1,4 @@
-# v3
+# v3.1
 
 
 import bpy
@@ -6,40 +6,44 @@ from bpy.props import StringProperty
 
 
 class ARMORED_OT_toggle_tool(bpy.types.Operator):
-    '''Toggles the specified tool.
+	'''Toggles the specified tool.
 
-(armoredColony.com)'''
+armoredColony.com '''
  
-    bl_idname  = 'view3d.armored_toggle_tool'
-    bl_label   = 'ARMORED Toggle Tool'
-    bl_options = {'REGISTER',}
-    
-    previous_tool:  StringProperty(name='Previous Tool',  default='builtin.select_box')
-    name:           StringProperty(name='Tool to toggle', default='builtin.move')
-    
+	bl_idname = 'view3d.armored_toggle_tool'
+	bl_label = 'ARMORED Toggle Tool'
+	bl_options = {'REGISTER'}
+	
+	name:          StringProperty(name='Tool to toggle', default='builtin.move')
+	previous_tool: StringProperty(name='Previous Tool',  default='builtin.select_box')
+	fallback_tool: StringProperty(name='Fallback Tool',  default='builtin.select_box')
+	
 
-    def execute(self, context):
-        current_tool = context.workspace.tools.from_space_view3d_mode(context.mode, create=False).idname
+	def execute(self, context):
+		current_tool = context.workspace.tools.from_space_view3d_mode(context.mode, create=False).idname
 
-        if current_tool != self.name:
-            self.previous_tool = current_tool
-            bpy.ops.wm.tool_set_by_id(name=self.name)
+		if current_tool != self.name:
+			self.previous_tool = current_tool
+			bpy.ops.wm.tool_set_by_id(name=self.name)
 
-        else:
-            bpy.ops.wm.tool_set_by_id(name=self.previous_tool)
+		else:
+			bpy.ops.wm.tool_set_by_id(name=self.previous_tool)
+		
+		if self.fallback_tool:
+			bpy.ops.wm.tool_set_by_id(name=self.fallback_tool, as_fallback=True)
 
-        return {'FINISHED'}
+		return {'FINISHED'}
 
 
 classes = (
-    ARMORED_OT_toggle_tool,
+	ARMORED_OT_toggle_tool,
 )
 
 def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
+	for cls in classes:
+		bpy.utils.register_class(cls)
 
 
 def unregister():
-    for cls in classes:
-        bpy.utils.unregister_class(cls)
+	for cls in classes:
+		bpy.utils.unregister_class(cls)

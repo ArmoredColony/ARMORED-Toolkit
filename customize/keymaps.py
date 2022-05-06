@@ -359,8 +359,13 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.add('view3d.localview', 'NUMPAD_SLASH', 'PRESS'); self.prop('frame_selected', False)
         
 
+        # ========================================================================================================
+        # OBJECT
+
         self.km = kc.keymaps.new(name='Object Mode')
         self.add('object.delete', 'X', 'PRESS'); self.prop('confirm', False)
+
+        self.add('mesh.armored_classic_mirror', 'X', 'PRESS', ctrl=True, alt=True)
         
         self.add('object.armored_export_fbx', 'E', 'PRESS', ctrl=True)
 
@@ -375,14 +380,14 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.km = kc.keymaps.new(name='Mesh')
 
         self.add('wm.tool_set_by_id', 'Y', 'PRESS'); self.prop('name', 'edit_mesh.merge_tool')
-        self.add('mesh.armored_symmetrize', 'X', 'PRESS', ctrl=True, alt=True); self.prop('axis', 'POSITIVE_X')
+        self.add('mesh.armored_classic_mirror', 'X', 'PRESS', ctrl=True, alt=True)
 
         self.add('mesh.armored_vitaly_poke', 'V', 'PRESS', alt=True)
         self.add('mesh.loopcut_slide', 'C', 'PRESS'); self.prop('TRANSFORM_OT_edge_slide.release_confirm', True)
 
         self.add('mesh.faces_select_linked_flat', 'F', 'PRESS', shift=True)
-        self.add('mesh.edge_face_add',            'F', 'PRESS', alt=True)
-        # self.add('mesh.f2',                       'F', 'PRESS', alt=True) # Same keymap as above, but seems to take prio if f2 is installed and viceversa.
+        # self.add('mesh.edge_face_add',            'F', 'PRESS', alt=True)
+        self.add('mesh.f2',                       'F', 'PRESS', alt=True) # Same keymap as above, but seems to take prio if f2 is installed and viceversa.
         
         self.add('mesh.armored_flatten', 'F', 'PRESS', ctrl=True, alt=True)
         # self.add('wm.call_menu', 'X', 'PRESS', ctrl=True, alt=True); self.prop('name', 'MESH_MT_flatten')
