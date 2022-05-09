@@ -1,7 +1,13 @@
 # ARMORED TOOLKIT CHANGELOG
 
+## v0.4.2
+*09/May/2022*
+
+### Added
+- Keymap Override **Wireframe Selected** (EXPERIMENTAL): displays the wireframe for any object you select, similar to other DCCs.
+
 ## v0.4.1
-*unreleased*
+*05/May/2022*
 
 ### Added
 - Theme **Candy Neutral**: gray background, white UI and red selections. Works well with black, gray and white matcaps.

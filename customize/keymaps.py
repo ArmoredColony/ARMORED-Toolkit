@@ -162,18 +162,31 @@ class TAB_HISTORY(keymap_utils.KeymapGroup):
         self.enabled_message()
 
 
-# class WIREFRAME_SELECTED(keymap_utils.KeymapGroup):
-#     def register(self):
-#         self.km = kc.keymaps.new('3D View', space_type='VIEW_3D')
-#         self.add('view3d.armored_select', 'LEFTMOUSE', 'CLICK')
-#         self.add('view3d.armored_select', 'LEFTMOUSE', 'CLICK', shift=True); self.prop('toggle', True)
+class WIREFRAME_SELECTED(keymap_utils.KeymapGroup):
+    def register(self):
+        # ========================================================================================================
+        # VIEW3D
 
-#         self.km = kc.keymaps.new('3D View Tool: Select Box', space_type='VIEW_3D')
-#         self.add('view3d.armored_select_box', 'EVT_TWEAK_L', 'ANY'); self.prop('VIEW3D_OT_select_box.mode', 'SET')
-#         self.add('view3d.armored_select_box', 'EVT_TWEAK_L', 'ANY', shift=True); self.prop('VIEW3D_OT_select_box.mode', 'ADD')
-#         self.add('view3d.armored_select_box', 'EVT_TWEAK_L', 'ANY', ctrl=True); self.prop('VIEW3D_OT_select_box.mode', 'SUB')
+        # SELECT CLICK
+        self.km = kc.keymaps.new('3D View', space_type='VIEW_3D')
+        self.add('view3d.armored_select_click', 'LEFTMOUSE', 'CLICK');             self.prop('VIEW3D_OT_select.deselect_all', True)
+        self.add('view3d.armored_select_click', 'LEFTMOUSE', 'CLICK', shift=True); self.prop('VIEW3D_OT_select.toggle', True)
 
-#         self.enabled_message()
+        # SELECT BOX
+        self.km = kc.keymaps.new('3D View Tool: Select Box', space_type='VIEW_3D')
+        self.add('view3d.armored_select_box', 'EVT_TWEAK_L', 'ANY');             self.prop('VIEW3D_OT_select_box.mode', 'SET')
+        self.add('view3d.armored_select_box', 'EVT_TWEAK_L', 'ANY', shift=True); self.prop('VIEW3D_OT_select_box.mode', 'ADD')
+        self.add('view3d.armored_select_box', 'EVT_TWEAK_L', 'ANY', ctrl=True);  self.prop('VIEW3D_OT_select_box.mode', 'SUB')
+
+        # ========================================================================================================
+        # OBJECT
+
+        # [A] SELECT
+        self.km = kc.keymaps.new(name='Object Mode')
+        self.add('object.armored_select_all', 'A', 'PRESS');           self.prop('OBJECT_OT_select_all.action', 'SELECT')
+        self.add('object.armored_select_all', 'A', 'PRESS', alt=True); self.prop('OBJECT_OT_select_all.action', 'DESELECT')
+
+        self.enabled_message()
 
 
 class ZBRUSH_SCULPTING(keymap_utils.KeymapGroup):

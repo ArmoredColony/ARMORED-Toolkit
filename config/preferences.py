@@ -91,9 +91,9 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             description='Delete components based on your selection mode (vertex, edge, face) without aditional menus.\nOriginal Menu moved to ALT+X', 
             update=closure(prop='delete_without_menus', category='keymaps'),)
 
-#     wireframe_selected: BoolProperty(name='Wireframe Selected', default=False,
-#             description='Display the wireframe of any objects you select (similar to Maya).', 
-#             update=closure(prop='wireframe_selected', category='keymaps'),)
+    wireframe_selected: BoolProperty(name='Wireframe Selected', default=False,
+            description='Display the wireframe of any objects you select and viceversa', 
+            update=closure(prop='wireframe_selected', category='keymaps'),)
 
 
     # STUDIO LIGHTS >>
@@ -172,10 +172,10 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             box.prop(self, 'tab_undo_mode', text='', expand=False)
         col1.separator()
 
-        # box = col1.box()
-        # box.label(text='EXPERIMENTAL', icon='ERROR')
-        # prop_line(prop='wireframe_selected', icon='MATERIAL', url='www.youtube.com')
-        # col1.separator()
+        box = col1.box()
+        box.label(text='EXPERIMENTAL', icon='ERROR')
+        prop_line(prop='wireframe_selected', icon='MATERIAL', url='www.youtube.com')
+        col1.separator()
 
         box = col2.box()
         box.label(text='Armored Preferences:')

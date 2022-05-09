@@ -12,41 +12,14 @@ def remove_all_wireframes():
 		ob.show_wire = False
 
 
-class VIEW3D_OT_armored_select(bpy.types.Operator):
-	bl_idname = 'view3d.armored_select'
-	bl_label = 'ARMORED Select'
-	bl_options = {'REGISTER', 'UNDO'}
-	
-	extend   : BoolProperty(name='Extend',   default=False, options={'SKIP_SAVE'})
-	deselect : BoolProperty(name='Deselect', default=False, options={'SKIP_SAVE'})
-	toggle   : BoolProperty(name='Toggle',   default=False, options={'SKIP_SAVE'})
-
-	def invoke(self, context, event):
-		result = bpy.ops.view3d.select('INVOKE_DEFAULT', extend=self.extend, deselect=self.deselect, toggle=self.toggle)
-		# print(result)
-
-		if context.mode != 'OBJECT':
-			return result
-
-		if 'PASS_THROUGH' in result:
-			if not any((event.ctrl, event.alt, event.shift)):
-				bpy.ops.object.select_all(action='DESELECT')
-				remove_all_wireframes()
-			return {'PASS_THROUGH'}
-
-		if 'FINISHED' in result:
-			remove_all_wireframes()
-			wireframe_selected(context)
-			return {'FINISHED'}
-
-		return result
-
-
-
 class ARMORED_OT_wireframe_selected(bpy.types.Operator):
+	'''Enables wireframes on selected objects and viceversa.
+
+armoredColony.com '''
+
 	bl_idname = 'armored.wireframe_selected'
 	bl_label = 'ARMORED Wireframe Selected'
-	bl_options = {'INTERNAL'}
+	bl_options = {'REGISTER'}
 
 	def invoke(self, context, event):
 		remove_all_wireframes()
@@ -54,9 +27,14 @@ class ARMORED_OT_wireframe_selected(bpy.types.Operator):
 		return {'FINISHED'}
 
 
-class VIEW3D_OT_armored_select_macro(bpy.types.Macro):
-    bl_idname = 'view3d.armored_select_macro'
-    bl_label = 'ARMORED Select Macro'
+# ================================================================================
+# HIJACK MACROS 
+# Run the original operators and then our `wireframe selected` operator afterwards.
+
+
+class VIEW3D_OT_armored_select_click(bpy.types.Macro):
+    bl_idname = 'view3d.armored_select_click'
+    bl_label = 'ARMORED Select Click'
     bl_options = {'REGISTER', 'UNDO'}
 
 
@@ -66,22 +44,31 @@ class VIEW3D_OT_armored_select_box(bpy.types.Macro):
     bl_options = {'REGISTER', 'UNDO'}
 
 
+class OBJECT_OT_armored_select_all(bpy.types.Macro):
+    bl_idname = 'object.armored_select_all'
+    bl_label = 'ARMORED Select All'
+    bl_options = {'REGISTER', 'UNDO'}
+
+
 classes = (
-	VIEW3D_OT_armored_select,
-	VIEW3D_OT_armored_select_macro,
 	ARMORED_OT_wireframe_selected,
+	VIEW3D_OT_armored_select_click,
 	VIEW3D_OT_armored_select_box,
+	OBJECT_OT_armored_select_all,
 )
 
 def register():
 	for cls in classes:
 		bpy.utils.register_class(cls)
-	
-	VIEW3D_OT_armored_select_macro.define('VIEW3D_OT_select')
-	VIEW3D_OT_armored_select_macro.define('ARMORED_OT_wireframe_selected')
+
+	VIEW3D_OT_armored_select_click.define('VIEW3D_OT_select')
+	VIEW3D_OT_armored_select_click.define('ARMORED_OT_wireframe_selected')
 
 	VIEW3D_OT_armored_select_box.define('VIEW3D_OT_select_box')
 	VIEW3D_OT_armored_select_box.define('ARMORED_OT_wireframe_selected')
+
+	OBJECT_OT_armored_select_all.define('OBJECT_OT_select_all')
+	OBJECT_OT_armored_select_all.define('ARMORED_OT_wireframe_selected')
 
 
 def unregister():
