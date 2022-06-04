@@ -3,7 +3,7 @@
 ## v0.4.3
 *03/Jun/2022*
 
-## Added
+### Added
 - Resources: Another studio HDRI I really like.
 
 ### Changed
