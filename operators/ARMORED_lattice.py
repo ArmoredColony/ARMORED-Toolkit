@@ -1,7 +1,7 @@
-# v2.0
+# v2.2
 
 import bpy
-from bpy.props import IntProperty, BoolProperty, EnumProperty
+from bpy.props import IntProperty, BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty
 
 from mathutils import Vector
 
@@ -24,9 +24,24 @@ armoredColony.com '''
 		items=[ ('BOUNDS', 'Bounds', 'Object Bounding Box'),
 			('ORIGIN', 'Origin', 'Object Origin'), ])
 	
+	vertical_only: BoolProperty(
+		name='Vertical Only', default=True, 
+		description='Only increase the lattice resolution vertically')
+
+	# scale_offset: FloatProperty(
+	# 	name='Scale Offset', default=0, 
+	# 	min=0, #step=0.1, 
+	# 	description='Makes the lattice larger than the object')
+
+	scale_offset: FloatVectorProperty(
+		name='Scale Offset', 
+		min=0, #step=0.1, 
+		description='Makes the lattice larger than the object')
+	
 	zero_mesh_transforms: BoolProperty(
 		name='Zero Mesh Transforms', default=False, 
 		description='Clear all mesh transforms and transfer them to the lattice instead')
+	
 	
 	def draw(self, context):
 		layout = self.layout
@@ -34,10 +49,19 @@ armoredColony.com '''
 
 		col = layout.column()
 		col.prop(self, 'resolution')
+		col.prop(self, 'vertical_only')
+		col.separator()
+
 		row = col.row()
 		row.prop(self, 'lattice_center', expand=True)
+		col.separator()
+
+		col.prop(self, 'scale_offset')
+		col.separator()
+		
 		col.prop(self, 'zero_mesh_transforms')
 		col.separator()
+
 		col.operator('wm.operator_defaults', text='Reset')
 
 	@classmethod
@@ -47,6 +71,10 @@ armoredColony.com '''
 		# This alternate poll return prevents operator for working correctly?!
 		# active = context.active_object
 		# return context.active_object is not None and context.active_object.type == 'MESH'
+	
+	def invoke(self, context, event):
+		# self.scale_offset = max(context.object.dimensions) * 0.1
+		return self.execute(context)
 	
 	def execute(self, context):
 		self.target = context.active_object
@@ -94,14 +122,20 @@ armoredColony.com '''
 
 	def _set_lattice_resolution(self):
 		data = self.lattice.data
-		data.points_u = self.resolution
-		data.points_v = self.resolution
 		data.points_w = self.resolution
+
+		if not self.vertical_only:
+			data.points_u = self.resolution
+			data.points_v = self.resolution
 	
 	def _set_lattice_transforms(self):
 		self.lattice.location = self.target.location
 		self.lattice.rotation_euler = self.target.rotation_euler
-		self.lattice.dimensions = self.target.dimensions
+		# self.target.dimensions.z += self.scale_offset
+		self.lattice.dimensions = self.target.dimensions + Vector(self.scale_offset)
+		# self.lattice.dimensions = self.target.dimensions + Vector((1, 1, 1)) * self.scale_offset
+		# dims = self.target.dimensions
+		# self.lattice.dimensions = dims.x, dims.y, dims.z + self.scale_offset
 
 		if self.lattice_center == 'BOUNDS':
 			self.lattice.location = self._get_bounding_box_center(obj=self.target)

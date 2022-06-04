@@ -64,6 +64,9 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
         self.km = kc.keymaps.new('Outliner', space_type='OUTLINER')
         self.add('outliner.show_active', key, 'PRESS')
 
+        self.km = kc.keymaps.new('3D View', space_type='VIEW_3D')
+        self.add('view3d.armored_focus', key, 'PRESS')
+
         self.km = kc.keymaps.new('Object Mode')  # DEFAULT space_type is 'EMPTY'
         # self.add('view3d.view_selected', key, 'PRESS')
         self.add('view3d.armored_focus', key, 'PRESS')
@@ -327,7 +330,11 @@ class ZBRUSH_SCULPTING(keymap_utils.KeymapGroup):
 
 class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
     def register(self):
+        # ========================================================================================================
+        # WINDOW
+
         self.km = kc.keymaps.new('Window', space_type='EMPTY')
+
         self.add('screen.userpref_show', 'COMMA', 'PRESS', ctrl=True)
         self.add('wm.armored_open_most_recent',  'R', 'PRESS', alt=True,  shift=True)
         self.add('script.reload', 'F5', 'PRESS')  # best to create this keymap manually in blender's keymap editor, otherwise you wont be able to use it if something crashes.
@@ -341,6 +348,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         # VIEW 3D
 
         self.km = kc.keymaps.new('3D View', space_type='VIEW_3D')
+
         self.add('view3d.armored_switch_color_modes', 'V', 'PRESS')
         self.prop('mode_1', 'MATERIAL')
         self.prop('mode_2', 'RANDOM')
@@ -376,6 +384,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         # OBJECT
 
         self.km = kc.keymaps.new(name='Object Mode')
+
         self.add('object.delete', 'X', 'PRESS'); self.prop('confirm', False)
 
         self.add('mesh.armored_classic_mirror', 'X', 'PRESS', ctrl=True, alt=True)
@@ -394,6 +403,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
         self.add('wm.tool_set_by_id', 'Y', 'PRESS'); self.prop('name', 'edit_mesh.merge_tool')
         self.add('mesh.armored_classic_mirror', 'X', 'PRESS', ctrl=True, alt=True)
+        self.add('mesh.loop_multi_select', 'L', 'PRESS', alt=True); self.prop('ring', False)
 
         self.add('mesh.armored_vitaly_poke', 'V', 'PRESS', alt=True)
         self.add('mesh.loopcut_slide', 'C', 'PRESS'); self.prop('TRANSFORM_OT_edge_slide.release_confirm', True)
@@ -475,6 +485,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         # CURVE
 
         self.km = kc.keymaps.new('Curve', space_type='EMPTY')
+
         self.add('curve.shortest_path_pick', 'LEFTMOUSE', 'PRESS', ctrl=True, shift=True)
         # self.add('curve.draw', 'LEFTMOUSE', 'PRESS', alt=True)
 

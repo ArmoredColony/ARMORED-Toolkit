@@ -1,5 +1,22 @@
 # ARMORED TOOLKIT CHANGELOG
 
+## v0.4.3
+*03/Jun/2022*
+
+## Added
+- Resources: Another studio HDRI I really like.
+
+### Changed
+- Operator **Lattice**: `scale_offset` property is now a vector so each dimension can be adjusted independently.
+- Operator **Single Subdivision Level** was renamed to **Adjust Subdivision Level**
+- Operator **Adjust Subdivision Level** will no longer add a new Subsurf Modifier if an existing disabled/invisible one is found.
+- Operator Shortcuts keymaps:
+    + I'm too lazy today, they're inconsequential anyway.
+
+### Fixed
+- Operator **Primitives**: modal primitives no longer crash in Blender 3.2
+
+
 ## v0.4.2
 *09/May/2022*
 

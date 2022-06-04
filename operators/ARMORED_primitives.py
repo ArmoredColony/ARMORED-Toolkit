@@ -1,3 +1,5 @@
+# v1.1
+
 import bpy
 from bpy.props import IntProperty, FloatProperty
 from bpy.types import Operator
@@ -227,6 +229,10 @@ class ModalPrimitive(StatusBar):
 	def _create_geometry_nodes_modifier(self):
 		self.mod_name = f'Cube_{hash("cube")}'
 		self.mod = self.node_container.modifiers.new(name=self.mod_name, type='NODES')
+
+		if self.mod.node_group is None:
+			bpy.ops.node.new_geometry_node_group_assign()	# because 3.2 does NOT assign a blank node group by default
+
 	
 	def _set_node_tree(self):
 		self.node_tree = self.mod.node_group
