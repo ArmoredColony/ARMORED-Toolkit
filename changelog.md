@@ -1,5 +1,18 @@
 # ARMORED TOOLKIT CHANGELOG
 
+## v0.4.4
+*03/Jun/2022*
+
+### Added
+- Operator **Muscle Rig** (bundled with **Lattice** script): Creates a lattice around your selection and hooks the control points to 3 Empties aligned vertically. Made to be used with vertical cyber muscle kitbash.
+
+### Changed
+- Operator **Lattice**: Now works with multiple selections.
+- Operator **Remesh**: Blender Voxel Remesh can now preserve vertex colors natively. This script is relegated to simply enabling it.
+- Operator Shortcuts keymaps:
+    + I'm too lazy today, they're inconsequential anyway.
+
+
 ## v0.4.3
 *03/Jun/2022*
 

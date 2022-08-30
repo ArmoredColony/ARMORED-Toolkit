@@ -12,7 +12,7 @@ def get_items(self, context):
 		('AVERAGE',      'Average',      'The average plane that best matches your selection.'), 
 		('NEAREST_AXIS', 'Nearest Axis', 'The axis plane that best matches your selection.'), 
 		('ACTIVE_FACE',  'Active Face',  'The plane defined by the last selected face.'),
-		]
+	]
 
 	if self.active_is_none:
 		del items[2]

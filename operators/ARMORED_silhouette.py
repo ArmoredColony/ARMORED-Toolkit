@@ -26,7 +26,7 @@ class VIEW3D_OT_armored_silhouette(bpy.types.Operator):
 		space_data.shading.cavity_type = 'WORLD'
 		space_data.overlay.show_fade_inactive = False
 	
-	def update_last_mode(self, context):
+	def store_last_mode(self, context):
 		space_data = context.space_data
 		self.last_mode = space_data.shading.light
 		self.last_color = space_data.shading.color_type
@@ -44,7 +44,7 @@ class VIEW3D_OT_armored_silhouette(bpy.types.Operator):
 		if context.space_data.shading.light == 'FLAT':
 			self.set_from_last_mode(context)
 		else:
-			self.update_last_mode(context)
+			self.store_last_mode(context)
 			self.set_flat_mode(context)
 
 		return {'FINISHED'}
