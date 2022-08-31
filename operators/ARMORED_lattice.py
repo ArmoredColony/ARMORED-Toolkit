@@ -144,7 +144,6 @@ armoredColony.com '''
 	
 	def _parent_selected_to_lattice(self):
 		for obj in self.targets:
-			print(f'parenting {obj.name} to lattice')
 			obj.parent = self.lattice
 			obj.matrix_parent_inverse = self.lattice.matrix_world.inverted()
 
