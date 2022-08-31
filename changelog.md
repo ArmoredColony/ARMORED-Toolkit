@@ -1,7 +1,14 @@
 # ARMORED TOOLKIT CHANGELOG
 
+## v0.4.5
+*30/Ago/2022*
+
+### Changed
+- Operator **Muscle Rig**: Now allows changing lattice resolution similar to the **Lattice** Operator.
+
+
 ## v0.4.4
-*03/Jun/2022*
+*30/Ago/2022*
 
 ### Added
 - Operator **Muscle Rig** (bundled with **Lattice** script): Creates a lattice around your selection and hooks the control points to 3 Empties aligned vertically. Made to be used with vertical cyber muscle kitbash.

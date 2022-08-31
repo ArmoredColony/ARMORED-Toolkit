@@ -1,4 +1,4 @@
-# v3.0
+# v3.1
 
 import bpy
 from bpy.props import IntProperty, BoolProperty, EnumProperty, FloatVectorProperty
@@ -184,6 +184,13 @@ armoredColony.com '''
 	bl_idname = 'object.armored_muscle_rig'
 	bl_label = 'ARMORED Muscle Rig'
 	bl_options = {'REGISTER', 'UNDO'}
+
+	resolution: IntProperty(
+		name='Resolution', default=3, min=2)
+	
+	vertical_only: BoolProperty(
+		name='Vertical Only', default=True, 
+		description='Only increase the lattice resolution vertically')
 		
 	group_controllers: BoolProperty(
 		name='Group Controllers', default=False,
@@ -192,8 +199,8 @@ armoredColony.com '''
 	hide_lattice: BoolProperty(
 		name='Hide Lattice', default=False,)
 
-	hooks_in_editmode: BoolProperty(
-		name='Hook in Edit Mode', default=False,)
+	# hooks_in_editmode: BoolProperty(
+	# 	name='Hook in Edit Mode', default=False,)
 	
 	empty_display_type: EnumProperty(
 		name='Display As', default='PLAIN_AXES', 
@@ -210,15 +217,15 @@ armoredColony.com '''
 	def execute(self, context):
 		self.target = context.active_object
 
-		self.bot, self.mid, self.top = self._create_empties()
-
 		context.view_layer.objects.active = self.target
 		self.lattice = self._create_lattice()
+
+		self.controllers = self._create_empties()
 
 		self._reposition_empties()
 		self._scale_empties()
 		self._create_hooks()
-		self._edit_hook_mod_settings()
+		# self._edit_hook_mod_settings()
 		self._parent_empties_to_mesh()
 		self._parent_lattice_to_mesh()	# MUST BE DONE AT THE END TO AVOID DEPENDENCY CYCLES?
 
@@ -234,14 +241,16 @@ armoredColony.com '''
 	
 
 	def _create_lattice(self) -> bpy.types.Lattice:
-		bpy.ops.object.armored_lattice(parent='NONE')	# KEEP AT NONE AND DO PARENTING SOMEWHERE ELSE
+		bpy.ops.object.armored_lattice(
+			resolution=self.resolution, vertical_only=self.vertical_only, parent='NONE') # KEEP AT NONE AND DO PARENTING SOMEWHERE ELSE
+
 		lattice = bpy.context.active_object
 		lattice.name = self.target.name + '_Lattice'
-		lattice.hide_set(self.hide_lattice)	# This does NOT work correctly with the Redo Panel
+		lattice.hide_set(self.hide_lattice)
 
 		return lattice
 
-	def _create_empties(self) -> tuple[bpy.types.Object]:
+	def _create_empties(self) -> list[bpy.types.Object]:
 		
 		def _create_empty_object(name='Empty') -> bpy.types.Object:
 			empty = bpy.data.objects.new(name, None)
@@ -251,53 +260,48 @@ armoredColony.com '''
 			empty.empty_display_type = self.empty_display_type
 
 			return empty
-		
-		top = _create_empty_object(name='Control Top')
-		mid = _create_empty_object(name='Control Mid')
-		bot = _create_empty_object(name='Control Bot')
 
-		return bot, mid, top
-	
+		return [_create_empty_object(name=f'C{i}') for i in range(self.lattice.data.points_w)]
+		
 	def _reposition_empties(self) -> None:
-		points = self.lattice.data.points
+		data = self.lattice.data
+		points = data.points
+		point_count = data.points_u * data.points_v
 		matrix_world = self.lattice.matrix_world
-		# x = ((()))
-		self.bot.location = matrix_world @ (sum((p.co_deform for p in points[ :4]),  Vector()) / 4)
-		self.mid.location = matrix_world @ (sum((p.co_deform for p in points[4:8]),  Vector()) / 4)
-		self.top.location = matrix_world @ (sum((p.co_deform for p in points[8:12]), Vector()) / 4)
-	
+		
+		for i, obj in enumerate(self.controllers):
+			start = i * point_count
+			end = start + point_count
+			obj.location = matrix_world @ (sum((p.co_deform for p in points[start:end]),  Vector()) / point_count)
+
 	def _scale_empties(self) -> None:
 		scale = self.lattice.scale
 		average_scale = (scale.x + scale.y) / 2 / 2 # NOT A TYPO
 
-		for obj in (self.bot, self.mid, self.top):
+		for obj in self.controllers:
 			obj.scale = [average_scale] * 3
-	
+
 	def _create_hooks(self) -> None:
 
-		def _select_lattice_points(start: int, end: int, state: bool) -> None:
-			for i in range(start, end+1):
-				self.lattice.data.points[i].select = state
-		
-		def _clear_selected_lattice_points() -> None:
-			for p in self.lattice.data.points:
-				p.select = False
-		
-		def _hook_to_object(obj: bpy.types.Object) -> None:
+		data = self.lattice.data
+		points = data.points
+		point_count = data.points_u * data.points_v
+
+		for i, obj in enumerate(self.controllers):
+			
+			start = i * point_count
+			end = start + point_count
+
+			for j in range(start, end):
+				points[j].select = True
+			
 			obj.select_set(True)
 			bpy.ops.object.hook_add_selob(use_bone=False)
+			obj.select_set(False)
 
-		_select_lattice_points(0, 3, True)
-		_hook_to_object(self.bot)
-		_clear_selected_lattice_points()
-
-		_select_lattice_points(4, 7, True)
-		_hook_to_object(self.mid)
-		_clear_selected_lattice_points()
-
-		_select_lattice_points(8, 11, True)
-		_hook_to_object(self.top)
-		_clear_selected_lattice_points()
+			for j in range(start, end):
+				points[j].select = False
+			
 	
 	def _edit_hook_mod_settings(self) -> None:
 		hook_modifiers = [mod for mod in self.lattice.modifiers if mod.type == 'HOOK']
@@ -305,9 +309,9 @@ armoredColony.com '''
 			mod.show_in_editmode = self.hooks_in_editmode
 	
 	def _parent_empties_to_mesh(self) -> None:
-		for empty in (self.bot, self.mid, self.top):
-			empty.parent = self.target
-			empty.matrix_parent_inverse = self.target.matrix_world.inverted()
+		for controller in self.controllers:
+			controller.parent = self.target
+			controller.matrix_parent_inverse = self.target.matrix_world.inverted()
 	
 	def _parent_lattice_to_mesh(self) -> None:
 		self.lattice.parent = self.target
@@ -319,12 +323,12 @@ armoredColony.com '''
 		
 		return collection
 
-	def _move_controllers_to_collection(self):
-		controller_collection = self._create_collection(name=self.target.name)
-		controllers = [self.lattice, self.bot, self.mid, self.top]
-		for element in controllers:
-			controller_collection.objects.link(element)
-			bpy.context.collection.objects.unlink(element)
+	def _move_controllers_to_collection(self) -> None:
+		controller_collection = self._create_collection(name=self.target.name + ' Controls')
+		controllers = [self.lattice, *self.controllers]
+		for obj in controllers:
+			controller_collection.objects.link(obj)
+			bpy.context.collection.objects.unlink(obj)
 
 
 
