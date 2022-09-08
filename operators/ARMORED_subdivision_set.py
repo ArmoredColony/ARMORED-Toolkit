@@ -1,4 +1,4 @@
-# v1.1
+# v1.2
 
 import bpy
 
@@ -21,9 +21,9 @@ armoredColony.com '''
 		options={'SKIP_SAVE'},
 		)
 
-	@classmethod
-	def poll(cls, context):
-		return context.selected_objects
+	# @classmethod
+	# def poll(cls, context):
+	# 	return context.selected_objects
 	
 	def invoke(self, context, event):
 		for self.obj in context.selected_objects:

@@ -1,5 +1,12 @@
 # ARMORED TOOLKIT CHANGELOG
 
+## v0.4.7
+*08/Sep/2022*
+
+### Fixed
+- Operator **Fast Crease**: would sometimes think nothing was selected because it was using outdated object data.
+
+
 ## v0.4.6
 *07/Sep/2022*
 

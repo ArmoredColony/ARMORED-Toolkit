@@ -54,6 +54,7 @@ class ARMORED_OT_fast_crease(bpy.types.Operator):
 		elif self._any_components_selected(context):
 			self.uncrease_selected()
 		else:
+			print('Nothing Selected -> Uncrease ALL')
 			self.uncrease_all()
 
 		if self.deselect_after:
@@ -81,9 +82,11 @@ class ARMORED_OT_fast_crease(bpy.types.Operator):
 		bpy.ops.mesh.select_all(action='DESELECT')
 
 	def _any_components_selected(self, context) -> bool:
-		selected_components = sum(obj.data.total_vert_sel for obj in context.selected_objects)
+		objects = context.objects_in_mode
+		selection = sum(obj.data.total_vert_sel for obj in objects)
+		print('total vert sel', selection)
 
-		return bool(selected_components)
+		return bool(selection)
 	
 
 
