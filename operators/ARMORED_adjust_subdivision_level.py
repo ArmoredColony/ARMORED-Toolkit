@@ -1,4 +1,4 @@
-# v2.0
+# v2.1
 
 import bpy
 
@@ -8,10 +8,10 @@ class BaseClass:
 
 	@classmethod
 	def poll(cls, context):
-		return len(context.selected_objects) > 0
+		return context.selected_objects
 
 	def _get_subd_modifiers(self, context) -> list[bpy.types.Modifier]:
-		selected_objects = (ob for ob in context.selected_objects if ob.type == 'MESH')
+		selected_objects = (ob for ob in context.selected_objects if ob.type in {'MESH'})
 
 		subd_modifiers = []
 		for ob in selected_objects:
@@ -19,15 +19,15 @@ class BaseClass:
 			
 			if mod is None:
 				mod = ob.modifiers.new(name='Subdivision', type='SUBSURF')
-				mod.levels = 0
-
+			
+			mod.use_limit_surface = False
 			subd_modifiers.append(mod)
 
 		return subd_modifiers
 
 
 class VIEW3D_OT_increase_subd_mod_level(bpy.types.Operator, BaseClass):
-	'''Increase the current Subdivision modifier level by one (ignores non-MESH types) (adds a subD modifier if none exists).
+	'''Increase the current Subdivision modifier level by one (adds a subD modifier if none exists).
 
 armoredColony.com '''
 
@@ -43,7 +43,7 @@ armoredColony.com '''
 
 
 class VIEW3D_OT_decrease_subd_mod_level(bpy.types.Operator, BaseClass):
-	'''Decrease the current Subdivision modifier level by one (ignores non-MESH types) (adds a subD modifier if none exists).
+	'''Decrease the current Subdivision modifier level by one (adds a subD modifier if none exists).
 
 armoredColony.com '''
     

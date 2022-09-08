@@ -110,6 +110,30 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
         self.enabled_message()
 
     
+class FAST_SUBDIVISION(keymap_utils.KeymapGroup):
+    def register(self):
+
+        def subsurf_modifier_keymaps():
+            self.add('object.armored_subdivision_set', 'ZERO',  'PRESS', ctrl=True); self.prop('level', 0)
+            self.add('object.armored_subdivision_set', 'ONE',   'PRESS', ctrl=True); self.prop('level', 1)
+            self.add('object.armored_subdivision_set', 'TWO',   'PRESS', ctrl=True); self.prop('level', 2)
+            self.add('object.armored_subdivision_set', 'THREE', 'PRESS', ctrl=True); self.prop('level', 3)
+            self.add('object.armored_subdivision_set', 'FOUR',  'PRESS', ctrl=True); self.prop('level', 4)
+            self.add('object.armored_subdivision_set', 'FIVE',  'PRESS', ctrl=True); self.prop('level', 5)
+            self.add('object.armored_subdivision_set', 'SIX',   'PRESS', ctrl=True); self.prop('level', 6)
+            self.add('object.armored_subdivision_set', 'SEVEN', 'PRESS', ctrl=True); self.prop('level', 7)
+            self.add('object.armored_subdivision_set', 'EIGHT', 'PRESS', ctrl=True); self.prop('level', 8)
+            self.add('object.armored_subdivision_set', 'NINE',  'PRESS', ctrl=True); self.prop('level', 9)
+            
+        self.km = kc.keymaps.new(name='Object Mode')
+        subsurf_modifier_keymaps()
+
+        self.km = kc.keymaps.new(name='Mesh')
+        subsurf_modifier_keymaps()
+
+        self.enabled_message()
+
+
 class DESELECT_WITH_CTRL(keymap_utils.KeymapGroup):
     def register(self):
         self.km = kc.keymaps.new(name='Object Mode')
@@ -454,17 +478,17 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.prop('mode', 'FULL')
         self.prop('only_affect_last', False)
 
-        # SubD Hotkeys for Edit Mode
-        self.add('object.armored_subdivision_set', 'ZERO',  'PRESS', ctrl=True); self.prop('level', 0)
-        self.add('object.armored_subdivision_set', 'ONE',   'PRESS', ctrl=True); self.prop('level', 1)
-        self.add('object.armored_subdivision_set', 'TWO',   'PRESS', ctrl=True); self.prop('level', 2)
-        self.add('object.armored_subdivision_set', 'THREE', 'PRESS', ctrl=True); self.prop('level', 3)
-        self.add('object.armored_subdivision_set', 'FOUR',  'PRESS', ctrl=True); self.prop('level', 4)
-        self.add('object.armored_subdivision_set', 'FIVE',  'PRESS', ctrl=True); self.prop('level', 5)
-        self.add('object.armored_subdivision_set', 'SIX',   'PRESS', ctrl=True); self.prop('level', 6)
-        self.add('object.armored_subdivision_set', 'SEVEN', 'PRESS', ctrl=True); self.prop('level', 7)
-        self.add('object.armored_subdivision_set', 'EIGHT', 'PRESS', ctrl=True); self.prop('level', 8)
-        self.add('object.armored_subdivision_set', 'NINE',  'PRESS', ctrl=True); self.prop('level', 9)
+        # # SubD Hotkeys for Edit Mode
+        # self.add('object.armored_subdivision_set', 'ZERO',  'PRESS', ctrl=True); self.prop('level', 0)
+        # self.add('object.armored_subdivision_set', 'ONE',   'PRESS', ctrl=True); self.prop('level', 1)
+        # self.add('object.armored_subdivision_set', 'TWO',   'PRESS', ctrl=True); self.prop('level', 2)
+        # self.add('object.armored_subdivision_set', 'THREE', 'PRESS', ctrl=True); self.prop('level', 3)
+        # self.add('object.armored_subdivision_set', 'FOUR',  'PRESS', ctrl=True); self.prop('level', 4)
+        # self.add('object.armored_subdivision_set', 'FIVE',  'PRESS', ctrl=True); self.prop('level', 5)
+        # self.add('object.armored_subdivision_set', 'SIX',   'PRESS', ctrl=True); self.prop('level', 6)
+        # self.add('object.armored_subdivision_set', 'SEVEN', 'PRESS', ctrl=True); self.prop('level', 7)
+        # self.add('object.armored_subdivision_set', 'EIGHT', 'PRESS', ctrl=True); self.prop('level', 8)
+        # self.add('object.armored_subdivision_set', 'NINE',  'PRESS', ctrl=True); self.prop('level', 9)
 
 
         # ========================================================================================================

@@ -1,4 +1,4 @@
-# v3.1
+# v3.2
 
 import bpy
 from bpy.props import IntProperty, BoolProperty, EnumProperty, FloatVectorProperty
@@ -217,7 +217,7 @@ armoredColony.com '''
 		self.target = context.active_object
 
 		context.view_layer.objects.active = self.target
-		self.lattice = self._create_lattice()
+		self.lattice = self._create_lattice(context)
 
 		self.controllers = self._create_empties()
 
@@ -239,11 +239,11 @@ armoredColony.com '''
 		return {'FINISHED'}
 	
 
-	def _create_lattice(self) -> bpy.types.Lattice:
+	def _create_lattice(self, context) -> bpy.types.Lattice:
 		bpy.ops.object.armored_lattice(
 			resolution=self.resolution, vertical_only=self.vertical_only, parent='NONE') # KEEP AT NONE AND DO PARENTING SOMEWHERE ELSE
 
-		lattice = bpy.context.active_object
+		lattice = context.active_object
 		lattice.name = self.target.name + '_Lattice'
 		lattice.hide_set(self.hide_lattice)
 
@@ -281,7 +281,6 @@ armoredColony.com '''
 			obj.scale = [average_scale] * 3
 
 	def _create_hooks(self) -> None:
-
 		data = self.lattice.data
 		points = data.points
 		point_count = data.points_u * data.points_v

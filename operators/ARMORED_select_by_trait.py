@@ -1,4 +1,4 @@
-# v1.0
+# v1.1
 
 import bpy
 
@@ -27,8 +27,7 @@ armoredColony.com '''
 		bpy.ops.mesh.select_face_by_sides(type='GREATER', number=5, extend=False)
 
 		sel_count = self._get_sel_face_count(context)
-		if sel_count:
-			self.report({'ERROR'}, f'{sel_count} Ngons found')
+		self.report({'ERROR'}, f'{sel_count} Ngons found')
 
 		return {'FINISHED'}
 	
@@ -46,8 +45,7 @@ armoredColony.com '''
 		bpy.ops.mesh.select_face_by_sides(type='EQUAL', number=3, extend=False)
 
 		sel_count = self._get_sel_face_count(context)
-		if sel_count:
-			self.report({'ERROR'}, f'{sel_count} Triangles found')
+		self.report({'ERROR'}, f'{sel_count} Triangles found')
 			
 		return {'FINISHED'}
 
@@ -65,8 +63,7 @@ armoredColony.com '''
 		bpy.ops.mesh.select_face_by_sides(type='GREATER', number=4, extend=True)
 
 		sel_count = self._get_sel_face_count(context)
-		if sel_count:
-			self.report({'ERROR'}, f'{sel_count} non-Quads found')
+		self.report({'ERROR'}, f'{sel_count} non-Quads found')
 			
 		return {'FINISHED'}
 

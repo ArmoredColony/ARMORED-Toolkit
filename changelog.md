@@ -1,5 +1,18 @@
 # ARMORED TOOLKIT CHANGELOG
 
+## v0.4.6
+*07/Sep/2022*
+
+### Changed
+- Operator **Select by Trait**: The pop up will now appear even when nothing was found/selected (so you can be sure its working).
+- Operator **Silhouette**: now saves ALL your current viewport settings to a JSON file before modifying them to mimic a silhouette mode. Running the operator again will read that file and restore your viewport to the exact same settings.
+- Operator **Fast Crease**: now works with vertex creasing.
+- Operator **Subdivision Set**: now disables `use_limit_surface` by default when applying the SUBSURF modifier (faster but less accurate)..
+
+### Fixed
+- Operator **Lattice**: sanity fix (replaced one instance of `bpy.context` for `context`). Realistically, there was no need for this change since it does not affect anything.
+
+
 ## v0.4.5
 *30/Ago/2022*
 

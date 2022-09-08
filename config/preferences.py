@@ -56,6 +56,10 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
             description='Frame your selection with the F key (NUMPAD_PERIOD can still be used). This option does NOT affect Sculpt or similar modes where F is used to resize the brush. See the dedicated ZBrush Sculpting override for this functionality', 
             update=closure(prop='focus_selected_with_f', category='keymaps'),)
 
+    fast_subdivision: BoolProperty(name='Fast Subdivision', default=False,
+            description='Ctrl 1-9 still applies a SUBSURF modifier normally, but with \'use_limit_surface\' disabled (faster but less acurate)', 
+            update=closure(prop='fast_subdivision', category='keymaps'),)
+
     deselect_with_ctrl: BoolProperty(name='Deselect with CTRL', default=False,
             description='CTRL Click now deselects stuff (both in Edit and Object mode)', 
             update=closure(prop='deselect_with_ctrl', category='keymaps'),)
@@ -147,6 +151,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
         prop_line(prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='focus_selected_with_f', icon='FILE_MOVIE', url='www.youtube.com')
+        prop_line(prop='fast_subdivision',      icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='delete_without_menus',  icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
         prop_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')

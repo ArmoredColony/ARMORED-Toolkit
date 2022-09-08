@@ -12,7 +12,7 @@ def load_system_preferences(context=bpy.context):
     context.preferences.view.show_tooltips_python = True
     context.preferences.inputs.drag_threshold_mouse = 1
     context.preferences.inputs.invert_mouse_zoom = True
-    context.preferences.edit.undo_steps = 90
+    context.preferences.edit.undo_steps = 150
 
     if addon.debug(): 
         print('LOADED Armored Preferences')
