@@ -64,20 +64,20 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
         self.km = kc.keymaps.new('Outliner', space_type='OUTLINER')
         self.add('outliner.show_active', key, 'PRESS')
 
-        self.km = kc.keymaps.new('3D View', space_type='VIEW_3D')
-        self.add('view3d.armored_focus', key, 'PRESS')
+        # self.km = kc.keymaps.new('3D View', space_type='VIEW_3D')
+        # self.add('view3d.armored_focus', key, 'PRESS')
 
         self.km = kc.keymaps.new('Object Mode')  # DEFAULT space_type is 'EMPTY'
-        # self.add('view3d.view_selected', key, 'PRESS')
-        self.add('view3d.armored_focus', key, 'PRESS')
+        self.add('object.armored_focus', key, 'PRESS')
 
         self.km = kc.keymaps.new('Mesh')
-        # self.add('view3d.view_selected', key, 'PRESS')
-        self.add('mesh.armored_focus', key, 'PRESS')    # This requires mesh.op_name to take priority, view3d does not work
+        self.add('mesh.armored_focus', key, 'PRESS')
+
+        self.km = kc.keymaps.new('Lattice')
+        self.add('lattice.armored_focus', key, 'PRESS')
         
         self.km = kc.keymaps.new('Curve')
-        # self.add('view3d.view_selected', key, 'PRESS')
-        self.add('view3d.armored_focus', key, 'PRESS')
+        self.add('curve.armored_focus', key, 'PRESS')
 
         # self.km = kc.keymaps.new('Sculpt')
         # self.add('view3d.view_selected', key, 'PRESS')
@@ -90,7 +90,8 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
         self.add('image.view_selected', key, 'PRESS')
 
         self.km = kc.keymaps.new('Node Editor', space_type='NODE_EDITOR')
-        self.add('node.view_selected', key, 'PRESS')
+        # self.add('node.view_selected', key, 'PRESS')
+        self.add('node.armored_focus', key, 'PRESS')
 
         self.km = kc.keymaps.new('File Browser Main', space_type='FILE_BROWSER')
         self.add('file.view_selected', key, 'PRESS')
@@ -225,12 +226,13 @@ class ZBRUSH_SCULPTING(keymap_utils.KeymapGroup):
 
         self.add('view3d.localview', 'TAB', 'PRESS'); self.prop('frame_selected', False)
 
+        self.add('mesh.paint_mask_slice', 'E', 'PRESS', ctrl=True, shift=True); self.prop('fill_holes', False)
+
         self.add('object.transfer_mode', 'Q', 'PRESS')
         self.add('object.armored_switch_and_focus', 'Q', 'DOUBLE_CLICK')
 
-        self.add('view3d.armored_focus', 'F', 'PRESS')
-        # self.add('view3d.view_all',      'F', 'PRESS', alt=True)
-        self.add('view3d.view_selected', 'F', 'PRESS', alt=True)
+        self.add('sculpt.armored_focus', 'F', 'PRESS', alt=True)
+        self.add('view3d.view_selected', 'F', 'PRESS', alt=False)
         self.add('wm.context_toggle',    'F', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
 
         self.add('transform.resize', 'S', 'PRESS', alt=True)
@@ -254,14 +256,17 @@ class ZBRUSH_SCULPTING(keymap_utils.KeymapGroup):
         self.add('wm.tool_set_by_id', 'TWO',   'PRESS'          ); self.prop('name', 'builtin_brush.Draw Sharp')
         self.add('wm.tool_set_by_id', 'TWO',   'PRESS', alt=True); self.prop('name', 'builtin_brush.Draw')
 
-        self.add('wm.tool_set_by_id', 'THREE', 'PRESS'          ); self.prop('name', 'builtin_brush.Scrape')
-        self.add('wm.tool_set_by_id', 'THREE', 'PRESS', alt=True); self.prop('name', 'builtin_brush.Flatten')
+        # self.add('wm.tool_set_by_id', 'THREE', 'PRESS'          ); self.prop('name', 'builtin_brush.Scrape')
+        # self.add('wm.tool_set_by_id', 'THREE', 'PRESS', alt=True); self.prop('name', 'builtin_brush.Flatten')
+        self.add('sculpt.armored_set_brush', 'THREE', 'PRESS'          ); self.prop('name', 'Scrape/Peaks')
+        self.add('sculpt.armored_set_brush', 'THREE', 'PRESS', alt=True); self.prop('name', 'hPolish')
 
         self.add('wm.tool_set_by_id', 'FOUR',  'PRESS'          ); self.prop('name', 'builtin_brush.Grab')
         self.add('wm.tool_set_by_id', 'FOUR',  'PRESS', alt=True); self.prop('name', 'builtin_brush.Snake Hook')
 
         self.add('wm.tool_set_by_id', 'FIVE',  'PRESS'          ); self.prop('name', 'builtin_brush.Crease')
         self.add('wm.tool_set_by_id', 'FIVE',  'PRESS', alt=True); self.prop('name', 'builtin_brush.Inflate')
+
 
         self.add('wm.context_toggle',  'W', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
         self.add('wm.context_toggle',  'T', 'PRESS', ctrl=True);  self.prop('data_path', 'space_data.overlay.show_fade_inactive')
@@ -311,7 +316,7 @@ class ZBRUSH_SCULPTING(keymap_utils.KeymapGroup):
         self.add('object.transfer_mode', 'Q', 'PRESS')
         self.add('object.armored_switch_and_focus', 'Q', 'DOUBLE_CLICK')
 
-        self.add('view3d.armored_focus', 'F', 'PRESS')
+        self.add('sculpt.armored_focus', 'F', 'PRESS')
         self.add('view3d.view_selected', 'F', 'PRESS', alt=True)
         self.add('wm.context_toggle',    'F', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
 
@@ -372,7 +377,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
         self.km = kc.keymaps.new('3D View', space_type='VIEW_3D')
 
-        self.add('view3d.zoom_border', 'F',            'PRESS', ctrl=True, shift=True)
+        # self.add('view3d.zoom_border', 'F',            'PRESS', ctrl=True, shift=True)
         self.add('view3d.zoom_border', 'BUTTON4MOUSE', 'PRESS')
 
         self.add('view3d.armored_paint_select', 'Q', 'PRESS') # Tapping this will activate select_box instead.
@@ -395,6 +400,15 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
         self.add('view3d.localview', 'SLASH',        'PRESS'); self.prop('frame_selected', False)
         self.add('view3d.localview', 'NUMPAD_SLASH', 'PRESS'); self.prop('frame_selected', False)
+
+
+        # ========================================================================================================
+        # NODE EDITOR
+
+        self.km = kc.keymaps.new('Node Editor', space_type='NODE_EDITOR')
+
+        self.add('view2d.zoom_border', 'BUTTON4MOUSE', 'PRESS')
+
         
 
         # ========================================================================================================
@@ -402,11 +416,13 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
         self.km = kc.keymaps.new(name='Object Mode')
 
+        self.add('object.armored_hide', 'H', 'PRESS')
+
         self.add('object.delete', 'X', 'PRESS'); self.prop('confirm', False)
 
         self.add('mesh.armored_classic_mirror', 'X', 'PRESS', ctrl=True, alt=True)
-        
-        self.add('object.armored_export_fbx', 'E', 'PRESS', ctrl=True)
+
+        self.add('object.armored_export_obj', 'E', 'PRESS', ctrl=True)
 
         self.add('object.move_to_collection', 'N', 'PRESS', shift=True)
         self.prop('collection_index', 0)
@@ -452,10 +468,13 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.add('mesh.armored_align_verts', 'V',    'PRESS', shift=True)
 
         self.add('mesh.armored_smart_crease', 'E', 'PRESS', shift=True)
-        self.add('mesh.armored_fast_crease', 'BUTTON5MOUSE', 'PRESS', shift=True); self.prop('crease_mode', 'CREASE')
-        self.add('mesh.armored_fast_crease', 'BUTTON4MOUSE', 'PRESS', shift=True); self.prop('crease_mode', 'UNCREASE')
-        self.add('mesh.armored_fast_crease', 'NUMPAD_PLUS',  'PRESS', shift=True); self.prop('crease_mode', 'CREASE')
-        self.add('mesh.armored_fast_crease', 'NUMPAD_MINUS', 'PRESS', shift=True); self.prop('crease_mode', 'UNCREASE')
+
+        self.add('mesh.armored_fast_crease',   'BUTTON5MOUSE', 'PRESS',            shift=True); self.prop('face_limit_method', 'BORDER')
+        self.add('mesh.armored_fast_crease',   'BUTTON5MOUSE', 'PRESS', ctrl=True, shift=True); self.prop('face_limit_method', 'ANGLE')
+        self.add('mesh.armored_fast_uncrease', 'BUTTON4MOUSE', 'PRESS', shift=True)
+        self.add('mesh.armored_fast_uncrease', 'BUTTON4MOUSE', 'PRESS', ctrl=True, shift=True)
+        # self.add('mesh.armored_fast_crease',   'NUMPAD_PLUS',  'PRESS', shift=True)
+        # self.add('mesh.armored_fast_uncrease', 'NUMPAD_MINUS', 'PRESS', shift=True)
 
         self.add('mesh.select_linked_pick', 'LEFTMOUSE', 'DOUBLE_CLICK', alt=True );            self.prop('deselect', False)
         # self.add('mesh.select_linked_pick', 'LEFTMOUSE', 'DOUBLE_CLICK', alt=True, shift=True); self.prop('deselect', True)
@@ -463,20 +482,18 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.add('mesh.select_more','WHEELUPMOUSE',   'PRESS', ctrl=True)
         self.add('mesh.select_less','WHEELDOWNMOUSE', 'PRESS', ctrl=True)
 
-        self.add('mesh.region_to_loop', 'FIVE',         'PRESS', alt=True)
+        # self.add('mesh.region_to_loop', 'FIVE',         'PRESS', alt=True)
         self.add('mesh.region_to_loop', 'BUTTON5MOUSE', 'PRESS')
+        self.add('mesh.armored_select_hard_edges', 'FIVE', 'PRESS', alt=True)
 
         self.add('mesh.armored_subd_view_in_edit', 'ONE',   'PRESS', alt=True)
         self.prop('mode', 'OFF')
-        self.prop('only_affect_last', False)
 
         self.add('mesh.armored_subd_view_in_edit', 'TWO',   'PRESS', alt=True)
         self.prop('mode', 'HYBRID')
-        self.prop('only_affect_last', False)
 
         self.add('mesh.armored_subd_view_in_edit', 'THREE', 'PRESS', alt=True)
         self.prop('mode', 'FULL')
-        self.prop('only_affect_last', False)
 
         # # SubD Hotkeys for Edit Mode
         # self.add('object.armored_subdivision_set', 'ZERO',  'PRESS', ctrl=True); self.prop('level', 0)

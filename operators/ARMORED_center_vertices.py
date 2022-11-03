@@ -1,4 +1,4 @@
-# v1.2
+# v1.3
 
 import bpy
 import bmesh
@@ -6,9 +6,9 @@ from bpy.props import EnumProperty
 
 
 class ARMORED_OT_center_vertices(bpy.types.Operator):
-    '''Moves your selected components to the world center in the specified Axis.
+    '''Flattens the selected vertices to the World's Center in a specific Axis.
 
-(www.armoredColony.com)'''
+www.armoredColony.com '''
     
     bl_idname = 'mesh.armored_center_vertices'
     bl_label = 'ARMORED Center Vertices'
@@ -16,11 +16,11 @@ class ARMORED_OT_center_vertices(bpy.types.Operator):
 
     axis: EnumProperty( 
         name='Axis', 
-        description='Move selected components to World Zero X, Y or Z', 
+        description='Flatten to World Center X, Y or Z', 
         default='X', 
-        items=[ ('X', 'X', 'Move selection to World Zero X'),
-                ('Y', 'Y', 'Move selection to World Zero Y'),
-                ('Z', 'Z', 'Move selection to World Zero Z'), ]
+        items=[ ('X', 'X', 'Flatten to World Center X'),
+                ('Y', 'Y', 'Flatten to World Center Y'),
+                ('Z', 'Z', 'Flatten to World Center Z'), ]
         )
 
     @classmethod
@@ -28,44 +28,46 @@ class ARMORED_OT_center_vertices(bpy.types.Operator):
         return context.mode == 'EDIT_MESH'
 
     def execute(self, context):
-        if context.mode != 'EDIT_MESH':
-            self.report({'ERROR'}, 'Zero Vertex X\n You need to be in edit mode.')
-            return {'CANCELLED'}
+        for ob in context.objects_in_mode:
+            me = ob.data
+            bm = bmesh.from_edit_mesh(me)
 
-        ob = context.edit_object
-        me = ob.data
-        bm = bmesh.from_edit_mesh(me)
+            matrix_world = ob.matrix_world
 
-        verts = [v for v in bm.verts if v.select]
+            verts = [v for v in bm.verts if v.select]
 
-        for v in verts:
-            if self.axis == 'X':
-                v.co[0] = 0
-            elif self.axis == 'Y':
-                v.co[1] = 0
-            else:
-                v.co[2] = 0
+            for v in verts:
+                new_co = matrix_world @ v.co
 
-        bmesh.update_edit_mesh(me)
+                if self.axis == 'X':
+                    new_co.x = 0
+                elif self.axis == 'Y':
+                    new_co.y = 0
+                else:
+                    new_co.z = 0
+
+                v.co = matrix_world.inverted() @ new_co
+
+            bmesh.update_edit_mesh(me)
+
         return {'FINISHED'}
 
 
 class ARMORED_MT_center_vertices(bpy.types.Menu):
-    bl_label = 'Center Vertices'
+    bl_label = 'Flatten to World Center'
     bl_idname = 'ARMORED_MT_center_vertices'
 
     def draw(self, context):
         layout = self.layout
 
-        # layout.label(text = 'ARMORED Scripts')
-        layout.operator(ARMORED_OT_center_vertices.bl_idname, text='ARMORED Center in X').axis = 'X'
-        layout.operator(ARMORED_OT_center_vertices.bl_idname, text='ARMORED Center in Y').axis = 'Y'
-        layout.operator(ARMORED_OT_center_vertices.bl_idname, text='ARMORED Center in Z').axis = 'Z'
+        layout.operator(ARMORED_OT_center_vertices.bl_idname, text='To World Center X').axis = 'X'
+        layout.operator(ARMORED_OT_center_vertices.bl_idname, text='To World Center Y').axis = 'Y'
+        layout.operator(ARMORED_OT_center_vertices.bl_idname, text='To World Center Z').axis = 'Z'
 
 
 def draw_menu(self, context):
     self.layout.separator()
-    self.layout.menu(ARMORED_MT_center_vertices.bl_idname, icon='FAKE_USER_OFF')
+    self.layout.menu(ARMORED_MT_center_vertices.bl_idname)
 
 
 classes = (

@@ -26,7 +26,12 @@ armoredColony.com '''
 	# 	return context.selected_objects
 	
 	def invoke(self, context, event):
-		for self.obj in context.selected_objects:
+		if self._nothing_selected(context):
+			return {'CANCELLED'}
+
+		valid_objects = [obj for obj in context.selected_objects if obj.type in {'MESH'}]
+
+		for self.obj in valid_objects:
 			self._add_subsurf_modifier()
 			
 		return {'FINISHED'}
@@ -40,6 +45,9 @@ armoredColony.com '''
 
 		mod.use_limit_surface = not self.fast_subdivision
 		mod.levels = self.level
+	
+	def _nothing_selected(self, context):
+		return not context.selected_objects
 
 
 classes = (

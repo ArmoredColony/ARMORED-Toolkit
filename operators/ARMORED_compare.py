@@ -1,4 +1,4 @@
-# v1.0
+# v1.1
 
 import bpy
 
@@ -11,7 +11,7 @@ cancel_events = {'RIGHTMOUSE', 'ESC'}
 	
 
 class OUTLINER_OT_armored_compare(bpy.types.Operator):
-	'''Based on your outliner selections, isolate 1 element at a time. Useful for comparing changes between similar objects. NOTE: also works with collections.
+	'''Based on your outliner selections, isolate 1 item at a time. Useful for comparing changes between similar objects. NOTE: also works with collections.
 
 armoredColony.com'''
 	
@@ -31,9 +31,9 @@ armoredColony.com'''
 	def invoke(self, context, event):
 		self.scene_collections = self.get_view_layer_collections(context)
 		self.selected_elements = context.selected_ids[:]
-		self.save_original_visibility(context)
+		self.store_original_visibility(context)
 		
-		self.report({'INFO'}, 'SCROLL to isolate one element at a time')
+		self.report({'INFO'}, 'SCROLL to isolate one item at a time')
 		context.window.cursor_set('SCROLL_Y')
 
 		self.iter_elements = Cycle(self.selected_elements)
@@ -77,20 +77,21 @@ armoredColony.com'''
 	
 	def hide_all_elements(self, context):
 		'''Hide all selected'''
-		for element in self.selected_elements:
-			self.set_visibility(context, element, False)
+		for item in self.selected_elements:
+			self.set_visibility(context, item, False)
 
-	def save_original_visibility(self, context):
+	def store_original_visibility(self, context):
 		self.original_visibility = {}
-		for element in self.selected_elements:
-			if element.type == 'COLLECTION':
-				self.original_visibility[element] = not self.scene_collections[element.name].hide_viewport
+		for item in self.selected_elements:
+			if item.bl_rna.identifier == 'Collection':
+			# if item.type == 'COLLECTION':
+				self.original_visibility[item] = not self.scene_collections[item.name].hide_viewport
 			else:
-				self.original_visibility[element] = element.visible_get()
+				self.original_visibility[item] = item.visible_get()
 	
 	def restore_original_visibility(self, context):
-		for element, visible in self.original_visibility.items():
-			self.set_visibility(context, element, visible)
+		for item, visible in self.original_visibility.items():
+			self.set_visibility(context, item, visible)
 	
 	def isolate_next_element(self, context):
 		self.set_visibility(context, self.current_element, False)
@@ -103,11 +104,12 @@ armoredColony.com'''
 		self.set_visibility(context, self.current_element, True)
 	
 
-	def set_visibility(self, context, element, visible):
-		if element.type == 'COLLECTION':
-			self.scene_collections[element.name].hide_viewport = not visible
+	def set_visibility(self, context, item, visible):
+		if item.bl_rna.identifier == 'Collection':
+		# if item.type == 'COLLECTION':
+			self.scene_collections[item.name].hide_viewport = not visible
 		else:
-			element.hide_set(not visible)
+			item.hide_set(not visible)
 	
 	def traverse_tree(self, tree):
 		yield tree
@@ -161,9 +163,9 @@ def register():
 	for menu in menus:
 		exec(f'bpy.types.{menu}.prepend(menu_draw)')
 
-	if not hasattr(bpy.types.Collection, 'type'):
-		print('ARMORED-Toolkit: <outliner.armored_compare> created <COLLECTION> type')
-		bpy.types.Collection.type = bpy.props.StringProperty(name='Type', get=get_collection_type)
+	# if not hasattr(bpy.types.Collection, 'type'):
+	# 	print('ARMORED-Toolkit: <outliner.armored_compare> created <COLLECTION> type')
+	# 	bpy.types.Collection.type = bpy.props.StringProperty(name='Type', get=get_collection_type)
 
 
 def unregister():

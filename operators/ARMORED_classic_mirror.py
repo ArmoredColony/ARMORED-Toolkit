@@ -1,4 +1,4 @@
-# v1.0
+# v1.1
 
 import bpy
 
@@ -33,9 +33,9 @@ armoredColony.com '''
 		if mod is None:
 			mod = active.modifiers.new(type='MIRROR', name='Mirror')
 
-			mod.use_axis             = True,  True, True
-			mod.use_bisect_axis      = True,  True, True
-			mod.use_bisect_flip_axis = False, True, False
+			mod.use_axis             = True,  False, False
+			mod.use_bisect_axis      = True,  True,  True
+			mod.use_bisect_flip_axis = False, True,  False
 
 			mod.use_clip = True
 		

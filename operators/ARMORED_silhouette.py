@@ -92,14 +92,14 @@ class VIEW3D_OT_armored_silhouette(bpy.types.Operator):
 
 		if context.space_data.shading.light == 'FLAT':
 			if os.path.exists(self.filepath):
-				print('Exit Silhouette Mode')
+				# print('Exit Silhouette Mode')
 				self.restore_view_settings(context)
 			else:
-				print('Enter Silhouette Mode')
+				# print('Enter Silhouette Mode')
 				self.save_view_settings(context)
 				self.set_flat_mode(context)
 		else:
-			print('Enter Silhouette Mode')
+			# print('Enter Silhouette Mode')
 			self.save_view_settings(context)
 			self.set_flat_mode(context)
 

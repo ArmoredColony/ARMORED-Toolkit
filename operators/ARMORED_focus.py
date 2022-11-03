@@ -1,56 +1,123 @@
-# v3.3
+# v4.0
 
 import bpy
-from bpy.types import Operator
-from bpy_extras import view3d_utils
 
 
-class Focus:
-	'''Provides different view_selected methods for different context modes.'''
+class Focus():
+	'''
+	Abstract focus/view_selected class.
+	'''
 
 	bl_label = 'ARMORED Focus'
 	bl_options = {'REGISTER'}
+	bl_description = 'Similar to View Selected but will frame everything if nothing is selected \n\narmoredColony.com '
+	poll_mode = NotImplemented
 
-	# Was using Invoke instead of execute because the raycast required 'event.mouse_region'.
-	# Not raycasting anymore so this is just a remnant.
+	# The poll isn't strictly needed but it makes it so only one Focus operator will appear in the 
+	# search menu (F3) at any given time, based on the context specified in the <poll_mode> attribute.
+	@classmethod
+	def poll(cls, context):
+		return context.mode == cls.poll_mode
+
 	def invoke(self, context, event):
-		mode = context.mode
+		self._focus(context)
 
-		if mode == 'OBJECT':
-			self.object_focus(context)
-		
-		elif mode == 'EDIT_MESH':
-			self.edit_mesh_focus(context)
-		
-		elif mode in {'SCULPT', 'VERTEX_PAINT'}:
-			self.sculpting_focus(context, event)
-		
-		else:
-			bpy.ops.view3d.view_selected('INVOKE_DEFAULT')
-		
 		return {'FINISHED'}
 
+	def _focus(self, context):
+		raise NotImplementedError
+	
 
-	def object_focus(self, context):
+class OBJECT_OT_armored_focus(bpy.types.Operator, Focus):
+	
+	bl_idname = 'object.armored_focus'
+	poll_mode = 'OBJECT'
+
+	def _focus(self, context):
 		if context.selected_objects:
 			bpy.ops.view3d.view_selected('INVOKE_DEFAULT')
 			return
 
 		bpy.ops.view3d.view_all('INVOKE_DEFAULT')
 
-	def edit_mesh_focus(self, context):
-		objects = context.objects_in_mode
-		selection = sum(obj.data.total_vert_sel for obj in objects)
 
-		if not selection: 
+class MESH_OT_armored_focus(bpy.types.Operator, Focus):
+
+	bl_idname = 'mesh.armored_focus'
+	poll_mode = 'EDIT_MESH'
+
+	def _focus(self, context):
+		selection_count = sum(obj.data.total_vert_sel for obj in context.objects_in_mode)
+
+		if not selection_count: 
 			bpy.ops.mesh.select_all(action='SELECT')
 
 		bpy.ops.view3d.view_selected('INVOKE_DEFAULT')
 
-		if not selection: 
+		if not selection_count: 
 			bpy.ops.mesh.select_all(action='DESELECT')
 
-	def sculpting_focus(self, context, event):
+class LATTICE_OT_armored_focus(bpy.types.Operator, Focus):
+
+	bl_idname = 'lattice.armored_focus'
+	poll_mode = 'EDIT_LATTICE'
+
+	def _focus(self, context):
+		selection_count = sum(self._get_selected_point_count(obj) for obj in context.objects_in_mode)
+
+		if not selection_count: 
+			bpy.ops.lattice.select_all(action='SELECT')
+
+		bpy.ops.view3d.view_selected('INVOKE_DEFAULT')
+
+		if not selection_count: 
+			bpy.ops.lattice.select_all(action='DESELECT')
+	
+	def _get_selected_point_count(self, lattice: bpy.types.Object) -> int:
+		points = lattice.data.points
+
+		select_state = [False] * len(points)
+		points.foreach_get('select', select_state)
+
+		return sum(select_state)
+
+
+class CURVE_OT_armored_focus(bpy.types.Operator, Focus):
+
+	bl_idname = 'curve.armored_focus'
+	poll_mode = 'EDIT_CURVE'
+
+	def _focus(self, context):
+		selection_count = sum(self._get_selected_point_count(curve) for curve in context.objects_in_mode)
+
+		if not selection_count: 
+			bpy.ops.curve.select_all(action='SELECT')
+
+		bpy.ops.view3d.view_selected('INVOKE_DEFAULT')
+
+		if not selection_count: 
+			bpy.ops.curve.select_all(action='DESELECT')
+	
+	def _get_selected_point_count(self, curve) -> int:
+		selected_points = [
+			point for spline in curve.data.splines 
+				for point in self._get_spline_points(spline) if self._point_is_selected(spline.type, point)]
+		
+		return len(selected_points)
+	
+	def _get_spline_points(self, spline):
+		return spline.bezier_points if spline.type =='BEZIER' else spline.points
+	
+	def _point_is_selected(self, spline_type, point):
+		return point.select_control_point if spline_type =='BEZIER' else point.select
+
+
+class SCULPT_OT_armored_focus(bpy.types.Operator, Focus):
+	
+	bl_idname = 'sculpt.armored_focus'
+	poll_mode = 'SCULPT'
+	
+	def _focus(self, context):
 		if self._in_local_view(context):
 			bpy.ops.view3d.view_all('INVOKE_DEFAULT')
 			return
@@ -58,63 +125,31 @@ class Focus:
 		bpy.ops.view3d.localview('INVOKE_DEFAULT', frame_selected=False)
 		bpy.ops.view3d.view_all('INVOKE_DEFAULT')
 		bpy.ops.view3d.localview('INVOKE_DEFAULT', frame_selected=False)
-		
-		# if self._raycast_hit(context, event):
-		# 	bpy.ops.view3d.localview('INVOKE_DEFAULT', frame_selected=False)
-		# 	bpy.ops.view3d.view_all('INVOKE_DEFAULT')
-		# 	bpy.ops.view3d.localview('INVOKE_DEFAULT', frame_selected=False)
-		# 	return
-
-		# bpy.ops.view3d.view_all('INVOKE_DEFAULT')
 	
 	def _in_local_view(self, context):
 		return bool(context.space_data.local_view)
+
+
+class NODE_OT_armored_focus(bpy.types.Operator, Focus):
 	
-	def _raycast_hit(self, context, event):
-		scene = context.scene
-		region = context.region
-		rv3d = context.region_data
-		coord = event.mouse_region_x, event.mouse_region_y
+	bl_idname = 'node.armored_focus'
+	poll_mode = 'NODE_EDITOR'
 
-		depsgraph = context.evaluated_depsgraph_get()
-		# view_layer = context.view_layer # for older blenders
+	def _focus(self, context, event):
+		if context.selected_nodes:
+			bpy.ops.node.view_selected('INVOKE_DEFAULT')
+			return
 
-		# get the ray from the viewport and mouse
-		direction = view3d_utils.region_2d_to_vector_3d(region, rv3d, coord)
-		origin = view3d_utils.region_2d_to_origin_3d(region, rv3d, coord)
-
-		result, location, normal, index, obj, matrix = scene.ray_cast(depsgraph, origin, direction)
-
-		return result
-
-
-class MESH_OT_armored_focus(Operator, Focus):
-	'''Same as Blender's view_selected operator but can frame the entire object if no component is selected.
-
-armoredColony.com '''
-
-	bl_idname = 'mesh.armored_focus'
-
-	@classmethod
-	def poll(cls, context):
-		return context.mode == 'EDIT_MESH'
-
-
-class VIEW_OT_armored_focus(Operator, Focus):
-	'''Same as Blender's view_selected operator but can frame the entire object if no component is selected.
-
-armoredColony.com '''
-	
-	bl_idname = 'view3d.armored_focus'
-
-	@classmethod
-	def poll(cls, context):
-		return context.mode != 'EDIT_MESH'
+		bpy.ops.node.view_all('INVOKE_DEFAULT')
 	
 	
 classes = (
-	VIEW_OT_armored_focus,
+	OBJECT_OT_armored_focus,
 	MESH_OT_armored_focus,
+	LATTICE_OT_armored_focus,
+	CURVE_OT_armored_focus,
+	SCULPT_OT_armored_focus,
+	NODE_OT_armored_focus,
 )
 
 def register():
