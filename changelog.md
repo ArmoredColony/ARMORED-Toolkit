@@ -7,13 +7,13 @@
 - Operator **Hide**: A hide toggle. When called on selected objects it will hide normally, if called again (and your selection did not change) it will unhide the previously hidden objects.
 - Operator **Mask from Selected**: Creates a sculpt mask from vertices selected in Edit Mode.
 - Operator **Set Brush**: Lets you create hotkey brush presets (if you make an 'hPolish' brush, you can hotkey it through Blender's Keymap Editor)
+- File **ARMORED_export.py**: Will now house multiple export Operators.
 
 ### Changed
 - Operator **Lattice**: Lattice deformer rotation now matches the Active Object's rotation by default (optional).
 - Operator **Fast Crease**: Increased functionality thanks to `bmesh`, such as creasing without changing your selection or creasing all by angle.
 - Operator **Focus**: Split into individual Operators for different contexts (makes it easier to hotkey from the search menu).
 - Operator **Classic Mirror**: Now defaults to mirroring in the *X* axis only.
-- File **ARMORED_export.py**: Will now house multiple export Operators.
 - File **SubD View in Edit**: Apparently I added a bunch of empty space to the code for no reason, that seems to be it.
 - Operator **Subdivision Set** : `use_limit_surface` now defaults to `False`, for way faster subdivisions at the expense of accuracy.
 
@@ -22,7 +22,7 @@
 - Operator **Compare**: uses `bl_rna.identifier == 'Collection'` instead of creating a new collection type property.
 
 ### Removed
-- Operator **Export FBX***: Now part of multiple Operators in the **ARMORED_export.py** file.
+- Operator **Export FBX**: Now part of multiple Operators in the **ARMORED_export.py** file.
 
 
 ## v0.4.7

@@ -5,7 +5,10 @@ from . import addon
 
 
 class BlenderPaths():
-    # Common directories used by Blender.
+    '''
+    Common paths used by Blender.
+    '''
+
     config        = bpy.utils.user_resource('CONFIG', create=True)
 
     scripts       = bpy.utils.user_resource('SCRIPTS', create=True)
@@ -20,7 +23,10 @@ class BlenderPaths():
     
 
 class AddonPaths():
-    # Common directories used by the Addon.
+    '''
+    Common paths used by the Addon.
+    '''
+
     resources = os.path.join(addon.path(), 'resources')
 
     matcaps       = os.path.join(resources, 'matcaps')
@@ -29,6 +35,7 @@ class AddonPaths():
     themes        = os.path.join(resources, 'themes')
     materials     = os.path.join(resources, 'materials')
     
+    icons         = os.path.join(addon.path(), 'icons')
     docs          = os.path.join(addon.path(), 'docs')
     docs_keymaps  = os.path.join(docs, 'ARMORED-Toolkit-Keymaps.pdf')
 
