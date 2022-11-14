@@ -65,7 +65,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 		update=closure(prop='focus_selected_with_f', category='keymaps'),)
 
 	fast_subdivision: BoolProperty(name='Fast Subdivision', default=False,
-		description='Ctrl 1-9 still applies a SUBSURF modifier normally, but with \'use_limit_surface\' disabled (faster but less acurate)', 
+		description='Lowers the \'quality\' of the \'use_limit_surface\' property in Subsurf Modifiers applied with Ctrl + 1...9', 
 		update=closure(prop='fast_subdivision', category='keymaps'),)
 
 	deselect_with_ctrl: BoolProperty(name='Deselect with CTRL', default=False,

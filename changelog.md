@@ -1,5 +1,16 @@
 # ARMORED TOOLKIT CHANGELOG
 
+## v0.5.1
+*14/Nov/2022*
+
+### Changed
+- Renamed **Subdivision Set** to **Fast Subdivision**.
+- Operator **Fast Subdivision** now defaults to `use_limit_surface = True` and `quality = 1`. The potential performance boost isn't as great as disabling it entirely but its more consistent. Setting it to `False` could actually lower performance significantly in some situations (SubD level 3 and above with my typical mesh resolutions would become slower).
+
+### Fixed
+- Broken Keymap PFD buttom in the addon preferences. The file had been removed by accident.
+
+
 ## v0.5.0
 *03/Nov/2022*
 

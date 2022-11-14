@@ -57,6 +57,7 @@ class MESH_OT_armored_focus(bpy.types.Operator, Focus):
 		if not selection_count: 
 			bpy.ops.mesh.select_all(action='DESELECT')
 
+
 class LATTICE_OT_armored_focus(bpy.types.Operator, Focus):
 
 	bl_idname = 'lattice.armored_focus'

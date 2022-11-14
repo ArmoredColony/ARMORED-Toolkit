@@ -114,23 +114,29 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
 class FAST_SUBDIVISION(keymap_utils.KeymapGroup):
     def register(self):
 
-        def subsurf_modifier_keymaps():
-            self.add('object.armored_subdivision_set', 'ZERO',  'PRESS', ctrl=True); self.prop('level', 0)
-            self.add('object.armored_subdivision_set', 'ONE',   'PRESS', ctrl=True); self.prop('level', 1)
-            self.add('object.armored_subdivision_set', 'TWO',   'PRESS', ctrl=True); self.prop('level', 2)
-            self.add('object.armored_subdivision_set', 'THREE', 'PRESS', ctrl=True); self.prop('level', 3)
-            self.add('object.armored_subdivision_set', 'FOUR',  'PRESS', ctrl=True); self.prop('level', 4)
-            self.add('object.armored_subdivision_set', 'FIVE',  'PRESS', ctrl=True); self.prop('level', 5)
-            self.add('object.armored_subdivision_set', 'SIX',   'PRESS', ctrl=True); self.prop('level', 6)
-            self.add('object.armored_subdivision_set', 'SEVEN', 'PRESS', ctrl=True); self.prop('level', 7)
-            self.add('object.armored_subdivision_set', 'EIGHT', 'PRESS', ctrl=True); self.prop('level', 8)
-            self.add('object.armored_subdivision_set', 'NINE',  'PRESS', ctrl=True); self.prop('level', 9)
-            
         self.km = kc.keymaps.new(name='Object Mode')
-        subsurf_modifier_keymaps()
+        self.add('object.armored_fast_subdivision', 'ZERO',  'PRESS', ctrl=True); self.prop('level', 0)
+        self.add('object.armored_fast_subdivision', 'ONE',   'PRESS', ctrl=True); self.prop('level', 1)
+        self.add('object.armored_fast_subdivision', 'TWO',   'PRESS', ctrl=True); self.prop('level', 2)
+        self.add('object.armored_fast_subdivision', 'THREE', 'PRESS', ctrl=True); self.prop('level', 3)
+        self.add('object.armored_fast_subdivision', 'FOUR',  'PRESS', ctrl=True); self.prop('level', 4)
+        self.add('object.armored_fast_subdivision', 'FIVE',  'PRESS', ctrl=True); self.prop('level', 5)
+        self.add('object.armored_fast_subdivision', 'SIX',   'PRESS', ctrl=True); self.prop('level', 6)
+        self.add('object.armored_fast_subdivision', 'SEVEN', 'PRESS', ctrl=True); self.prop('level', 7)
+        self.add('object.armored_fast_subdivision', 'EIGHT', 'PRESS', ctrl=True); self.prop('level', 8)
+        self.add('object.armored_fast_subdivision', 'NINE',  'PRESS', ctrl=True); self.prop('level', 9)
 
         self.km = kc.keymaps.new(name='Mesh')
-        subsurf_modifier_keymaps()
+        self.add('mesh.armored_fast_subdivision', 'ZERO',  'PRESS', ctrl=True); self.prop('level', 0)
+        self.add('mesh.armored_fast_subdivision', 'ONE',   'PRESS', ctrl=True); self.prop('level', 1)
+        self.add('mesh.armored_fast_subdivision', 'TWO',   'PRESS', ctrl=True); self.prop('level', 2)
+        self.add('mesh.armored_fast_subdivision', 'THREE', 'PRESS', ctrl=True); self.prop('level', 3)
+        self.add('mesh.armored_fast_subdivision', 'FOUR',  'PRESS', ctrl=True); self.prop('level', 4)
+        self.add('mesh.armored_fast_subdivision', 'FIVE',  'PRESS', ctrl=True); self.prop('level', 5)
+        self.add('mesh.armored_fast_subdivision', 'SIX',   'PRESS', ctrl=True); self.prop('level', 6)
+        self.add('mesh.armored_fast_subdivision', 'SEVEN', 'PRESS', ctrl=True); self.prop('level', 7)
+        self.add('mesh.armored_fast_subdivision', 'EIGHT', 'PRESS', ctrl=True); self.prop('level', 8)
+        self.add('mesh.armored_fast_subdivision', 'NINE',  'PRESS', ctrl=True); self.prop('level', 9)
 
         self.enabled_message()
 
@@ -141,6 +147,9 @@ class DESELECT_WITH_CTRL(keymap_utils.KeymapGroup):
         self.add('armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
 
         self.km = kc.keymaps.new(name='Mesh')
+        self.add('armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
+
+        self.km = kc.keymaps.new('Lattice')
         self.add('armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
 
         self.km = kc.keymaps.new('Curve', space_type='EMPTY')
@@ -496,16 +505,16 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.prop('mode', 'FULL')
 
         # # SubD Hotkeys for Edit Mode
-        # self.add('object.armored_subdivision_set', 'ZERO',  'PRESS', ctrl=True); self.prop('level', 0)
-        # self.add('object.armored_subdivision_set', 'ONE',   'PRESS', ctrl=True); self.prop('level', 1)
-        # self.add('object.armored_subdivision_set', 'TWO',   'PRESS', ctrl=True); self.prop('level', 2)
-        # self.add('object.armored_subdivision_set', 'THREE', 'PRESS', ctrl=True); self.prop('level', 3)
-        # self.add('object.armored_subdivision_set', 'FOUR',  'PRESS', ctrl=True); self.prop('level', 4)
-        # self.add('object.armored_subdivision_set', 'FIVE',  'PRESS', ctrl=True); self.prop('level', 5)
-        # self.add('object.armored_subdivision_set', 'SIX',   'PRESS', ctrl=True); self.prop('level', 6)
-        # self.add('object.armored_subdivision_set', 'SEVEN', 'PRESS', ctrl=True); self.prop('level', 7)
-        # self.add('object.armored_subdivision_set', 'EIGHT', 'PRESS', ctrl=True); self.prop('level', 8)
-        # self.add('object.armored_subdivision_set', 'NINE',  'PRESS', ctrl=True); self.prop('level', 9)
+        # self.add('object.armored_fast_subdivision', 'ZERO',  'PRESS', ctrl=True); self.prop('level', 0)
+        # self.add('object.armored_fast_subdivision', 'ONE',   'PRESS', ctrl=True); self.prop('level', 1)
+        # self.add('object.armored_fast_subdivision', 'TWO',   'PRESS', ctrl=True); self.prop('level', 2)
+        # self.add('object.armored_fast_subdivision', 'THREE', 'PRESS', ctrl=True); self.prop('level', 3)
+        # self.add('object.armored_fast_subdivision', 'FOUR',  'PRESS', ctrl=True); self.prop('level', 4)
+        # self.add('object.armored_fast_subdivision', 'FIVE',  'PRESS', ctrl=True); self.prop('level', 5)
+        # self.add('object.armored_fast_subdivision', 'SIX',   'PRESS', ctrl=True); self.prop('level', 6)
+        # self.add('object.armored_fast_subdivision', 'SEVEN', 'PRESS', ctrl=True); self.prop('level', 7)
+        # self.add('object.armored_fast_subdivision', 'EIGHT', 'PRESS', ctrl=True); self.prop('level', 8)
+        # self.add('object.armored_fast_subdivision', 'NINE',  'PRESS', ctrl=True); self.prop('level', 9)
 
 
         # ========================================================================================================
