@@ -9,14 +9,14 @@ class FastSubdivision:
 	'''
 
 	bl_options = {'REGISTER'}
-	bl_description = 'Adds a Subsurf Modifier with limit_surface quality set to 1 (faster but less accurate) \n\narmoredColony.com '
+	bl_description = 'Add a Subsurf Modifier with limit_surface quality set to 1 (faster but less accurate) \n\narmoredColony.com '
 	poll_mode = NotImplemented
 
 	level: bpy.props.IntProperty(
 		name='Level', default=1, min=0, soft_min=0, max=100, soft_max=6)
 
 	use_limit_surface: bpy.props.BoolProperty(
-		name='Use Limit Surface', default=False, 
+		name='Use Limit Surface', default=True, 
 		description='Disabled is faster for low SubD levels (1 or 2), but enabled is faster for higher levels (using my typical mesh resolution as an example)',
 		options={'SKIP_SAVE'},
 		)
@@ -43,7 +43,7 @@ class FastSubdivision:
 		if mod is None:
 			mod = self.obj.modifiers.new(name='Subdivision', type='SUBSURF')
 
-		# mod.use_limit_surface = self.use_limit_surface
+		mod.use_limit_surface = self.use_limit_surface
 		mod.quality = 1
 		mod.levels = self.level
 	

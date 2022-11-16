@@ -1,5 +1,12 @@
 # ARMORED TOOLKIT CHANGELOG
 
+## v0.5.2
+*unreleased*
+
+### Changed
+- Operators **Increase/Decrease SubD Mod Level** will now only adjust the subdivision level without changing any other settings like `use_limit_surface` or `quality`.
+
+
 ## v0.5.1
 *14/Nov/2022*
 

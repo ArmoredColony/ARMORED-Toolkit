@@ -1,17 +1,32 @@
-# v2.1
+# v2.2
 
 import bpy
 
 
-class BaseClass:
+class AdjustSubdivisionLevel:
+	'''
+	Abstract class to adjust the Subsurf Modifier level by the Property <subd_add>
+	'''
+
 	bl_options = {'REGISTER'}
+	subd_add: int = NotImplemented	# How many levels you want to add/remove (ideally 1 or -1)
 
-	@classmethod
-	def poll(cls, context):
-		return context.selected_objects
+	# @classmethod
+	# def poll(cls, context):
+	# 	return context.selected_objects
+	
+	def execute(self, context):
+		subd_modifiers = self._get_subd_modifiers(context.selected_objects)
 
-	def _get_subd_modifiers(self, context) -> list[bpy.types.Modifier]:
-		selected_objects = (ob for ob in context.selected_objects if ob.type in {'MESH'})
+		for mod in subd_modifiers:
+			mod.levels += self.subd_add
+		
+		return {'FINISHED'}
+
+	def _get_subd_modifiers(self, selected_objects: list[bpy.types.Object]) -> list[bpy.types.Modifier]:
+		# Creates new Subsurf Modifier for each selected object that does NOT have one.
+
+		selected_objects = (ob for ob in selected_objects if ob.type in {'MESH'})
 
 		subd_modifiers = []
 		for ob in selected_objects:
@@ -20,42 +35,29 @@ class BaseClass:
 			if mod is None:
 				mod = ob.modifiers.new(name='Subdivision', type='SUBSURF')
 			
-			mod.use_limit_surface = False
 			subd_modifiers.append(mod)
 
 		return subd_modifiers
 
 
-class VIEW3D_OT_increase_subd_mod_level(bpy.types.Operator, BaseClass):
+class VIEW3D_OT_increase_subd_mod_level(bpy.types.Operator, AdjustSubdivisionLevel):
 	'''Increase the current Subdivision modifier level by one (adds a subD modifier if none exists).
 
 armoredColony.com '''
 
 	bl_idname = 'view3d.armored_increase_subd_mod_level'
 	bl_label = 'ARMORED Increase SubD modifier level'
-
-	def execute(self, context):
-		subd_modifiers = super()._get_subd_modifiers(context)
-		for mod in subd_modifiers:
-			mod.levels += 1
-
-		return {'FINISHED'}
+	subd_add = 1
 
 
-class VIEW3D_OT_decrease_subd_mod_level(bpy.types.Operator, BaseClass):
+class VIEW3D_OT_decrease_subd_mod_level(bpy.types.Operator, AdjustSubdivisionLevel):
 	'''Decrease the current Subdivision modifier level by one (adds a subD modifier if none exists).
 
 armoredColony.com '''
     
 	bl_idname = 'view3d.armored_decrease_subd_mod_level'
 	bl_label = 'ARMORED Decrease SubD modifier level'
-
-	def execute(self, context):
-		subd_modifiers = super()._get_subd_modifiers(context)
-		for mod in subd_modifiers:
-			mod.levels -= 1
-
-		return {'FINISHED'}
+	subd_add = -1
 
 
 classes = (
