@@ -13,36 +13,37 @@ armoredColony.com '''
 	bl_label = 'ARMORED Delete Mirrored'
 	bl_options = {'REGISTER', 'UNDO'}
 
-	margin: bpy.props.FloatProperty(name='Margin', 
+	threshold: bpy.props.FloatProperty(name='Threshold', 
 		default=0.001, min=0.0001, soft_max=1, step=0.1, precision=4)
 
 	@classmethod
 	def poll(cls, context):
 		active = context.active_object
-		return (
-			active is not None and 
-			active.type == 'MESH' and
+		return all((
+			active is not None, 
+			active.type == 'MESH',
 			context.mode in {'OBJECT', 'EDIT_MESH'} 
-			)
+			))
 
 	def execute(self, context):
 		mod = context.active_object.modifiers.get('Mirror')
+
 		if mod is None:
 			self.report({'WARNING'}, 'Object has no modifier named "Mirror"')
 			return {'CANCELLED'}
-		
-		if context.mode == 'OBJECT':
 
+		if context.mode == 'OBJECT':
 			ob = context.active_object
 			me = ob.data
 			bm = bmesh.new()
 			bm.from_mesh(me)
-			
-		elif context.mode == 'EDIT_MESH':
 
+		elif context.mode == 'EDIT_MESH':
 			ob = context.edit_object
 			me = ob.data
 			bm = bmesh.from_edit_mesh(me)
+
+		reference_ob = ob if mod.mirror_object is None else mod.mirror_object
 
 		use_axis = mod.use_axis
 		use_flip = mod.use_bisect_flip_axis
@@ -53,13 +54,17 @@ armoredColony.com '''
 
 			if not axis:
 				continue
-			
+
 			if flip:
 				delete_verts.update(
-					set(v for v in bm.verts if v.co[i] > 0 + self.margin))
+					{v for v in bm.verts 
+						if (ob.matrix_world @ v.co)[i] > reference_ob.location[i] + self.threshold})
+
 			else:
 				delete_verts.update(
-					set(v for v in bm.verts if v.co[i] < 0 - self.margin))
+					{v for v in bm.verts 
+						if (ob.matrix_world @ v.co)[i] < reference_ob.location[i] - self.threshold})
+
 
 		for v in delete_verts:
 			bm.verts.remove(v)
@@ -67,10 +72,11 @@ armoredColony.com '''
 
 		if context.mode == 'OBJECT':
 			bm.to_mesh(me)
+
 		elif context.mode == 'EDIT_MESH':
 			bmesh.update_edit_mesh(me)
 
-		return {'FINISHED'}
+		return {'FINISHED'} 
 
 
 def draw(self, context):

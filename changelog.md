@@ -1,5 +1,13 @@
 # ARMORED TOOLKIT CHANGELOG
 
+
+## v0.5.3
+*17/Nov/2022*
+
+### Fixed
+- Operator **Delete Mirrored** would always delete geometry based on the object's origin, even when the mirror modifier had a different object plugged into `mirror_object`.
+
+
 ## v0.5.2
 *15/Nov/2022*
 
