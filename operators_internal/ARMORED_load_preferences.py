@@ -14,6 +14,13 @@ def load_system_preferences(context=bpy.context):
     context.preferences.inputs.invert_mouse_zoom = True
     context.preferences.edit.undo_steps = 150
 
+    context.scene.unit_settings.length_unit = 'CENTIMETERS'
+    context.scene.eevee.use_gtao = True
+    context.scene.eevee.use_ssr = True
+
+    # world = bpy.data.worlds.get('World')
+    # world.color = [0.215861, 0.215861, 0.215861, 1.000000]
+
     if addon.debug(): 
         print('LOADED Armored Preferences')
 
@@ -24,6 +31,10 @@ def unload_system_preferences(context=bpy.context):
     context.preferences.inputs.drag_threshold_mouse = 3
     context.preferences.inputs.invert_mouse_zoom = False
     context.preferences.edit.undo_steps = 32
+
+    context.scene.unit_settings.length_unit = 'METERS'
+    context.scene.eevee.use_gtao = False
+    context.scene.eevee.use_ssr = False
 
     if addon.debug(): 
         print('UNLOADED Armored Preferences')

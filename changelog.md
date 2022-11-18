@@ -1,6 +1,20 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.5.4
+*18/Nov/2022*
+
+### Added
+- Operator **Clear Location**: Is very similar to Blender's clear location (ALT G), but this version can optionally keep the relative locations between the selected objects and move them as a group to world zero.
+
+### Fixed
+- Operator **Delete Mirrored** would crash if you ran the script with a selection and tried transforming that selection afterwards. Fixed by adding  `bm.select_flush_mode()`.
+- Operator **Select Hard Edges**: `edge_angle` propertry no longer goes to negative values.
+
+### Changed
+- Operators **Classic Mirror** and **Delete Mirrored** have smaller default thresholds `0.0001 m`.
+
+
 ## v0.5.3
 *17/Nov/2022*
 

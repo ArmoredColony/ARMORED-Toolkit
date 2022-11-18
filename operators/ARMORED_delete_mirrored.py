@@ -1,4 +1,4 @@
-# v1.1
+# v1.2
 
 import bpy
 import bmesh
@@ -14,7 +14,7 @@ armoredColony.com '''
 	bl_options = {'REGISTER', 'UNDO'}
 
 	threshold: bpy.props.FloatProperty(name='Threshold', 
-		default=0.001, min=0.0001, soft_max=1, step=0.1, precision=4)
+		default=0.0001, min=0.0001, soft_max=1, step=0.1, precision=4)
 
 	@classmethod
 	def poll(cls, context):
@@ -70,12 +70,14 @@ armoredColony.com '''
 			bm.verts.remove(v)
 			# v.select=True
 
+		bm.select_flush_mode()
+
 		if context.mode == 'OBJECT':
 			bm.to_mesh(me)
 
 		elif context.mode == 'EDIT_MESH':
 			bmesh.update_edit_mesh(me)
-
+		
 		return {'FINISHED'} 
 
 

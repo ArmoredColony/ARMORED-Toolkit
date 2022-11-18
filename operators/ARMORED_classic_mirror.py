@@ -38,6 +38,9 @@ armoredColony.com '''
 			mod.use_bisect_flip_axis = False, True,  False
 
 			mod.use_clip = True
+
+			mod.merge_threshold = .0001
+			mod.bisect_threshold = .0001
 		
 		else:
 			bpy.ops.object.modifier_copy(modifier='Mirror')

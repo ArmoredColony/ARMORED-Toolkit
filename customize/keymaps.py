@@ -1,6 +1,7 @@
 import bpy
 
 import sys
+import math
 
 from .. utils import(
     addon, 
@@ -425,6 +426,8 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
         self.km = kc.keymaps.new(name='Object Mode')
 
+        self.add('object.armored_clear_location', 'G', 'PRESS', alt=True)
+
         self.add('object.armored_hide', 'H', 'PRESS')
 
         self.add('object.delete', 'X', 'PRESS'); self.prop('confirm', False)
@@ -450,7 +453,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.add('mesh.armored_vitaly_poke', 'V', 'PRESS', alt=True)
         self.add('mesh.loopcut_slide', 'C', 'PRESS'); self.prop('TRANSFORM_OT_edge_slide.release_confirm', True)
 
-        self.add('mesh.faces_select_linked_flat', 'F', 'PRESS', shift=True)
+        self.add('mesh.faces_select_linked_flat', 'F', 'PRESS', shift=True); self.prop('sharpness', math.radians(5))
         self.add('mesh.edge_face_add',            'F', 'PRESS', alt=True)
         self.add('mesh.f2',                       'F', 'PRESS', alt=True) # Same keymap as above, but seems to take prio if f2 is installed and viceversa.
         

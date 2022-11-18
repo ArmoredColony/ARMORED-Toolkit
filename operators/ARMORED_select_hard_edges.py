@@ -1,19 +1,25 @@
-# v1.1
+# v1.2
 
-import bpy, bmesh
+import bpy
+import bmesh
+
 from bpy.props import FloatProperty
-from math import degrees, radians
 
-class ARMORED_OT_select_hard_edges(bpy.types.Operator):
+import math
+
+
+class MESH_OT_armored_select_hard_edges(bpy.types.Operator):
     '''Similar to Select Sharp Edges but limited to your selection or will apply to the entire mesh if nothing is selected.
 
-(www.armoredColony.com)'''
+armoredColony.com '''
 
     bl_label = 'ARMORED Select Hard Edges'
     bl_idname = 'mesh.armored_select_hard_edges'
     bl_options = {'REGISTER' , 'UNDO'}
 
-    edge_angle : FloatProperty(name='Edge Angle', default=30)
+    edge_angle : FloatProperty(
+        name='Edge Angle', default=30, min=1
+        description='Edges above this angle will be selected')
 
     @classmethod
     def poll(cls, context):
@@ -31,7 +37,7 @@ class ARMORED_OT_select_hard_edges(bpy.types.Operator):
 
         edges = set(e for e in bm.edges if e.select)
         bpy.ops.mesh.select_all(action='DESELECT')
-        bpy.ops.mesh.edges_select_sharp(sharpness=radians(self.edge_angle))
+        bpy.ops.mesh.edges_select_sharp(sharpness=math.radians(self.edge_angle))
 
         if edges:
             sharp_edges = set(e for e in bm.edges if e.select)
@@ -50,7 +56,7 @@ def draw_menu(self , context):
             
 
 classes = (
-    ARMORED_OT_select_hard_edges,
+    MESH_OT_armored_select_hard_edges,
 )
 
 def register():
