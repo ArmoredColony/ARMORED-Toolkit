@@ -2,7 +2,7 @@ bl_info = {
     'name'        : 'Toolkit',
     'description' : 'A collection of Scripts, Hotkeys and other goodies.',
     'author'      : 'Armored Colony',
-    'version'     : (0, 5, 4),
+    'version'     : (0, 5, 5),
     'blender'     : (2, 83),
     'location'    : 'Type "ARMORED" in the search menu.',
     # 'warning'     : 'Whatever', # Used for warning icon and text in addons panel.

@@ -18,7 +18,7 @@ armoredColony.com '''
     bl_options = {'REGISTER' , 'UNDO'}
 
     edge_angle : FloatProperty(
-        name='Edge Angle', default=30, min=1
+        name='Edge Angle', default=30, min=1,
         description='Edges above this angle will be selected')
 
     @classmethod
