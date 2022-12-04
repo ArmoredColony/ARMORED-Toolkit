@@ -1,9 +1,9 @@
-# v2.0
+# v2.1
 
 import bpy
 import bmesh
 import math
-from bpy.props import EnumProperty, BoolProperty, FloatProperty
+import contextlib
 
 
 def any_components_selected(context) -> bool:
@@ -22,7 +22,7 @@ armoredColony.com '''
 	bl_label = 'ARMORED Crease'
 	bl_options = {'REGISTER', 'UNDO'}
 
-	crease_value: FloatProperty(
+	crease_value: bpy.props.FloatProperty(
 		name='Value', default=1.0,
 		description='Crease value to apply to the selection',
 		min=0, max=1,
@@ -30,14 +30,14 @@ armoredColony.com '''
 		# options={'HIDDEN'},
 		)
 
-	face_limit_method: EnumProperty( 
+	face_limit_method: bpy.props.EnumProperty( 
 		name='Limit Method', 
 		description='Which edges do you want to affect.', 
 		default='BORDER', 
 		items=[ ('BORDER', 'Border', 'Only affect border edges'),
 			('ANGLE',  'Angle',  'Affect edges based on their angle'), ])
 			
-	edge_angle: FloatProperty(
+	edge_angle: bpy.props.FloatProperty(
 		name='Edge Angle', default=30,
 		description='Edges over this angle will be creased',
 		min=0, max=180,)
@@ -46,7 +46,7 @@ armoredColony.com '''
 	# 	name='Include Boundary Edges', default=True,
 	# 	description='Include the open edges of the mesh',)
 
-	deselect_after: BoolProperty(
+	deselect_after: bpy.props.BoolProperty(
 		name='Deselect after', default=False,
 		description='Deselect after the operation is performed',)
 	
@@ -146,7 +146,7 @@ armoredColony.com '''
 	bl_label = 'ARMORED Uncrease'
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	deselect_after: BoolProperty(
+	deselect_after: bpy.props.BoolProperty(
 		name='Deselect after', default=False,
 		description='Deselect after the operation is performed',)
 
@@ -167,8 +167,9 @@ armoredColony.com '''
 	
 
 	def _uncrease_selected(self) -> None:
-		bpy.ops.transform.vert_crease(value=-1)
 		bpy.ops.transform.edge_crease(value=-1)
+		with contextlib.suppress(AttributeError):	# Older versions have no vertex creasing.
+			bpy.ops.transform.vert_crease(value=-1)
 
 	def _uncrease_all(self) -> None:
 		bpy.ops.mesh.select_all(action='SELECT')

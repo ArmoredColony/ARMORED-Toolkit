@@ -17,6 +17,9 @@ class Focus():
 	# search menu (F3) at any given time, based on the context specified in the <poll_mode> attribute.
 	@classmethod
 	def poll(cls, context):
+		if cls.poll_mode is None:
+			return True
+			
 		return context.mode == cls.poll_mode
 
 	def invoke(self, context, event):
@@ -134,9 +137,9 @@ class SCULPT_OT_armored_focus(bpy.types.Operator, Focus):
 class NODE_OT_armored_focus(bpy.types.Operator, Focus):
 	
 	bl_idname = 'node.armored_focus'
-	poll_mode = 'NODE_EDITOR'
+	poll_mode = None
 
-	def _focus(self, context, event):
+	def _focus(self, context):
 		if context.selected_nodes:
 			bpy.ops.node.view_selected('INVOKE_DEFAULT')
 			return

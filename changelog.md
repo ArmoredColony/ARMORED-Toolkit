@@ -1,11 +1,30 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.6.0
+*04/Dec/2022*
+
+### Added
+- Operator **Transfer Data**: 'Duplicate the `object.data` of the active object to all selected objects and optionally turn them into linked duplicates.
+
+### Changed
+- Operator **Vitaly Poke** is more accurate. Also works with multi-object editing.
+- Operator **Lattice** panel properties got renamed/reordered to be more intuitive.
+- Operator **Primitives** got rewritten for future expandability. Also supports scaling inside the modal and toggling between CURSOR/WORLD alignment when creating the greometry.
+
+### Fixed
+- Operator **Clear Location** was NOT keeping the relative positions between objects when the property `as_group` (now called `keep_relative`) was enabled.
+- Operator **Muscle Rig** was NOT placing the Empty Controllers at the right location. The `matrix_world` multiplication order was incorrect.
+- Operator **Delete Mirrored** would sometimes crash at the poll method.
+- Operator **Focus** would NOT run in Node editors because `NODE_EDITOR` is not a context mode you can poll, duuuuh.
+- Preferences **Load Armored Colony Theme** now loads my latest theme (someone said it looked like Maya and XSI had a baby).
+
+
 ## v0.5.4
 *18/Nov/2022*
 
 ### Added
-- Operator **Clear Location**: Is very similar to Blender's clear location (ALT G), but this version can optionally keep the relative locations between the selected objects and move them as a group to world zero.
+- Operator **Clear Location**: Similar to Blender's clear location (ALT G), but this version can optionally keep the relative locations between the selected objects and move them as a group to world zero.
 
 ### Fixed
 - Operator **Delete Mirrored** would crash if you ran the script with a selection and tried transforming that selection afterwards. Fixed by adding  `bm.select_flush_mode()`.

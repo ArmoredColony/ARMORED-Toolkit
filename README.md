@@ -1,34 +1,32 @@
 # ARMORED-Toolkit
 
-## What is it?
-A FREE Blender Add-on containing my personal Scripts, Matcaps, Themes and Keymaps. 
+This is my free collection of modeling Scripts for Blender, bundled into a single Addon for easy installation. It also includes *optional* extras like my personal Blender Theme, Matcaps and Hotkeys which are all *disabled* by default.
 
-Everything is optional, except for the scripts which will automatically get installed with the addon and appear in the Search Menu (F3) with the 'ARMORED' prefix.
+## How to Install?
+- Click on the *Code* button and download the ZIP file.
+- Go to **Blender Preferences> Addons> Install** and select the ZIP you downloaded. 
 
-Note: some scripts are context sensitive, which means they will only appear under certain conditions (some only show up in Edit Mode, others in Object Mode, etc. 
+That's it! Scripts will automatically appear in the search menu (F3) and will be marked with the ARMORED prefix. Note that some scripts will be hidden based on the context. For example: **Flatten** only works in Edit mode and will not appear in Object mode.
 
-For a full list of included scripts check the 'Operators' folder.
+## Notable Scripts
+- **Lattice**: Create a new lattice deformer that is automaticaly sized and rotated to fit the selected objects.
+- **Vitaly Poke**: Convert a selection of quads to a diamond-shaped pattern (similar to Vitaly Bulgarov in XSI).
+- **Delete and Grid Fill**: Delete the selected faces and fill them with a grid of quads.
+- **Flatten**: Flatten your selection to the averaged normals, a world axis or the active face.
+- **Connect**: Create an edge loop through a selection of faces (similar to Maya, Max or Modo).
+- **Select Adjacent**: Selects the adjacent componnents and deselects the previous ones (like XSI).
+- **Fast Subdivision**: Applies a subsurface modifier with a lower `limit_surface` value for faster subdivisions with no quality loss. 
+- **Edge to Pipe**: Convert a curve or edge selection into a pipe (like Modo)
+- **Fast Bevel**: Combine the edge and vertex bevel tools into a single one. On face selections it will bevel the face border.
+- **Fast Crease**: Instantly apply full crease/uncrease to your selection. Can also crease by angle or face selection border.
+- **Hide**: Toggle the visibility of an object by only pressing H (like Maya).
+- **Primitives**: new primitives with divisions/sides you can interactively increase or decrease by scrolling; plus quadsphere and single vertex, etc.
+- **Focus**: Same as Blender's View Selected but capable of centering the mesh when nothing is selected.
+- **Compare**: Select multiple elements in the outliner and RMB>Compare to isolate one at a time by scrolling.
+- **Select by Trait**: select triangles, select ngons or select non-quads (they appear separately in the search menu).
+- **Silhouette**: In solid shade mode, toggle a silhouette view of the current viewport on and off.
 
-![Armored Toolkit Preferences](https://i.imgur.com/lCKhYiV.jpg)
-
-## How to install?
-You can download as ZIP and install just like any other Blender Add-on:
-
-Edit> Preferences> Add-ons> Install> Select the .zip file> Click the Checkbox to finally enable it.
-
-...or you can git pull directly into your addons folder.
-
-Afterwards, you can enable the specific resources that interest you. NOTE: the scripts are always installed no matter what.
-
-## What if I don't wan't all the scripts?
-
-Inside the Armored-Toolkit ZIP there's a sub-folder called **Operators**. Everything there is self contained so you can easily extract the individual scripts that interest you and use them without even installing the addon. Use them however you like!
-
-## Can you add this feature/script?
-I usually focus on scripts that facilitate my personal workflow. Ideas are always welcome but there are no guarantees I will code what you want, specially since this is a free addon.
-
-## I found a bug!
-Let me know about it and I will probably fix it since I use these scripts too!
+*There's more but those are some of my favorites.*
 
 ## How can I reach you?
 armoredcolony@gmail.com

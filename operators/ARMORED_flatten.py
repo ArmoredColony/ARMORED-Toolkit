@@ -45,7 +45,7 @@ armoredColony.com '''
 
 	@classmethod
 	def poll(cls, context):
-		return context.active_object is not None
+		return context.mode == 'EDIT_MESH'
 
 	def execute(self, context):
 		# self.active_is_none = False	# Flag to control what's drawn in the Redo Panel.

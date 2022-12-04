@@ -422,6 +422,15 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         
 
         # ========================================================================================================
+        # POSE
+
+        self.km = kc.keymaps.new(name='Pose')
+
+        self.add('view3d.armored_toggle_overlays', 'W', 'PRESS', alt=True); self.prop('toggle_gizmos', False)
+
+
+
+        # ========================================================================================================
         # OBJECT
 
         self.km = kc.keymaps.new(name='Object Mode')

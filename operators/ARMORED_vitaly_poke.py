@@ -1,65 +1,99 @@
-# v2.0
+# v2.1
 
 import bpy
 import bmesh
-from bpy.props import EnumProperty
 
 
 class ARMORED_OT_vitaly_poke(bpy.types.Operator):
-	'''Converts a selection of quads into a diamond pattern by using the poke operator and some weird code.
+	'''Converts a selection of quads into a diamond pattern (similar to Vitaly Bulgarov's technique).
 
-(www.armoredColony.com)'''
+armoredColony.com '''
 
 	bl_idname = 'mesh.armored_vitaly_poke'
 	bl_label = 'ARMORED Vitaly Poke'
 	bl_options = {'REGISTER', 'UNDO'}
 
-	deselect : EnumProperty(name='Deselect', default='NONE',
-	items=[ ('NONE',          'None',          'Deselect Nothing'), 
-		('CORNERS',       'Corners',       'Deselect Corner Triangles'),
-		('ALL_TRIANGLES', 'All Triangles', 'Deselect All Triangles'),   ])
+	deselect : bpy.props.EnumProperty(name='Deselect', default='NONE',
+		items=[ ('NONE',          'None',          'Deselect Nothing'), 
+			('CORNERS',       'Corners',       'Deselect Corner Triangles'),
+			('ALL_TRIANGLES', 'All Triangles', 'Deselect All Triangles'),   
+			])
 
 	def draw(self, context):
 		layout = self.layout
+
 		layout.label(text='Deselect:')
 		row = layout.row()
 		row.prop(self, 'deselect', expand=True)
+		layout.separator()
 
 	@classmethod
 	def poll(cls, context):
-		return context.active_object is not None
+		return context.mode == 'EDIT_MESH'
 	
 	def execute(self, context):
-		ob = context.edit_object
-		me = ob.data
-		bm = bmesh.from_edit_mesh(me)
 
-		sel_faces = (f for f in bm.faces if f.select)
-		sel_edges = {e for e in bm.edges if e.select}
-		border_edges = {e for e in sel_edges
-			if (e.is_boundary or not all(f.select for f in e.link_faces))}
+		for ob in context.objects_in_mode:
 
-		poked = bmesh.ops.poke(bm, faces=list(sel_faces))
-		for f in poked['faces']:
-			f.select = True
+			if not ob.data.total_vert_sel:
+				continue
 
-		dissolve_edges = sel_edges - border_edges
-		bmesh.ops.dissolve_edges(bm, edges=list(dissolve_edges))
+			bm = bmesh.from_edit_mesh(ob.data)
 
-		bm.select_mode = {'VERT'}
-		bm.select_flush_mode()
+			# WE NEED UNSELECTED FACES TOO FOR SOME FRINGE CASES.
 
-		if self.deselect == 'CORNERS':
-			self._deselect_corners(bm)
+			sel_faces, unsel_faces = [], []
+			for f in bm.faces:
+				if f.select:
+					sel_faces.append(f)
+				else:
+					unsel_faces.append(f)
+
+			sel_edges = {e for e in bm.edges if e.select}
+			border_edges = {e for e in sel_edges
+				if (e.is_boundary or not all(f.select for f in e.link_faces))}
 			
-		elif self.deselect == 'ALL_TRIANGLES':
-			self._deselect_all_triangles(bm)
 
-		bm.select_flush_mode()
-		bm.select_mode = {'FACE'}	# DO NOT REMOVE THIS LINE OR SHIT BREAKS!!!
-		bmesh.update_edit_mesh(me)
+			# POKE AND DISSOLVE EDGES TO CREATE THE NEW PATTERN.
+
+			poked = bmesh.ops.poke(bm, faces=sel_faces)
+			for f in poked['faces']:
+				f.select = True
+
+			dissolve_edges = list(sel_edges - border_edges)
+			bmesh.ops.dissolve_edges(bm, edges=dissolve_edges)
+
+			bm.select_mode = {'VERT'}
+			bm.select_flush_mode()
+
+
+			# DESELECT BASED ON PROPERTY.
+
+			if self.deselect == 'CORNERS':
+				self._deselect_corners(bm)
+
+			elif self.deselect == 'ALL_TRIANGLES':
+				self._deselect_all_triangles(bm)
+
+			bm.select_flush(False)
+
+
+			# THIS DESELECTS ANY EXTRA FACES WE MIGHT GET FROM THE VERTEX SELECT FLUSH.
+
+			for f in unsel_faces:
+				f.select = False
+
+			sel_faces = (f for f in bm.faces if f.select)
+			face_edges = {e for f in sel_faces for e in f.edges}
+			for e in face_edges:
+				e.select = True
+
+			bmesh.update_edit_mesh(ob.data)
+
 		return {'FINISHED'}
-	
+
+
+	# PRIVATE HELPERS
 
 	def _deselect_corners(self, bm):
 		sel_verts = (v for v in bm.verts if v.select)
@@ -68,7 +102,7 @@ class ARMORED_OT_vitaly_poke(bpy.types.Operator):
 			v.select = False
 
 	def _deselect_all_triangles(self, bm):
-		bm.select_mode = {'FACE'}	# for later flushing.
+		bm.select_mode = {'FACE'}	# IMPORTANT FOR LATER FLUSHING.
 		triangles = (f for f in bm.faces if f.select and len(f.verts) == 3)
 		for f in triangles:
 			f.select = False

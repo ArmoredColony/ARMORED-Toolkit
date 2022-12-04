@@ -1,6 +1,5 @@
 import os
 from . import paths
-from . import extrapy
 
 
 '''
@@ -96,17 +95,17 @@ smart_tab_functions = '\n'.join(smart_tab_functions)
 
 
 matcap_files = sorted(os.listdir(paths.AddonPaths.matcaps))
-matcap_files = extrapy.add_to_list_elements(matcap_files, prefix='\u2022 ')
+matcap_files = list(map(lambda x: '\u2022 ' + x, matcap_files))
 matcap_files = '\n'.join(matcap_files)
 
 hdri_files = sorted(os.listdir(paths.AddonPaths.hdris))
-hdri_files = extrapy.add_to_list_elements(hdri_files, prefix='\u2022 ')
+hdri_files = list(map(lambda x: '\u2022 ' + x, hdri_files))
 hdri_files = '\n'.join(hdri_files)
 
 studio_light_files = sorted(os.listdir(paths.AddonPaths.studio_lights))
-studio_light_files = extrapy.add_to_list_elements(studio_light_files, prefix='\u2022 ')
+studio_light_files = list(map(lambda x: '\u2022 ' + x, studio_light_files))
 studio_light_files = '\n'.join(studio_light_files)
 
 theme_files = sorted(os.listdir(paths.AddonPaths.themes))
-theme_files = extrapy.add_to_list_elements(theme_files, prefix='\u2022 ')
+theme_files = list(map(lambda x: '\u2022 ' + x, theme_files))
 theme_files = '\n'.join(theme_files)

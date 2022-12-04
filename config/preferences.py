@@ -1,23 +1,21 @@
 import bpy
 from bpy.props import EnumProperty, BoolProperty
 import bpy.utils.previews
-# from bpy.utils import previews
 
 import sys
-import os
+# import os
 
 from .. utils import (
     addon,
     config,
     descriptions,
-    extrapy,
     icons,
     paths,
 )
 
 from .. customize import (
     keymaps,
-    resources,  # being used by eval
+    resources,  # DO NOT DELETE (USED BY EVAL)
 )
 
 
@@ -150,7 +148,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 		def prop_line(prop, icon, url='www.youtube.com/armoredcolony', text=''):
 			row = box.column(align=True).row()
 
-			row.label(text=text or extrapy.format_string(prop))
+			row.label(text=text or prop.replace('_', ' ').title())
 			row.separator()
 			row.prop(self, prop, text='On' if getattr(self, prop) else 'Off', toggle=True);
 			#     row.operator('wm.url_open', icon=icon, text='').url = url
@@ -211,18 +209,18 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 		
 		box = col2.box()
 		box.label(text='Custom Theme:')
-		box.operator('armored.theme_install', text='Load Armored Theme')
+		box.operator('armored.theme_install', text='Load Armored Colony Theme')
 		box.operator('preferences.reset_default_theme', text='Reset to Default Theme')
 		col2.separator()
 
 		col2.separator()
 		box = col2.box()
 		box.label(text='Useful Directories:')
-		box.operator('armored.open_folder', text='Operators Folder', icon='ERROR')      .path = paths.AddonPaths.operators
-		box.operator('armored.open_folder', text='Keymaps File',     icon='FILE_SCRIPT').path = paths.AddonPaths.keymaps
-		box.operator('armored.open_folder', text='Startup Folder',   icon='FILE_FOLDER').path = paths.BlenderPaths.startup
-		box.operator('armored.open_folder', text='Matcaps Folder',   icon='MATERIAL')   .path = paths.BlenderPaths.matcaps
-		box.operator('armored.open_folder', text='Themes Folder',    icon='TOPBAR')     .path = paths.BlenderPaths.themes
+		box.operator('armored.open_folder', text='Scripts Folder', icon='ERROR')      .path = paths.AddonPaths.operators
+		box.operator('armored.open_folder', text='Keymaps File',   icon='FILE_SCRIPT').path = paths.AddonPaths.keymaps
+		box.operator('armored.open_folder', text='Startup Folder', icon='FILE_FOLDER').path = paths.BlenderPaths.startup
+		box.operator('armored.open_folder', text='Matcaps Folder', icon='MATERIAL')   .path = paths.BlenderPaths.matcaps
+		box.operator('armored.open_folder', text='Themes Folder',  icon='TOPBAR')     .path = paths.BlenderPaths.themes
 
 		col2.separator()
 		box = col2.box()

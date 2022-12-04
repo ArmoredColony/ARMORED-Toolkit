@@ -1,63 +1,617 @@
-# v1.1
+# v3.0
 
 import bpy
-from bpy.props import IntProperty, FloatProperty
-from bpy.types import Operator
-from bl_ui.space_statusbar import STATUSBAR_HT_header
 import blf
+import bgl
+import contextlib
+import gpu
+
+import math
+import dataclasses
+import itertools
+
+from mathutils import Vector
+from bpy_extras.view3d_utils import location_3d_to_region_2d, region_2d_to_vector_3d, region_2d_to_origin_3d, region_2d_to_location_3d
+from gpu_extras.batch import batch_for_shader
+# from bl_ui.space_statusbar import STATUSBAR_HT_header
+
+	
+class IntConcatenator:
+	'''
+	Concatenates numeric key inputs into a single integer.
+	'''
+
+	def __init__(self, empty_default: int=0, element_cap: int=3) -> None:
+		self.empty_default = empty_default
+		self.element_cap = element_cap
+		self.list_of_integers = []
+	
+	@property
+	def result(self):
+		if not self.list_of_integers:
+			return self.empty_default
+			
+		return int(''.join(map(str, self.list_of_integers)))
+	
+	def append(self, value):
+		if len(self.list_of_integers) >= self.element_cap:
+			return self.result
+			
+		self.list_of_integers.append(value)
+		return self.result
+	
+	@property
+	def pop(self):
+		if self.list_of_integers:
+			self.list_of_integers.pop()
+		return self.result
 
 
-from typing import TypeVar
-Node = TypeVar('Node')
+class EVENTS:
 
-pass_through_events = {'MIDDLEMOUSE', 'NUMPAD_PERIOD', 'F'}
-increase_events = {'WHEELUPMOUSE', 'NUMPAD_PLUS', 'PAGE_UP', 'UP_ARROW'}
-decrease_events = {'WHEELDOWNMOUSE', 'NUMPAD_MINUS', 'PAGE_DOWN', 'DOWN_ARROW'}
-reset_events = {'R'}
-scale_events = {'S'}
-finish_events = {'LEFTMOUSE', 'RET', 'NUMPAD_ENTER', 'SPACE', 'TAB'}
-cancel_events = {'RIGHTMOUSE', 'ESC'}
+	PASS_THROUGH = {'MIDDLEMOUSE', 'NUMPAD_PERIOD', 'F'}
+	INCREASE     = {'WHEELUPMOUSE',   'NUMPAD_PLUS',  'PAGE_UP',   'UP_ARROW'}
+	DECREASE     = {'WHEELDOWNMOUSE', 'NUMPAD_MINUS', 'PAGE_DOWN', 'DOWN_ARROW'}
+	SCALE        = {'S'}
+	ROTATE       = {'R'}
+	CANCEL       = {'RIGHTMOUSE', 'ESC'}
+	FINISH       = {'LEFTMOUSE', 'RET', 'NUMPAD_ENTER', 'SPACE', 'TAB'}
 
-number_events = {
-        'ONE'   : 1,
-        'TWO'   : 2,
-        'THREE' : 3,
-        'FOUR'  : 4,
-        'FIVE'  : 5,
-        'SIX'   : 6,
-        'SEVEN' : 7,
-        'EIGHT' : 8,
-        'NINE'  : 9,
-        'ZERO'  : 0,
+	BACK_SPACE   = {'BACK_SPACE'}
 
-        'NUMPAD_1' : 1,
-        'NUMPAD_2' : 2,
-        'NUMPAD_3' : 3,
-        'NUMPAD_4' : 4,
-        'NUMPAD_5' : 5,
-        'NUMPAD_6' : 6,
-        'NUMPAD_7' : 7,
-        'NUMPAD_8' : 8,
-        'NUMPAD_9' : 9,
-        'NUMPAD_0' : 0,
-    }
+	ALT          = {'LEFT_ALT',   'RIGHT_ALT'}
+	SHIFT        = {'LEFT_SHIFT', 'RIGHT_SHIFT'}
+	CTRL         = {'LEFT_CTRL',  'RIGHT_CTRL'}
+
+	NUMBER = {
+		'ONE'   : 1,
+		'TWO'   : 2,
+		'THREE' : 3,
+		'FOUR'  : 4,
+		'FIVE'  : 5,
+		'SIX'   : 6,
+		'SEVEN' : 7,
+		'EIGHT' : 8,
+		'NINE'  : 9,
+		'ZERO'  : 0,
+
+		'NUMPAD_1' : 1,
+		'NUMPAD_2' : 2,
+		'NUMPAD_3' : 3,
+		'NUMPAD_4' : 4,
+		'NUMPAD_5' : 5,
+		'NUMPAD_6' : 6,
+		'NUMPAD_7' : 7,
+		'NUMPAD_8' : 8,
+		'NUMPAD_9' : 9,
+		'NUMPAD_0' : 0,
+	}
 
 
+@dataclasses.dataclass(frozen=False)
+class InputData:
+	'''
+	Info about the Node and inputs we wish to tweak with modal events.
+	'''
+
+	node_name: str
+	input_indexes: tuple[int]
+	prop_name: str
+
+	offset: int = 0		# The offset required to match `input.default_value`.
+
+	node: bpy.types.GeometryNode          = NotImplemented
+	inputs: list[bpy.types.NodeSocketInt] = NotImplemented
 
 
-def draw_callback_px(self, context):
-	def draw_text(self, text, offset_x=0, offset_y=-35):
-		x = self.mouse_x + offset_x
-		y = self.mouse_y + offset_y
+@dataclasses.dataclass(frozen=False)
+class NodeData:
+	'''
+	<bpy.types.GeometryNode> with extra information.
+	'''
+
+	name: str
+	type: str
+	
+	defaults: dict = None
+
+
+class GeometryData:
+	
+	NODE_DATA  = NotImplemented	# List of NodeData.
+	LINK_DATA  = NotImplemented	# List of tuple(node_name, output_index, node_name, input_index).
+	INPUT_DATA = NotImplemented	# Dict of bool: InputData.
+
+
+class VERTEX_DATA(GeometryData):
+	
+	NODE_DATA = [
+			NodeData(name='Mesh Line', type='GeometryNodeMeshLine'),
+		]
+
+	LINK_DATA = [
+			('Mesh Line', 0, 'Group Output', 0),
+		]
+	
+	INPUT_DATA = {
+			False: InputData(prop_name='points', node_name='Mesh Line', input_indexes=(0,)),
+		}
+
+
+class PLANE_DATA(GeometryData):
+	
+	NODE_DATA = [
+			NodeData(name='Plane', type='GeometryNodeMeshGrid', defaults={0: 2, 1: 2}),
+			NodeData(name='Transform', type='GeometryNodeTransform'),
+		]
+
+	LINK_DATA = [
+			('Plane', 0, 'Transform', 0),
+			('Transform', 0, 'Group Output', 0),
+		]
+	
+	INPUT_DATA = {
+			False: InputData(prop_name='cuts', node_name='Plane', input_indexes=(2, 3), offset=2),
+			# 'scale': InputData(prop_name='scale', node_name='Plane', input_indexes=(0, 1))
+		}
+
+
+class CUBE_DATA(GeometryData):
+	
+	NODE_DATA = [
+			NodeData(name='Cube', type='GeometryNodeMeshCube', defaults={0: Vector((2, 2, 2))}),
+			NodeData(name='Transform', type='GeometryNodeTransform'),
+		]
+
+	LINK_DATA = [
+			('Cube', 0, 'Transform', 0),
+			('Transform', 0, 'Group Output', 0),
+		]
+	
+	INPUT_DATA = {
+			False: InputData(prop_name='cuts', node_name='Cube', input_indexes=(1, 2, 3), offset=2),
+			# 'scale': InputData(prop_name='scale', node_name='Cube', input_indexes=(0,))
+		}
+
+
+class CYLINDER_DATA(GeometryData):
+	
+	NODE_DATA = [
+			NodeData(name='Cylinder', type='GeometryNodeMeshCylinder'),
+			NodeData(name='Transform', type='GeometryNodeTransform'),
+		]
+
+	LINK_DATA = [
+			('Cylinder', 0, 'Transform', 0),
+			('Transform', 0, 'Group Output', 0),
+		]
+	
+	INPUT_DATA = {
+			False: InputData(prop_name='sides', node_name='Cylinder', input_indexes=(0,)),
+			True:  InputData(prop_name='cuts', node_name='Cylinder', input_indexes=(1,), offset=1),
+			# 'scale': InputData(prop_name='scale', node_name='Cylinder', input_indexes=(3, 4))
+		}
+
+
+class QUADSPHERE_DATA(GeometryData):
+	
+	NODE_DATA = [
+			NodeData(name='Cube', type='GeometryNodeMeshCube', defaults={0: Vector((2, 2, 2))}),
+			NodeData(name='SubD', type='GeometryNodeSubdivisionSurface'),
+			NodeData(name='Transform', type='GeometryNodeTransform'),
+		]
+
+	LINK_DATA = [
+			('Cube', 0, 'SubD', 0),
+			('SubD', 0, 'Transform', 0),
+			('Transform', 0, 'Group Output', 0),
+		]
+	
+	INPUT_DATA = {
+			False: InputData(prop_name='subdivisions', node_name='SubD', input_indexes=[1]),
+			# 'scale': InputData(prop_name='scale', node_name='Cube', input_indexes=(0,))
+		}
+
+
+def fill_missing_data(input_data, nodes: list[bpy.types.GeometryNode]):
+	'''
+	Fill out missing <node> and <inputs> properties in the input_data: dataclass by using <node_name> and <input_indexes> as keys on the <node_tree.nodes>.
+	'''
+
+	for _input_data in input_data.values():
+		_input_data.node = nodes.get(_input_data.node_name)
+		_input_data.inputs = [_input_data.node.inputs[i] for i in _input_data.input_indexes]
+	
+	return input_data
+
+
+class EventManager:
+	'''
+	ABSTRACT CLASS: Run methods based on modal events.
+	'''
+	
+	def event(self, event):
+		self.any(event)
+
+		if event.type == 'MOUSEMOVE':
+			self.mousemove(event)
+			
+		if event.type in EVENTS.PASS_THROUGH:
+			return {'PASS_THROUGH'}
+
+		if event.type in EVENTS.SCALE and event.value == 'PRESS':
+			self.scale(event)
+
+		if event.type in EVENTS.INCREASE and event.value == 'PRESS':
+			self.increase(event)
 		
-		dpi = context.preferences.system.dpi
-		scale = context.preferences.system.ui_scale
-		font_size = 11
+		if event.type in EVENTS.DECREASE and event.value == 'PRESS':
+			self.decrease(event)
+		
+		if event.type in EVENTS.NUMBER and event.value == 'PRESS':
+			self.number(event, EVENTS.NUMBER.get(event.type))
+		
+		if event.type in EVENTS.BACK_SPACE and event.value == 'PRESS':
+			self.backspace(event)
+		
+		if event.type in EVENTS.ROTATE and event.value == 'PRESS':
+			self.rotate(event)
+		
+		if event.type in EVENTS.CANCEL:
+			self.reset(event)
+			self.cancel(event)
+			return {'CANCELLED'}
+
+		if event.type in EVENTS.FINISH:
+			self.finish(event)
+			return {'FINISHED'}
+		
+		return {'RUNNING_MODAL'}
+
+
+	# COMMON EVENTS
+
+	def any(self, event):
+		pass
+	
+	def mousemove(self, event):
+		pass
+
+	def increase(self, event):
+		pass
+	
+	def decrease(self, event):
+		pass
+	
+	def number(self, event, number):
+		pass
+	
+	def backspace(self, event):
+		pass
+	
+	def reset(self, event):
+		pass
+	
+
+	# TRANSFORMS
+
+	def scale(self, event):
+		pass
+
+	def rotate(self, event):
+		pass
+
+
+	# OPERATOR CONTROL
+
+	def cancel(self, event):
+		pass
+
+	def finish(self, event):
+		pass
+
+
+#####################
+# GENERATORS
+#####################
+
+class GeometryGenerator(EventManager):
+	pass
+
+
+class NodeGeometry(GeometryGenerator):
+	'''
+	ABSTRACT CLASS: Create Geometry using Nodes.
+	'''
+
+	def __init__(self, context, node_data, link_data):
+		self.context = context
+		self.node_data = node_data
+		self.link_data = link_data
+
+		self.node_container = self._create_node_container_object()
+		self.node_container.show_wire = True
+
+		self.location = self.node_container.location
+
+		self.mod_name      = f'NodeGeometry_{hash("NodeGeometry")}'
+		self.node_modifier = self._create_geometry_nodes_modifier()
+		self.node_tree     = self.node_modifier.node_group
+		self.nodes         = self.node_tree.nodes
+
+		self.align_to_cursor = itertools.cycle((True, False))
+
+		self._create_nodes()
+		self._link_nodes()
+		self.rotate(event=None)
+
+
+
+	def _create_node_container_object(self):
+		bpy.ops.mesh.primitive_cube_add()
+
+		return self.context.active_object
+	
+	def _create_geometry_nodes_modifier(self) -> bpy.types.Modifier:
+		mod = self.node_container.modifiers.new(name=self.mod_name, type='NODES')
+
+		if mod.node_group is None:
+			bpy.ops.node.new_geometry_node_group_assign()	# because 3.2 does NOT assign a blank node group by default
+		
+		return mod
+	
+	def _create_nodes(self):
+
+		for node_data in self.node_data:
+			node = self.node_tree.nodes.new(node_data.type)
+			node.name = node_data.name
+
+			if node_data.defaults is None:
+				continue
+
+			for key, val in node_data.defaults.items():
+				node.inputs[key].default_value = val
+
+		
+	def _link_nodes(self):
+		
+		for male, out, female, _in in self.link_data:
+			male   = self.node_tree.nodes.get(male)
+			female = self.node_tree.nodes.get(female)
+
+			if male is None or female is None:
+				raise ValueError(f'You cannot link node {male} to node {female}')
+
+			self.node_tree.links.new(male.outputs[out], female.inputs[_in])
+
+
+	# TRANSFORMS
+
+	def rotate(self, event):
+		# We do the initial rotation on the Node Container bl_object instead of the Transform node in the Node Editor Class
+		# because we wan't to keep the rotation after the geometry nodes modifier is applied.
+
+		if next(self.align_to_cursor):
+			self.node_container.rotation_euler = self.context.scene.cursor.rotation_euler
+		else:
+			self.node_container.rotation_euler = (0, 0, 0)
+
+
+	# OPERATOR CONTROL
+
+	# def tab(self, event):
+	# 	self.finish(event)
+	
+	def cancel(self, event):
+		self._cleanup()
+
+	def finish(self, event):
+		self._cleanup()
+		
+		if event.type == 'TAB':
+			bpy.ops.object.mode_set(mode='EDIT')
+	
+	def _cleanup(self):
+		bpy.ops.object.modifier_apply(modifier=self.mod_name)
+		self.node_container.show_wire = False
+		bpy.data.node_groups.remove(self.node_tree)
+		# bpy.ops.object.mode_set(mode='EDIT')
+	
+
+#####################
+# EDITORS
+#####################
+
+class GeometryEditor(EventManager):
+	pass
+
+
+class NodeEditor(GeometryEditor):
+	'''
+	ABSTRACT CLASS: Edit GeometryNode Inputs.
+	'''
+	
+	def __init__(self, operator, context, geometry_origin: Vector, nodes: list[bpy.types.GeometryNode], input_data) -> None:
+		self.operator = operator
+		self.context = context
+		self.geometry_origin = geometry_origin
+		self.nodes = nodes
+		self.input_data = fill_missing_data(input_data, self.nodes)
+
+		self._set_node_input_defaults()
+
+		self.scaling = False
+
+		self.cuts = IntConcatenator(0)
+
+	def _set_node_input_defaults(self):  # sourcery skip: assign-if-exp
+		for input_data in self.input_data.values():
+			val = getattr(self.operator, input_data.prop_name)
+
+			for node_input in input_data.inputs:
+				if isinstance(node_input.default_value, Vector):
+					node_input.default_value = Vector.Fill(len(node_input.default_value), val)
+				else:
+					node_input.default_value = val
+		
+		transform_node = self.nodes.get('Transform')
+		if transform_node is None:
+			return
+		
+		scale_amount = getattr(self.operator, 'scale', None)
+		if scale_amount is None:
+			return
+		
+		scale_input = transform_node.inputs[3]
+		scale_amount = scale_amount
+		scale_input.default_value = scale_amount
+	
+	def _scroll(self, event, increment: int):
+		input_data = self.input_data.get(event.alt)
+		if input_data is None:
+			return
+			
+		setattr(self.operator, input_data.prop_name, getattr(self.operator, input_data.prop_name) + increment)
+		for input in input_data.inputs:
+			input.default_value = getattr(self.operator, input_data.prop_name)
+	
+	def increase(self, event):
+		self._scroll(event, increment=1)
+
+	def decrease(self, event):
+		self._scroll(event, increment=-1)
+
+	def number(self, event, number: int):
+		input_data = self.input_data.get(event.alt)
+		if input_data is None:
+			return
+		
+		self.cuts.append(number)
+
+		setattr(self.operator, input_data.prop_name, self.cuts.result + input_data.offset)
+		for input in input_data.inputs:
+			input.default_value = getattr(self.operator, input_data.prop_name)
+	
+	def backspace(self, event):
+		input_data = self.input_data.get(event.alt)
+		if input_data is None:
+			return
+
+		self.cuts.pop
+
+		setattr(self.operator, input_data.prop_name, self.cuts.result + input_data.offset)
+		for input in input_data.inputs:
+			input.default_value = getattr(self.operator, input_data.prop_name)
+	
+
+	# TRANSFORMS
+
+	def mousemove(self, event):
+		self.mouse_position = Vector((event.mouse_region_x, event.mouse_region_y))
+		self.geometry_origin_2d = location_3d_to_region_2d(
+				self.context.region, self.context.space_data.region_3d, self.geometry_origin)
+
+		if not self.scaling:
+			return
+		
+		transform_node = self.nodes.get('Transform')
+		if transform_node is None:
+			return
+
+		scale_amount = getattr(self.operator, 'scale', None)
+		if scale_amount is None:
+			return
+
+		scale_input = transform_node.inputs[3]
+		scale_amount = self.start_scale * (self.geometry_origin_2d - self.mouse_position).length / self.scale_multiplier
+
+		# We set the operator property before we retrieve it again in case it has any defined min/max limits.
+		setattr(self.operator, 'scale', scale_amount)
+		scale_input.default_value = getattr(self.operator, 'scale')
+
+
+	def scale(self, event):
+		transform_node = self.nodes.get('Transform')
+		if transform_node is None:
+			return
+			
+		self.scaling = not self.scaling
+		self.start_position = Vector((event.mouse_region_x, event.mouse_region_y))
+
+		# This value allows imitating Blender's scale behavior (scale faster the closer you are to the object origin).
+		self.scale_multiplier = (self.geometry_origin_2d - self.start_position).length
+
+		scale_input = transform_node.inputs[3]
+		self.start_scale = scale_input.default_value.copy()
+	
+	def rotate(self, event):
+		return
+	
+
+#####################
+# USER INTERFACES
+#####################
+
+class UserInterface(EventManager):
+	
+	context = NotImplemented
+
+	def event(self, event):
+		self.context.area.tag_redraw()
+
+		return super().event(event)
+
+
+class HeadsUpDisplay(UserInterface):
+	'''
+	Heads Up Display for the active property being tweaked and it's value.
+	'''
+
+	def __init__(self, context, geometry_origin: Vector, nodes: list[bpy.types.GeometryNode], input_data, event) -> None:
+		self.context = context
+		self.geometry_origin = geometry_origin
+		self.nodes = nodes
+		self.input_data = fill_missing_data(input_data, self.nodes)
+
+		self.property_name = ''
+		self.property_value = ''
+
+		self.context.window.cursor_modal_set('CROSSHAIR')
+
+		# Event parameter is only used here.
+		self.mouse_position = Vector((event.mouse_region_x, event.mouse_region_y))
+		self.geometry_origin_2d = location_3d_to_region_2d(self.context.region, self.context.space_data.region_3d, self.geometry_origin)
+	
+		self._props_handle = bpy.types.SpaceView3D.draw_handler_add(self.draw_callback_props, (), 'WINDOW', 'POST_PIXEL')
+		self._scale_handle = None
+
+	def draw_callback_props(self):
+		offset_x = 30
+		self.draw_text(f'{self.property_name}: {str(self.property_value)}', offset_x=offset_x)
+		if self._scale_handle is not None:
+			self.draw_text('[Scaling]', offset_x=offset_x, offset_y=-20)
+
+	def draw_callback_scale_line(self):
+		start = self.geometry_origin_2d 
+		end = self.mouse_position
+		coords=[start, end]
+		self.draw_line_2d(coords, color=(1, 1, 1, .5))
+
+	def draw_text(self, text, color=(1, 1, 1, 1), font_size=11, offset_x=0, offset_y=0, rotation_radians=0):
+		x = self.mouse_position.x + offset_x
+		y = self.mouse_position.y + offset_y
+		
+		dpi   = self.context.preferences.system.dpi
+		scale = self.context.preferences.system.ui_scale
 
 		font_id = 1
 		blf.size(font_id, font_size*scale, dpi)
-		blf.color(font_id, 1, 1, 1, 1.0)
+		blf.color(font_id, *color)
 		blf.position(font_id, x, y, 0)
+
+		if rotation_radians != 0:
+			blf.enable(font_id, blf.ROTATION)
+			blf.rotation(font_id, rotation_radians + math.radians(90))
 		
 		blf.enable(font_id, blf.SHADOW)
 
@@ -73,7 +627,100 @@ def draw_callback_px(self, context):
 
 		blf.disable(font_id, blf.SHADOW)
 
-	draw_text(self, self.text)
+		if rotation_radians != 0:
+			blf.disable(font_id, blf.ROTATION)
+	
+	def draw_line_2d(self, coords, color=(1, 1, 1, 1)):
+		bgl.glLineWidth(1)
+		bgl.glEnable(bgl.GL_BLEND)
+		bgl.glEnable(bgl.GL_LINE_SMOOTH)
+		bgl.glEnable(bgl.GL_DEPTH_TEST)
+
+		shader = gpu.shader.from_builtin('2D_UNIFORM_COLOR')
+		batch = batch_for_shader(shader, 'LINES', {"pos": coords})
+		shader.bind()
+		shader.uniform_float('color', color)
+		batch.draw(shader)
+
+		bgl.glLineWidth(1)
+		bgl.glDisable(bgl.GL_BLEND)
+		bgl.glDisable(bgl.GL_LINE_SMOOTH)
+		bgl.glEnable(bgl.GL_DEPTH_TEST)
+	
+	def any(self, event):
+		self.update_hud(event)
+	
+	def mousemove(self, event):
+		'''
+		Update the required 2d coordinate for the HUD.
+		'''
+
+		self.mouse_position = Vector((event.mouse_region_x, event.mouse_region_y))
+		self.geometry_origin_2d = location_3d_to_region_2d(
+				self.context.region, self.context.space_data.region_3d, self.geometry_origin)
+
+	def increase(self, event):
+		self.update_hud(event)
+
+	def decrease(self, event):
+		self.update_hud(event)
+
+	def number(self, event, number: int):
+		self.update_hud(event)
+	
+	def update_hud(self, event):
+		iNode = self.input_data.get(event.alt)
+		if iNode is None:
+			return
+
+		self.property_value = iNode.inputs[0].default_value - iNode.offset
+		self.property_name = iNode.prop_name.title()
+	
+
+	def scale(self, event):
+		if self._scale_handle is None:
+			self._scale_handle = bpy.types.SpaceView3D.draw_handler_add(self.draw_callback_scale_line, (), 'WINDOW', 'POST_PIXEL')
+		else:
+			bpy.types.SpaceView3D.draw_handler_remove(self._scale_handle, 'WINDOW')
+			self._scale_handle = None
+
+
+	# OPERATOR CONTROL
+
+	def cancel(self, event):
+		self._cleanup()
+
+	def finish(self, event):
+		self._cleanup()
+	
+	def _cleanup(self):
+		bpy.types.SpaceView3D.draw_handler_remove(self._props_handle, 'WINDOW')
+
+		if self._scale_handle is not None:
+			bpy.types.SpaceView3D.draw_handler_remove(self._scale_handle, 'WINDOW')
+
+		self.context.window.cursor_modal_restore()
+	
+
+#####################
+# COMPOSITOR
+#####################
+
+class ModalGeometry:
+	'''
+	Creates a geometry object in the scene that can be adjusted with a modal (ex. scroll to add sides to cylinder).
+	'''
+
+	def __init__(self, geometry_generator: GeometryGenerator, geometry_editor: GeometryEditor, user_interface: UserInterface) -> None:
+		self.geometry_generator = geometry_generator
+		self.geometry_editor    = geometry_editor
+		self.user_interface     = user_interface
+	
+	def event(self, event) -> set[str]:
+		self.geometry_editor.event(event)
+		self.user_interface.event(event)
+
+		return self.geometry_generator.event(event)
 
 
 class StatusBar:
@@ -96,10 +743,10 @@ class StatusBar:
 
 	def draw_status_bar(self, active_prop_name):
 		def draw(self, context):
-			def key(icon, label, separation=2):
+			def key(icon, label, spacing=2):
 				row.label(text='', icon=icon)
 				row.label(text=label)
-				row.separator(factor=separation)
+				row.separator(factor=spacing)
 
 			layout = self.layout
 			row = layout.row(align=True)
@@ -107,438 +754,138 @@ class StatusBar:
 			row.label(text='Cube (modal)')
 			row.separator(factor=6)
 			
-			key('MOUSE_LMB', 'Finish', 2)
-			key('MOUSE_MMB', active_prop_name, 2)
+			key('MOUSE_LMB', 'Finish')
+			key('MOUSE_MMB', active_prop_name)
 			key('MOUSE_RMB', 'Cancel', 6)
 
-			key('EVENT_R', 'Reset', 2)
+			key('EVENT_R', 'Reset')
 			key('EVENT_TAB', 'Edit Mode', 2)
 		return draw
 
 
-class ModalPrimitive(StatusBar):
-	scale : FloatProperty(name='Scale', default=1)
-	start_scale = 0
-	scaling = False
+class OperatorBase:
+
+	bl_options = {'REGISTER', 'UNDO'}
 
 	@classmethod
 	def poll(cls, context):
 		return context.mode in {'OBJECT'}
 	
 	def invoke(self, context, event):
-		self.alt_is_pressed = False
-		# self.set_active_property('Cuts')
+		raise NotImplementedError
 
-		self._set_text()
-		self.update_status_bar()
-		self._set_mouse_positions(event)
-		self._set_cursor_display(context)
-		
-		self._create_node_container(context)
-		self._show_wireframe()
 
-		self._create_geometry_nodes_modifier()
-		self._set_node_tree()
-		self._set_output_node()
-		self._create_primitive_node()
-		self._link_nodes()
-		self._set_primitive_node_inputs()
+class NonModalOperator(OperatorBase):
 
-		args = (self, context)
-		self._handle = bpy.types.SpaceView3D.draw_handler_add(draw_callback_px, args, 'WINDOW', 'POST_PIXEL')
+
+	def invoke(self, context, event):
+		geometry_generator = NodeGeometry(context, self.DATA.NODE_DATA, self.DATA.LINK_DATA)
+		geometry_editor    = NodeEditor(self, context, geometry_generator.location, geometry_generator.nodes, self.DATA.INPUT_DATA)
+		user_interface     = HeadsUpDisplay(context, geometry_generator.location, geometry_generator.nodes, self.DATA.INPUT_DATA, event)
+
+		geometry_generator.finish(event)
+		user_interface.finish(event)
+
+		return {'FINISHED'}
+
+
+class ModalOperator(OperatorBase):
+
+	def invoke(self, context, event):
+		geometry_generator = NodeGeometry(context, self.DATA.NODE_DATA, self.DATA.LINK_DATA)
+		geometry_editor    = NodeEditor(self, context, geometry_generator.location, geometry_generator.nodes, self.DATA.INPUT_DATA)
+		user_interface     = HeadsUpDisplay(context, geometry_generator.location, geometry_generator.nodes, self.DATA.INPUT_DATA, event)
+
+		self.modal_geometry = ModalGeometry(
+			geometry_generator, geometry_editor, user_interface)
+
 		context.window_manager.modal_handler_add(self)
-		return {'RUNNING_MODAL'}
-	
-	def _pressing_alt(self, context, event):
-		if self.alt_is_pressed:
-			return
-		self.alt_is_pressed = True
-		self.scaling = True
-		self.start_scale = event.mouse_region_x
-		print('pressed alt')
 
-	def _not_pressing_alt(self, context, event):
-		if not self.alt_is_pressed:
-			return
-		self.alt_is_pressed = False
-		self.scaling = False
-		print('released alt')
+		return {'RUNNING_MODAL'}
 
 	def modal(self, context, event):
-		# context.area.tag_redraw()
-
-		if event.alt:
-			self._pressing_alt(context, event)
-		else:
-			self._not_pressing_alt(context, event)
-		
-
-		if event.type == 'MOUSEMOVE':
-			self._set_mouse_positions(event)
-			if self.scaling:
-				self._scale(event)
-		
-		elif event.type in pass_through_events:
-			return {'PASS_THROUGH'}
-
-		elif event.type in increase_events and event.value == 'PRESS':
-			self._increase_method(event)
-		
-		elif event.type in decrease_events and event.value == 'PRESS':
-			self._decrease_method(event)
-		
-		elif event.type in number_events and event.value == 'PRESS':
-			self._number_method(event)
-		
-		elif event.type in reset_events and event.value == 'PRESS':
-			self._reset_method()
-
-		# elif event.type in scale_events and event.value == 'PRESS':
-			# self._scale()
-		
-		elif event.type in cancel_events and event.value == 'PRESS':
-			self._reset_method()
-			self._cleanup(context, 'CANCELLED')
-			return {'FINISHED'}
-
-		elif event.type in finish_events and event.value == 'PRESS':
-			self._cleanup(context, 'FINISHED')
-			if event.type == 'TAB':
-				self.enter_edit_mode(context)
-			return {'FINISHED'}
-
-		self._set_text()
-		context.area.tag_redraw()
-		return {'RUNNING_MODAL'}
-
-	
-	def _set_mouse_positions(self, event):
-		self.mouse_x = event.mouse_region_x
-		self.mouse_y = event.mouse_region_y
-
-	def _set_cursor_display(self, context):
-		context.window.cursor_set('SCROLL_Y')
-
-	def _reset_cursor_display(self, context):
-		context.window.cursor_set('DEFAULT')
-
-	def _create_node_container(self, context):
-		bpy.ops.mesh.primitive_cube_add(align='CURSOR')
-		self.node_container = context.active_object
-	
-	def _create_geometry_nodes_modifier(self):
-		self.mod_name = f'Cube_{hash("cube")}'
-		self.mod = self.node_container.modifiers.new(name=self.mod_name, type='NODES')
-
-		if self.mod.node_group is None:
-			bpy.ops.node.new_geometry_node_group_assign()	# because 3.2 does NOT assign a blank node group by default
-
-	
-	def _set_node_tree(self):
-		self.node_tree = self.mod.node_group
-	
-	def _get_node(self, name: str) -> Node:
-		return self.node_tree.nodes.get(name)
-
-	def _set_output_node(self):
-		self.output_node = self._get_node('Group Output')
-	
-	def _set_primitive_node_inputs(self):
-		self.inputs = self.primitive_node.inputs
-	
-	def _link_nodes(self):
-		self.node_tree.links.new(self.primitive_node.outputs[0], self.output_node.inputs[0])
-	
-	def _apply_modifier(self, context):
-		if context.mode != 'EDIT':
-			bpy.ops.object.mode_set(mode='OBJECT')
-		bpy.ops.object.modifier_apply(modifier=self.mod_name)
-	
-	def _delete_node_tree(self):
-		bpy.data.node_groups.remove(self.node_tree)
-
-	def enter_edit_mode(self, context):
-		bpy.ops.object.mode_set(mode='EDIT')
-		context.tool_settings.mesh_select_mode = (False, False, True)
-	
-	def _show_wireframe(self):
-		self.node_container.show_wire = True
-
-	def _hide_wireframe(self):
-		self.node_container.show_wire = False
-	
-	def _cleanup(self, context, report: str):
-		self._apply_modifier(context)
-		self._hide_wireframe()
-		self._delete_node_tree()
-		self._reset_cursor_display(context)
-		bpy.types.SpaceView3D.draw_handler_remove(self._handle, 'WINDOW')
-		# restore_status_bar(self)
-		self.restore_status_bar()
-		self.report({'INFO'}, report)
-	
-
-	def _set_text(self):
-		raise NotImplementedError
-
-	def _create_primitive_node(self):
-		raise NotImplementedError
-	
-	def _reset_method(self):
-		raise NotImplementedError
-
-	def _increase_method(self, event):
-		raise NotImplementedError
-
-	def _decrease_method(self, event):
-		raise NotImplementedError
-	
-	def _number_method(self, event):
-		raise NotImplementedError
-	
-	def _scale(self, event):
-		raise NotImplementedError
+		return self.modal_geometry.event(event)
 
 
-class MESH_OT_armored_cube(Operator, ModalPrimitive):
+class MESH_OT_armored_plane(bpy.types.Operator, ModalOperator):
+	'''Modal Plane primitive.
+
+armoredColony.com '''
+
+	bl_idname = 'mesh.armored_plane'
+	bl_label  = 'ARMORED Plane'
+	DATA = PLANE_DATA
+
+	cuts: bpy.props.IntProperty(default=2, min=2, max=102)
+	scale: bpy.props.FloatVectorProperty(default=(1, 1, 1))
+
+
+class MESH_OT_armored_cube(bpy.types.Operator, ModalOperator):
 	'''Modal Cube primitive.
 
 armoredColony.com '''
 
 	bl_idname = 'mesh.armored_cube'
-	bl_label = 'ARMORED Cube'
-	bl_options = {'REGISTER', 'UNDO'}
-
-	cuts : IntProperty(name='Cuts', default=0, min=0, max=100)
-	CUT_OFFSET = 2
-
-	def _set_text(self):
-		self.text = f'Cuts: {self.cuts}'
-		self.set_active_property('Cuts')
-
-	def _create_primitive_node(self):
-		self.primitive_node = self.node_tree.nodes.new(type='GeometryNodeMeshCube')
-		inputs = self.primitive_node.inputs
-		inputs[0].default_value = (2, 2, 2)
-		for input in inputs[1:4]:
-			input.default_value = self.cuts + self.CUT_OFFSET
+	bl_label  = 'ARMORED Cube'
+	DATA = CUBE_DATA
 	
-	def _set_values(self):
-		for input in self.inputs[1:4]:
-			input.default_value = self.cuts + self.CUT_OFFSET
+	cuts: bpy.props.IntProperty(default=2, min=2, max=102)
+	scale: bpy.props.FloatVectorProperty(default=(1, 1, 1))
 	
-	def _increase_method(self, event):
-		self.cuts += 1
-		self._set_values()
 
-	def _decrease_method(self, event):
-		self.cuts -= 1
-		self._set_values()
-	
-	def _number_method(self, event):
-		self.cuts = number_events[event.type]
-		self._set_values()
-	
-	def _reset_method(self):
-		self.cuts = 0
-		self._set_values()
-	
-	def _scale(self, event):
-		self.scale = (event.mouse_region_x - self.start_scale) / 100
-		print(self.scale)
-		self.inputs[0].default_value = ([self.scale]*3)
-
-# class MESH_OT_armored_plane(MESH_OT_armored_cube, Operator):
-# 	'''Modal Plane primitive.
-
-# armoredColony.com '''
-
-# 	bl_idname = 'mesh.armored_plane'
-# 	bl_label = 'ARMORED Plane'
-# 	bl_options = {'REGISTER', 'UNDO'}
-
-# 	cuts : IntProperty(name='Cuts', default=0, min=0, max=100)
-# 	CUT_OFFSET = 2
-
-# 	# def _set_text(self):
-# 	# 	self.text = f'Cuts: {self.cuts}'
-
-# 	def _create_primitive_node(self):
-# 		self.primitive_node = self.node_tree.nodes.new(type='GeometryNodeMeshGrid')
-# 		inputs = self.primitive_node.inputs
-
-# 		for input in inputs[:2]:
-# 			input.default_value = 3
-# 		for input in inputs[2:4]:
-# 			input.default_value = self.cuts + self.CUT_OFFSET
-	
-# 	def _set_values(self):
-# 		for input in self.inputs[2:5]:
-# 			input.default_value = self.cuts + self.CUT_OFFSET
-	
-	# def _increase_method(self, event):
-	# 	self.cuts += 1
-	# 	self._set_values()
-
-	# def _decrease_method(self, event):
-	# 	self.cuts -= 1
-	# 	self._set_values()
-	
-	# def _number_method(self, event):
-	# 	self.cuts = number_events[event.type]
-	# 	self._set_values()
-	
-	# def _reset_method(self):
-	# 	self.cuts = 0
-	# 	self._set_values()	
-
-
-class MESH_OT_armored_cylinder(Operator, ModalPrimitive):
+class MESH_OT_armored_cylinder(bpy.types.Operator, ModalOperator):
 	'''Modal Cylinder primitive.
 
 armoredColony.com '''
 
 	bl_idname = 'mesh.armored_cylinder'
-	bl_label = 'ARMORED Cylinder'
-	bl_options = {'REGISTER', 'UNDO'}
-	
-	sides         : IntProperty(name='Sides',         default=8, min=3, max=128)
-	vertical_cuts : IntProperty(name='Vertical Cuts', default=0, min=0, max=100)
+	bl_label  = 'ARMORED Cylinder'
+	DATA = CYLINDER_DATA
 
-	VERTICAL_CUTS_OFFSET = 1
-
-	def _set_text(self):
-		self.text = f'Sides {self.sides}'
-		self.set_active_property('Sides')
-
-	def _set_alt_text(self):
-		self.text = f'Vertical Cuts {self.vertical_cuts}'
-
-	def _create_primitive_node(self):
-		self.primitive_node = self.node_tree.nodes.new(type='GeometryNodeMeshCylinder')
-		self.primitive_node.inputs[0].default_value = self.sides
-		self.primitive_node.inputs[1].default_value = self.vertical_cuts + 1
-	
-	def _set_values(self):
-		self.inputs[1].default_value = self.vertical_cuts + self.VERTICAL_CUTS_OFFSET
-		self.inputs[0].default_value = self.sides
-
-	def _increase_method(self, event):
-		if event.shift:
-			self.vertical_cuts += 1
-		else:
-			self.sides += 1
-		self._set_values()
-
-	def _decrease_method(self, event):
-		if event.shift:
-			self.vertical_cuts -= 1
-		else:
-			self.sides -= 1
-		self._set_values()
-	
-	def _number_method(self, event):
-		self.sides = number_events[event.type]
-		self._set_values()
-	
-	def _reset_method(self):
-		self.sides = 8
-		self.vertical_cuts = 0
-		self._set_values()
+	sides: bpy.props.IntProperty(default=8, min=3, max=128)
+	cuts:  bpy.props.IntProperty(default=1, min=1, max=129)
+	scale: bpy.props.FloatVectorProperty(default=(1, 1, 1))
 
 
-class MESH_OT_armored_quadsphere(Operator, ModalPrimitive):
+class MESH_OT_armored_quadsphere(bpy.types.Operator, ModalOperator):
 	'''Modal Quadsphere primitive.
 
 armoredColony.com '''
 
-	bl_idname = 'mesh.armored_quadspheree'
-	bl_label = 'ARMORED Quadsphere'
-	bl_options = {'REGISTER', 'UNDO'}
+	bl_idname = 'mesh.armored_quadsphere'
+	bl_label  = 'ARMORED Quadsphere'
+	DATA = QUADSPHERE_DATA
 
-	subdivisions : IntProperty(name='Subdivisions', default=1, min=1, max=7)
-
-	def _set_text(self):
-		self.text = f'Subdivisions: {self.subdivisions}'
-		self.set_active_property('Subdivisions')
-
-	def _create_primitive_node(self):
-		self.primitive_node = self.node_tree.nodes.new(type='GeometryNodeSubdivisionSurface')
-		inputs = self.primitive_node.inputs
-		inputs[1].default_value = self.subdivisions
-
-	def _link_nodes(self):
-		super()._link_nodes()
-		self.node_tree.links.new(self._get_node('Group Input').outputs[0], self.primitive_node.inputs[0])
-	
-	def _set_values(self):
-		self.inputs[1].default_value = self.subdivisions
-	
-	def _increase_method(self, event):
-		self.subdivisions += 1
-		self._set_values()
-
-	def _decrease_method(self, event):
-		self.subdivisions -= 1
-		self._set_values()
-	
-	def _number_method(self, event):
-		self.subdivisions = number_events[event.type]
-		self._set_values()
-	
-	def _reset_method(self):
-		self.subdivisions = 0
-		self._set_values()
-	
-	def _cleanup(self, context, report):
-		super()._cleanup(context, report)
-
-		# Select components and cast to sphere.
-		bpy.ops.object.mode_set(mode='EDIT')
-		bpy.ops.mesh.select_all(action='SELECT')
-		bpy.ops.transform.tosphere(value=1)
-		bpy.ops.mesh.select_all(action='DESELECT')
-		bpy.ops.object.mode_set(mode='OBJECT')
+	subdivisions: bpy.props.IntProperty(default=1, min=1, max=6)
+	scale: bpy.props.FloatVectorProperty(default=(1, 1, 1))
 
 
-class MESH_OT_armored_vertex(Operator):
+
+class MESH_OT_armored_vertex(bpy.types.Operator, NonModalOperator):
 	'''Add a single vertex and enter edit mode.
 
 armoredColony.com '''
 
 	bl_idname = 'mesh.armored_vertex'
-	bl_label = 'ARMORED Vertex'
-	bl_options = {'REGISTER', 'UNDO'}
+	bl_label  = 'ARMORED Vertex'
+	DATA = VERTEX_DATA
 
-	@classmethod
-	def poll(cls, context):
-		return context.mode in {'OBJECT', 'EDIT_MESH'}
+	points: bpy.props.IntProperty(default=1, min=1, max=1)
 
-	def execute(self, context):
-		mesh = bpy.data.meshes.new('Vert')
-		mesh.vertices.add(1)
-
-		from bpy_extras import object_utils
-		object_utils.object_data_add(context, mesh)
-		bpy.ops.object.mode_set(mode='EDIT')
-		bpy.context.tool_settings.mesh_select_mode = (True, False, False)
-
-		return {'FINISHED'}
-	
 
 def draw_menu(self, context):
     layout = self.layout
     layout.separator()
-#     layout.operator(MESH_OT_armored_plane.bl_idname,	  text='Plane (modal)',      icon='MESH_PLANE')
-    layout.operator(MESH_OT_armored_cube.bl_idname,	  text='Cube (modal)',       icon='MESH_CUBE')
+    layout.operator(MESH_OT_armored_plane.bl_idname,	  text='Plane (modal)',      icon='MESH_PLANE')
+    layout.operator(MESH_OT_armored_cube .bl_idname,	  text='Cube (modal)',       icon='MESH_CUBE')
     layout.operator(MESH_OT_armored_cylinder.bl_idname,   text='Cylinder (modal)',   icon='MESH_CYLINDER')
     layout.operator(MESH_OT_armored_quadsphere.bl_idname, text='Quadsphere (modal)', icon='MESH_UVSPHERE')
     layout.operator(MESH_OT_armored_vertex.bl_idname,     text='Single Vert',        icon='DOT')
 
 
 classes = (
+	MESH_OT_armored_plane,
 	MESH_OT_armored_cube,
-	# MESH_OT_armored_plane,
 	MESH_OT_armored_cylinder,
 	MESH_OT_armored_quadsphere,
 	MESH_OT_armored_vertex,

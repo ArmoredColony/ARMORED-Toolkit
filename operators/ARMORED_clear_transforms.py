@@ -4,7 +4,7 @@ from mathutils import Vector
 
 
 class OBJECT_OT_armored_clear_location(bpy.types.Operator):
-	'''Operator Description.
+	'''Similar to Blender's clear location (ALT G), but this version can optionally keep the relative locations between the selected objects and move them as a group to world zero.
 
 armoredColony.com '''
 
@@ -12,8 +12,9 @@ armoredColony.com '''
 	bl_label = 'ARMORED Clear Location'
 	bl_options = {'REGISTER', 'UNDO'}
 
-	as_group: bpy.props.BoolProperty(
-		name='As Group', default=True)
+	keep_relative: bpy.props.BoolProperty(
+		name='Keep Relative', default=True,
+		description='With multiple objects selected, keep their relative positions and move them as a group.')
 
 	center: bpy.props.EnumProperty(
 		name='Group Center',
@@ -33,33 +34,34 @@ armoredColony.com '''
 		layout = self.layout
 		layout.use_property_split = True
 
-		layout.prop(self, 'as_group')
+		layout.prop(self, 'keep_relative')
+		layout.separator()
 
-		if self.as_group and self._get_active(context) is not None:
-			layout.prop(self, 'center')
+		row = layout.row()
+		row.prop(self, 'center', expand=True)
 
-	def invoke(self, context, event):
-		if self._get_active(context) is None:
-			self.center = 'BOUNDS'
-		
-		return self.execute(context)
+		if not self.keep_relative or self._get_active(context) is None:
+			row.enabled = False
 
 	def execute(self, context):
-		if not self.as_group:
+		if not self.keep_relative:
 			bpy.ops.object.location_clear()
 
 			return {'FINISHED'}
+		
+		if self._get_active(context) is None:
+			self.center = 'BOUNDS'
 
 		self.selected_objects = context.selected_objects
 
-		if self.center == 'ACTIVE' and self._get_active is not None:
-			self.group_center = context.active_object.matrix_world.translation
+		if self.center == 'ACTIVE':
+			group_center = context.active_object.matrix_world.translation.copy()
 
 		elif self.center == 'BOUNDS':
 			bounds_min, bounds_max = self._get_min_max_vectors_from_bounds()
-			self.group_center = (bounds_min + bounds_max) / 2
+			group_center = (bounds_min + bounds_max) / 2
 
-		self._clear_location_of_selected()
+		self._clear_location_of_selected(group_center)
 
 		return {'FINISHED'}
 	
@@ -72,9 +74,9 @@ armoredColony.com '''
 		
 		return context.active_object
 	
-	def _clear_location_of_selected(self) -> None:
+	def _clear_location_of_selected(self, group_center: Vector) -> None:
 		for obj in self.selected_objects:
-			obj.matrix_world.translation -= self.group_center
+			obj.matrix_world.translation -= group_center
 	
 	def _get_min_max_vectors_from_bounds(self) -> tuple[Vector, Vector]:
 		'''
