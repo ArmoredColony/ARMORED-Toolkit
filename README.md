@@ -14,7 +14,7 @@ That's it! Scripts will automatically appear in the search menu (F3) and will be
 - **Delete and Grid Fill**: Delete the selected faces and fill them with a grid of quads.
 - **Flatten**: Flatten your selection to the averaged normals, a world axis or the active face.
 - **Connect**: Create an edge loop through a selection of faces (similar to Maya, Max or Modo).
-- **Select Adjacent**: Selects the adjacent componnents and deselects the previous ones (like XSI).
+- **Select Adjacent**: Selects the adjacent components and deselects the previous ones (like XSI).
 - **Fast Subdivision**: Applies a subsurface modifier with a lower `limit_surface` value for faster subdivisions with no quality loss. 
 - **Edge to Pipe**: Convert a curve or edge selection into a pipe (like Modo)
 - **Fast Bevel**: Combine the edge and vertex bevel tools into a single one. On face selections it will bevel the face border.
