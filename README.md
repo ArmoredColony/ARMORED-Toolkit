@@ -3,7 +3,7 @@
 This is my free collection of modeling Scripts for Blender, bundled into a single Addon for easy installation. It also includes *optional* extras like my personal Blender Theme, Matcaps and Hotkeys which are all *disabled* by default.
 
 ## How to Install?
-- Click on the *Code* button and download the ZIP file.
+- Click on the `<> Code` button and download the ZIP file.
 - Go to **Blender Preferences> Addons> Install** and select the ZIP you downloaded. 
 
 That's it! Scripts will automatically appear in the search menu (F3) and will be marked with the ARMORED prefix. Note that some scripts will be hidden based on the context. For example: **Flatten** only works in Edit mode and will not appear in Object mode.
