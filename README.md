@@ -1,6 +1,6 @@
 # ARMORED-Toolkit
 
-This is my free collection of modeling Scripts for Blender, bundled into a single Addon for easy installation. It also includes *optional* extras like my personal Blender Theme, Matcaps and Hotkeys which are all *disabled* by default.
+This is my free collection of modeling Scripts for Blender, bundled into a single Addon for easy installation. It also includes *optional* extras (disabled by default) like my personal Blender Theme, Matcaps and Hotkeys.
 
 ## How to Install?
 - Click the `<> Code` button and download the ZIP file.
