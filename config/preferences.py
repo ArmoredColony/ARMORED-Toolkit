@@ -40,7 +40,7 @@ def update(self, context, prop='', category=''):
 		ARMORED_mode_toggle.register()
 		ARMORED_mode_toggle.unregister()
 
-	config.set_config(prop, category, state)
+	# config.set_config(prop, category, state)
 
 
 class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
@@ -199,18 +199,20 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 		col1.separator()
 
 		box = col2.box()
-		box.label(text='Armored Preferences:')
+		box.label(text='Custom Preferences:')
 		layout.use_property_split = True
-		box.operator('armored.load_custom_preferences', text='Load Preferences')
-		box.operator('armored.unload_custom_preferences', text='Unload Preferences')
+		box.operator('armored.load_preferences', text='Load Preferences')
+		box.operator('armored.unload_preferences', text='Unload Preferences')
 		# prop_line(prop='system_preferences', icon='TOPBAR', url='www.youtube.com')
 		layout.use_property_split = False
 		col2.separator()
 		
 		box = col2.box()
 		box.label(text='Custom Theme:')
-		box.operator('armored.theme_install', text='Load Armored Colony Theme')
-		box.operator('preferences.reset_default_theme', text='Reset to Default Theme')
+		box.operator('armored.theme_install', text='Load Theme')
+		box.operator('armored.theme_uninstall', text='Unload Theme')
+
+		# box.operator('preferences.reset_default_theme', text='Reset to Default Theme')
 		col2.separator()
 
 		col2.separator()

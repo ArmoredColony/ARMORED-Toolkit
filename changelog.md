@@ -1,6 +1,14 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.6.1
+*08/Dec/2022*
+
+### Changed
+- Addon Preferences **Load Preferences** loads a few more prefences than before (check tooltip).
+- Addon Preferences **Load Theme** now loads a Matcap and HDRI that matches the Armored Colony Theme.
+
+
 ## v0.6.0
 *04/Dec/2022*
 
