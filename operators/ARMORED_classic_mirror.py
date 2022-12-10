@@ -1,4 +1,4 @@
-# v1.1
+# v1.2
 
 import bpy
 
@@ -39,8 +39,8 @@ armoredColony.com '''
 
 			mod.use_clip = True
 
-			mod.merge_threshold = .0001
-			mod.bisect_threshold = .0001
+			# mod.merge_threshold = .01
+			# mod.bisect_threshold = .01
 		
 		else:
 			bpy.ops.object.modifier_copy(modifier='Mirror')

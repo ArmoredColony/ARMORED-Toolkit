@@ -1,6 +1,16 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.6.2
+*09/Dec/2022*
+
+## Added
+- Operator **Curve Deform**: create an automatically sized curve deformer and assign it to all selected objects.
+
+## Changed
+- Operator **Classic Mirror** now uses default merge and bisect thresholds.
+
+
 ## v0.6.1
 *08/Dec/2022*
 

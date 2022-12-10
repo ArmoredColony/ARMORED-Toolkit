@@ -1,32 +1,30 @@
-# v4.1
+# v4.2
 
 import bpy
 import bmesh
-
-from bpy.props import IntProperty, BoolProperty, EnumProperty, FloatVectorProperty, StringProperty
-from mathutils import Vector, Quaternion, Euler
-
-from abc import ABC, abstractmethod
+import abc
+import mathutils
 
 
-class BoundsCalculator(ABC):
+
+class BoundsCalculator(abc.ABC):
 	'''
 	Abstract Base Class for calculating the location, rotation and dimensions of a bounding box.
 	'''
 
-	@abstractmethod
+	@abc.abstractmethod
 	def calculate_location(self):
 		pass
 
-	@abstractmethod
+	@abc.abstractmethod
 	def calculate_rotation(self):
 		pass
 
-	@abstractmethod
+	@abc.abstractmethod
 	def calculate_dimensions(self):
 		pass
 
-	def calculate_transforms(self) -> tuple[Vector, Vector, Vector]:
+	def calculate_transforms(self) -> tuple[mathutils.Vector, mathutils.Vector, mathutils.Vector]:
 		loc = self.calculate_location()
 		rot = self.calculate_rotation()
 		dim = self.calculate_dimensions()
@@ -40,39 +38,39 @@ class FromIndividualBoundingBoxes(BoundsCalculator):
 	and the active object's rotation as world space.
 	'''
 
-	def __init__(self, selected_objects: list[bpy.types.Object], rotation_quaternion: Quaternion) -> None:
+	def __init__(self, selected_objects: list[bpy.types.Object], rotation_quaternion: mathutils.Quaternion=None) -> None:
 		self.selected_objects = selected_objects
 
-		self.rotation_quaternion = rotation_quaternion
+		self.rotation_quaternion = mathutils.Quaternion() if rotation_quaternion is None else rotation_quaternion
 		self.bounds_min, self.bounds_max = self._get_min_max_vectors_from_bounds()
 		
-	def calculate_location(self) -> Vector:
+	def calculate_location(self) -> mathutils.Vector:
 		return self.rotation_quaternion @ ((self.bounds_min + self.bounds_max) / 2)
 
-	def calculate_rotation(self) -> Vector:
+	def calculate_rotation(self) -> mathutils.Vector:
 		return self.rotation_quaternion.to_euler()
 
-	def calculate_dimensions(self) -> Vector:
+	def calculate_dimensions(self) -> mathutils.Vector:
 		return self._get_dimensions_from_min_max_bounds()
 	
 
 	# PRIVATE HELPERS >>
 
-	def _get_dimensions_from_min_max_bounds(self) -> Vector:
+	def _get_dimensions_from_min_max_bounds(self) -> mathutils.Vector:
 		'''
-		Returns (x, y, z): Vector dimensions of a bounding box based on 2 opposite corners.
+		Returns (x, y, z): mathutils.Vector dimensions of a bounding box based on 2 opposite corners.
 		'''
 
-		return Vector((
+		return mathutils.Vector((
 			abs(self.bounds_min.x - self.bounds_max.x), 
 			abs(self.bounds_min.y - self.bounds_max.y), 
 			abs(self.bounds_min.z - self.bounds_max.z)
 			))
 	
-	def _get_min_max_vectors_from_bounds(self) -> tuple[Vector, Vector]:
+	def _get_min_max_vectors_from_bounds(self) -> tuple[mathutils.Vector, mathutils.Vector]:
 
 		'''
-		Returns (min: Vector, max: Vector) corners of a bounding box around the selected objects.
+		Returns (min: mathutils.Vector, max: mathutils.Vector) corners of a bounding box around the selected objects.
 		'''
 
 		print(f'class selected {self.selected_objects}')
@@ -80,9 +78,9 @@ class FromIndividualBoundingBoxes(BoundsCalculator):
 		for obj in self.selected_objects:
 			vertex_coords.extend(
 				self.rotation_quaternion.inverted() @ 
-				(obj.matrix_world @ Vector(point)) for point in obj.bound_box)
+				(obj.matrix_world @ mathutils.Vector(point)) for point in obj.bound_box)
 		
-		return Vector(map(min, *vertex_coords)), Vector(map(max, *vertex_coords))	# NOT SURE WHY THIS WORKS
+		return mathutils.Vector(map(min, *vertex_coords)), mathutils.Vector(map(max, *vertex_coords))	# NOT SURE WHY THIS WORKS
 
 
 class FromIndividualBoundingBoxesEvaluated(FromIndividualBoundingBoxes):
@@ -90,13 +88,13 @@ class FromIndividualBoundingBoxesEvaluated(FromIndividualBoundingBoxes):
 	Same as FromIndividualBoundingBoxes, but uses evaluated objects to get the bounding box.
 	'''
 
-	def __init__(self, context, selected_objects: list[bpy.types.Object], rotation_quaternion: Quaternion) -> None:
+	def __init__(self, context, selected_objects: list[bpy.types.Object], rotation_quaternion: mathutils.Quaternion) -> None:
 		self.context = context
 		super().__init__(selected_objects, rotation_quaternion)
 
-	def _get_min_max_vectors_from_bounds(self) -> tuple[Vector, Vector]:
+	def _get_min_max_vectors_from_bounds(self) -> tuple[mathutils.Vector, mathutils.Vector]:
 		'''
-		Returns (min: Vector, max: Vector) corners of a bounding box around the selected objects.
+		Returns (min: mathutils.Vector, max: mathutils.Vector) corners of a bounding box around the selected objects.
 		'''
 
 		depsgraph = self.context.evaluated_depsgraph_get()
@@ -108,9 +106,9 @@ class FromIndividualBoundingBoxesEvaluated(FromIndividualBoundingBoxes):
 				
 			vertex_coords.extend(
 				self.rotation_quaternion.inverted() @ 
-					(obj.matrix_world @ Vector(point)) for point in obj.bound_box)
+					(obj.matrix_world @ mathutils.Vector(point)) for point in obj.bound_box)
 		
-		return Vector(map(min, *vertex_coords)), Vector(map(max, *vertex_coords))	# NOT SURE WHY THIS WORKS
+		return mathutils.Vector(map(min, *vertex_coords)), mathutils.Vector(map(max, *vertex_coords))	# NOT SURE WHY THIS WORKS
 
 # ===============
 # COMPOSITOR CLASS
@@ -207,35 +205,35 @@ armoredColony.com '''
 	bl_label  = 'ARMORED Lattice'
 	bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
-	orientation: EnumProperty(
+	orientation: bpy.props.EnumProperty(
 		name='Orientation',
 		default='LOCAL',
-		items=[	('GLOBAL', 'Global',  'Align the lattice axes to world space'),
-			('LOCAL',  'Local',   'Align the lattice axes to the selected/active object\'s local space'), ])
+		items=[	('GLOBAL', 'Global', 'Align the lattice axes to world space'),
+			('LOCAL',  'Local',  'Align the lattice axes to the selected/active object\'s local space'), ])
 
-	points_u: IntProperty(
+	points_u: bpy.props.IntProperty(
 		name='U', default=2, min=2, max=24)
 
-	points_v: IntProperty(
+	points_v: bpy.props.IntProperty(
 		name='V', default=2, min=2, max=24)
 
-	points_w: IntProperty(
+	points_w: bpy.props.IntProperty(
 		name='W', default=3, min=2, max=24)
 
-	parent: EnumProperty(
+	parent: bpy.props.EnumProperty(
 		name='Parent', 
 		description='Which object is the parent',
 		default='LATTICE',
-		items=[	('LATTICE',  'Lattice',  'The Selected Objects are parented to the Lattice'),
-			('ACTIVE',   'Active',   'The Lattice is parented to the Active Object'),
-			('NONE',      'None',    'There is no parenting between the Lattice or your Selection'), ])
+		items=[	('LATTICE', 'Lattice', 'The Selected Objects are parented to the Lattice'),
+			('ACTIVE',  'Active',  'The Lattice is parented to the Active Object'),
+			('NONE',     'None',   'There is no parenting between the Lattice or your Selection'), ])
 
-	scale_offset: FloatVectorProperty(
+	scale_offset: bpy.props.FloatVectorProperty(
 		name='Scale Offset', 
 		#step=0.1, 
 		description='Makes the lattice larger than the object')
 
-	enter_edit: BoolProperty(
+	enter_edit: bpy.props.BoolProperty(
 		default=True)
 	
 	lattice_name: bpy.props.StringProperty()
@@ -276,7 +274,7 @@ armoredColony.com '''
 	
 	
 	def execute(self, context):
-		self.selected_objects = context.selected_objects
+		self.selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
 		self.active_object    = self._get_active(context)	# Can return None.
 		
 		self.rotation_quaternion = self._get_rotation_quaternion(context)
@@ -302,36 +300,36 @@ armoredColony.com '''
 	# PRIVATE HELPERS >>
 	
 	def _get_active(self, context):	# sourcery skip: assign-if-exp, reintroduce-else
-		if context.active_object not in context.selected_objects:
+		if context.active_object not in self.selected_objects:
 			return None
 
 		return context.active_object
 	
-	def _get_rotation_quaternion(self, context) -> Quaternion:
+	def _get_rotation_quaternion(self, context) -> mathutils.Quaternion:
 		'''
 		Get the rotation for the lattice based on the specified selection/operator properties.
 		'''
 
 		if self.orientation == 'GLOBAL':
-			return Quaternion()
+			return mathutils.Quaternion()
 		
 		
 		active = self.active_object
 
 		if active is None:
-			average = sum((Vector(obj.rotation_euler) for obj in self.selected_objects), Vector()) / len(self.selected_objects)
-			return Euler(average, 'XYZ').to_quaternion()
+			average = sum((mathutils.Vector(obj.rotation_euler) for obj in self.selected_objects), mathutils.Vector()) / len(self.selected_objects)
+			return mathutils.Euler(average, 'XYZ').to_quaternion()
 
 		if active.rotation_mode == 'QUATERNION':
 			return active.rotation_quaternion
 
 		if active.rotation_mode == 'AXIS_ANGLE':
-			return Quaternion(Vector(active.rotation_axis_angle).yzw, active.rotation_axis_angle[0])
+			return mathutils.Quaternion(mathutils.Vector(active.rotation_axis_angle).yzw, active.rotation_axis_angle[0])
 
 		return active.rotation_euler.to_quaternion()
 
 	def _offset_lattice_scale(self):
-		self.lattice.scale *= Vector((1, 1, 1)) + Vector(self.scale_offset)
+		self.lattice.scale *= mathutils.Vector((1, 1, 1)) + mathutils.Vector(self.scale_offset)
 	
 	def _set_parent(self):
 		self.lattice.matrix_world = self.lattice.matrix_basis 	# Update the matrix to save us a scene update.
@@ -379,26 +377,26 @@ armoredColony.com '''
 	bl_label = 'ARMORED Muscle Rig'
 	bl_options = {'REGISTER', 'UNDO'}
 
-	points_u: IntProperty(
+	points_u: bpy.props.IntProperty(
 		name='U', default=2, min=2, max=24)
 
-	points_v: IntProperty(
+	points_v: bpy.props.IntProperty(
 		name='V', default=2, min=2, max=24)
 
-	points_w: IntProperty(
+	points_w: bpy.props.IntProperty(
 		name='W', default=3, min=2, max=24)
 		
-	group_controllers: BoolProperty(
+	group_controllers: bpy.props.BoolProperty(
 		name='Group Controllers', default=True,
 		description='Group the controllers in their own separate Collection',)
 
-	hide_lattice: BoolProperty(
+	hide_lattice: bpy.props.BoolProperty(
 		name='Hide Lattice', default=True,)
 
 	# hooks_in_editmode: BoolProperty(
 	# 	name='Hook in Edit Mode', default=False,)
 	
-	empty_display_type: EnumProperty(
+	empty_display_type: bpy.props.EnumProperty(
 		name='Display As', default='PLAIN_AXES', 
 		description='Viewport display style for the controllers',
 		items=[ ('PLAIN_AXES', 'Plain Axes', ''),
@@ -474,7 +472,7 @@ armoredColony.com '''
 		for i, obj in enumerate(self.controllers):
 			start = i * point_count
 			end = start + point_count
-			obj.location = matrix_world @ sum((p.co_deform for p in points[start:end]),  Vector()) / point_count
+			obj.location = matrix_world @ sum((p.co_deform for p in points[start:end]),  mathutils.Vector()) / point_count
 			obj.rotation_euler = self.lattice.rotation_euler
 
 	def _scale_empties(self) -> None:
