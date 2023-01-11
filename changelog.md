@@ -1,5 +1,18 @@
 # ARMORED TOOLKIT CHANGELOG
 
+## v0.6.3
+*10/Jan/2023*
+
+### Added
+- Operator **Control Loops** uses the bevel tool to create control loops for subdivision surfaces.
+- Operator **Cursor to Selected**: move the cursor to the selected element and rotate it to match its normal.
+
+## Changed
+- Operator **Clear Location** will automatically switch between the active center or the selection bounds center (can still be overriden in the redo panel).
+
+## Fixed
+- Operator **Curve Deform** was not placing the curve correctly in the Z (vertical) axis.
+
 
 ## v0.6.2
 *09/Dec/2022*

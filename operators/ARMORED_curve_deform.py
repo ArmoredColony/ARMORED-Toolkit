@@ -1,4 +1,4 @@
-version = (0, 1, 0)
+version = (1, 0, 0)
 
 import bpy
 import abc
@@ -236,6 +236,9 @@ armoredColony.com '''
 	point_count: bpy.props.IntProperty(
 		name='Point Count', default=3, min=3,)
 	
+	parent_to_curve: bpy.props.BoolProperty(
+		name='Parent to Curve', default=False,)
+	
 	def draw(self, context):
 		layout = self.layout
 		layout.use_property_split = True
@@ -246,17 +249,18 @@ armoredColony.com '''
 		row.prop(self, 'curve_type', expand=True)
 
 		col.prop(self, 'point_count')
+		col.separator()
+
+		col.prop(self, 'parent_to_curve')
 
 	def execute(self, context):
-		# bpy.ops.ed.undo_push()
+
 		self.selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
 		self.active_object = self._get_active(context)
 
 		self.rotation_quaternion = self._get_rotation_quaternion(context)
 		bounds_calculator = FromIndividualBoundsEvaluated(context, self.selected_objects, mathutils.Quaternion())
-		loc, rot, dim = bounds_calculator.calculate_transforms()
-
-		# curve = Curve(context, self.point_count, self.curve_type)
+		bounds_loc, bounds_rot, bounds_dim = bounds_calculator.calculate_transforms()
 
 		if self.curve_type == 'BEZIER':
 			curve = BezierCurve(context, self.point_count)
@@ -264,45 +268,37 @@ armoredColony.com '''
 		elif self.curve_type == 'NURBS':
 			curve = NURBSCurve(context, self.point_count)
 		
-		# curve.bl_object.rotation_euler = context.active_object.rotation_euler
-		
-		step = dim.z / (self.point_count -1)
+		# Dimensions
+		step = bounds_dim.z / (self.point_count -1)
 		for i, point in enumerate(curve.points):
-			point.co.z = (i * step) # -dim.z / 2
+			point.co.z = (i * step) # -bounds_dim.z / 2
 			# point.co = self.rotation_quaternion @ point.co
 
-		curve.bl_object.location.z = -dim.z / 2
-
-		# curve.bl_object.location       = loc
-		# curve.bl_object.rotation_euler = rot
-		# curve.bl_object.dimensions     = dim
-
-
-
-
-		# curve.bl_object.show_in_front = True
-
-		# self.set_curve_origin(curve)
-		# context.scene.cursor.location = curve.points[0].co
-		# bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-
-		# bpy.ops.object.parent_set(type='CURVE', keep_transform=False)
+		curve.bl_object.location = bounds_loc
+		curve.bl_object.location.z -= bounds_dim.z / 2
+		curve.bl_object.rotation_euler = bounds_rot
 
 		# THIS MAKES PARENTING WORK WITHOUT NEEDING A FULL SCENE UPDATE:
 		curve.bl_object.matrix_world = curve.bl_object.matrix_basis
 
-		for obj in context.selected_objects:
-			# obj.location.z += dim.z / 2
-			parent = curve.bl_object
-			obj.parent = parent
-			obj.matrix_parent_inverse = parent.matrix_world.inverted()
-			obj.select_set(False)
+		if self.parent_to_curve:
+			for obj in context.selected_objects:
+				parent = curve.bl_object
+				obj.parent = parent
+				obj.matrix_parent_inverse = parent.matrix_world.inverted()
+				obj.select_set(False)
 
 		for obj in self.selected_objects:
+			found_subsurf = bool(obj.modifiers and obj.modifiers[-1].type == 'SUBSURF')
+
 			mod = obj.modifiers.new(name='Curve', type='CURVE')
 			mod.deform_axis = 'POS_Z'
 			mod.object = curve.bl_object
-			
+
+			if found_subsurf:
+				bpy.ops.object.modifier_move_up({'object': obj}, modifier=mod.name)
+		
+		bpy.ops.object.select_all(action='DESELECT')
 		curve.bl_object.select_set(True)
 		context.view_layer.objects.active = curve.bl_object
 
@@ -340,16 +336,6 @@ armoredColony.com '''
 
 		return active.rotation_euler.to_quaternion()
 	
-	# def set_curve_origin(self, curve):
-	# 	obj = curve.bl_object
-	# 	matrix_world = obj.matrix_world
-	# 	origin = mathutils.Vector(curve.points[0].co[:3])	# Just in case we're using NURBS
-
-	# 	T = Matrix.Translation(-origin)
-	# 	obj.data.transform(T)
-	# 	matrix_world.translation = matrix_world @ origin
-
-	# 	obj.location = origin
 
 classes = (
 	OBJECT_OT_armored_curve_deform,

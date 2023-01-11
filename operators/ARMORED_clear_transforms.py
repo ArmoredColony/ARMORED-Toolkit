@@ -1,10 +1,12 @@
+version = (1, 2, 0)
+
 import bpy
 
 from mathutils import Vector
 
 
 class OBJECT_OT_armored_clear_location(bpy.types.Operator):
-	'''Similar to Blender's clear location (ALT G), but this version can optionally keep the relative locations between the selected objects and move them as a group to world zero.
+	'''Similar to Blender's clear location (ALT G), but you can optionally keep the relative locations between the selected objects and move them as a group to world zero.
 
 armoredColony.com '''
 
@@ -14,10 +16,10 @@ armoredColony.com '''
 
 	keep_relative: bpy.props.BoolProperty(
 		name='Keep Relative', default=True,
-		description='With multiple objects selected, keep their relative positions and move them as a group.')
+		description='Keep the relative positions between multiple selected objects.')
 
 	center: bpy.props.EnumProperty(
-		name='Group Center',
+		name='Selection Center',
 		default='ACTIVE',
 		description='Choose the group center',
 		items = [ 
@@ -40,28 +42,37 @@ armoredColony.com '''
 		row = layout.row()
 		row.prop(self, 'center', expand=True)
 
-		if not self.keep_relative or self._get_active(context) is None:
-			row.enabled = False
+		# if not self.keep_relative or self._get_active(context) is None:
+		# 	row.enabled = False
+	
+	def invoke(self, context, event):
+		if context.active_object in context.selected_objects:
+			self.center = 'ACTIVE'
+		else:
+			self.center = 'BOUNDS'
+		
+		return self.execute(context)
 
 	def execute(self, context):
+		if not context.selected_objects:
+			return {'FINISHED'}
+
 		if not self.keep_relative:
 			bpy.ops.object.location_clear()
 
 			return {'FINISHED'}
 		
-		if self._get_active(context) is None:
-			self.center = 'BOUNDS'
-
-		self.selected_objects = context.selected_objects
-
 		if self.center == 'ACTIVE':
-			group_center = context.active_object.matrix_world.translation.copy()
+			if len(context.selected_objects) == 1:
+				selection_center = context.selected_objects[0].matrix_world.translation.copy()
+			else:
+				selection_center = context.active_object.matrix_world.translation.copy()
 
 		elif self.center == 'BOUNDS':
-			bounds_min, bounds_max = self._get_min_max_vectors_from_bounds()
-			group_center = (bounds_min + bounds_max) / 2
+			bounds_min, bounds_max = self._get_min_max_vectors_from_selection_bounds(context)
+			selection_center = (bounds_min + bounds_max) / 2
 
-		self._clear_location_of_selected(group_center)
+		self._clear_location_of_selected(context, selection_center)
 
 		return {'FINISHED'}
 	
@@ -74,19 +85,19 @@ armoredColony.com '''
 		
 		return context.active_object
 	
-	def _clear_location_of_selected(self, group_center: Vector) -> None:
-		for obj in self.selected_objects:
-			obj.matrix_world.translation -= group_center
+	def _clear_location_of_selected(self, context, selection_center: Vector) -> None:
+		for obj in context.selected_objects:
+			obj.matrix_world.translation -= selection_center
 	
-	def _get_min_max_vectors_from_bounds(self) -> tuple[Vector, Vector]:
+	def _get_min_max_vectors_from_selection_bounds(self, context) -> tuple[Vector, Vector]:
 		'''
 		Returns (min: Vector, max: Vector) corners of a bounding box around the selected objects (uses evaluated depsgraph).
 		'''
 
-		depsgraph = bpy.context.evaluated_depsgraph_get()
+		depsgraph = context.evaluated_depsgraph_get()
 
 		vertex_coords = []
-		for obj in self.selected_objects:
+		for obj in context.selected_objects:
 			if obj.modifiers:
 				obj = obj.evaluated_get(depsgraph)
 

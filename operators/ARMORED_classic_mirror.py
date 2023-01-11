@@ -1,4 +1,4 @@
-# v1.2
+version  = (1, 3, 0)
 
 import bpy
 
@@ -31,16 +31,7 @@ armoredColony.com '''
 		mod = active.modifiers.get('Mirror')
 
 		if mod is None:
-			mod = active.modifiers.new(type='MIRROR', name='Mirror')
-
-			mod.use_axis             = True,  False, False
-			mod.use_bisect_axis      = True,  True,  True
-			mod.use_bisect_flip_axis = False, True,  False
-
-			mod.use_clip = True
-
-			# mod.merge_threshold = .01
-			# mod.bisect_threshold = .01
+			self._add_mirror_modifier(active)
 		
 		else:
 			bpy.ops.object.modifier_copy(modifier='Mirror')
@@ -50,6 +41,19 @@ armoredColony.com '''
 			bpy.ops.object.mode_set(mode='EDIT')
 
 		return {'FINISHED'}
+	
+
+	def _add_mirror_modifier(self, active) -> bpy.types.Modifier:
+		mod = active.modifiers.new(type='MIRROR', name='Mirror')
+
+		mod.use_axis             = True,  False, False
+		mod.use_bisect_axis      = True,  True,  True
+		mod.use_bisect_flip_axis = False, True,  False
+
+		mod.use_clip = True
+		# mod.bisect_threshold = .01
+
+		return mod
 
 
 classes = (

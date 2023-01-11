@@ -1,4 +1,4 @@
-# v4.2
+version = (4, 3, 0)
 
 import bpy
 import bmesh
@@ -149,7 +149,7 @@ class LatticeDeformer:
 			mod.object = self.lattice
 
 			if found_subsurf:
-				bpy.ops.object.modifier_move_up({'object': obj}, modifier='Lattice')
+				bpy.ops.object.modifier_move_up({'object': obj}, modifier=mod.name)
 
 
 
@@ -159,7 +159,7 @@ class LatticeDeformer:
 
 def WireCube(context) -> bpy.types.Object:
 	'''
-	Create a Wireframe Cube.
+	Create a Wireframe Cube (for debugging purposes).
 	'''
 
 	mesh = bpy.data.meshes.new('Cube')

@@ -1,4 +1,4 @@
-# v2.0
+version = (2, 0, 1)
 
 import bpy
 
@@ -21,8 +21,12 @@ USER_PREFERENCES = {
 	'context.scene.world.color': [0.215861, 0.215861, 0.215861],
 
 	'context.scene.render.engine': 'CYCLES',
+	'context.scene.cycles.device': 'GPU',
 	'context.scene.cycles.use_preview_denoising': True,
 	'context.scene.cycles.denoiser': 'OPTIX',
+	'context.scene.eevee.taa_samples': 64,
+	'context.scene.eevee.use_ssr_halfres': False,
+	'context.scene.eevee.ssr_quality': 1,
 }
 
 FACTORY_USER_PREFERENCES = {
@@ -40,22 +44,30 @@ FACTORY_USER_PREFERENCES = {
 
 	'context.scene.world.color': [0.050876, 0.050876, 0.050876],
 
+	'context.scene.cycles.device': 'CPU',
 	'context.scene.render.engine': 'BLENDER_EEVEE',
 	'context.scene.cycles.use_preview_denoising': False,
 	'context.scene.cycles.denoiser': 'OPENIMAGEDENOISE',
+	'context.scene.eevee.taa_samples': 32,
+	'context.scene.eevee.use_ssr_halfres': True,
+	'context.scene.eevee.ssr_quality': .25,
 }
 
-# Use str 'space' instead of 'space_data'.
+# Use str 'space_data' instead of 'context.space_data'
+# because we want to affect all spaces and not just the active one.
 SPACE_SETTINGS = {
-	'space.overlay.grid_scale': USER_PREFERENCES.get('context.scene.unit_settings.scale_length', 1.0),
-	'space.overlay.show_stats': True,
+	'space_data.overlay.grid_scale': USER_PREFERENCES.get('context.scene.unit_settings.scale_length', 1.0),
+	'space_data.overlay.show_stats': True,
+	'space_data.shading.use_scene_world_render': False,
+	# 'space_data.clip_end': 10000,
 
 }
 
 FACTORY_SPACE_SETTINGS = {
-	'space.overlay.grid_scale': 1.0,
-	'space.overlay.show_stats': False,
-
+	'space_data.overlay.grid_scale': 1.0,
+	'space_data.overlay.show_stats': False,
+	'space_data.shading.use_scene_world_render': True,
+	# 'space_data.clip_end': 1000,
 }
 
 
@@ -75,8 +87,8 @@ def set_user_preferences(context, user_preferences):
 def set_space_settings(space_settings):
 	for screen in bpy.data.screens:
 		for area in screen.areas:
-			for space in area.spaces:
-				if space.type != 'VIEW_3D':
+			for space_data in area.spaces:
+				if space_data.type != 'VIEW_3D':
 					continue
 				
 				for key, val in space_settings.items():
@@ -99,15 +111,14 @@ class ARMORED_OT_load_preferences(bpy.types.Operator):
 
 	@classmethod
 	def description(cls, context, event):
-		# sourcery skip: merge-list-appends-into-extend
+
+		SETTINGS = {**USER_PREFERENCES, **SPACE_SETTINGS}
 
 		list_description = []
-		for key, val in USER_PREFERENCES.items():
+		for key, val in SETTINGS.items():
 			_, attr_name = key.rsplit('.', 1)
 			attr_name = attr_name.replace('_', ' ')
 			list_description.append(f"{attr_name}: {val}")
-
-		list_description.append(f'grid scale: {USER_PREFERENCES.get("context.scene.unit_settings.scale_length")}')
 
 		return 'Loads my custom system preferences\n NOTE: these settings persist when the addon is disabled; use the Unload button to return Blender to factory defaults:\n' + '\u2022 ' + ('\n\u2022 '.join(list_description))
 	
@@ -120,7 +131,7 @@ class ARMORED_OT_load_preferences(bpy.types.Operator):
 	def _load_custom_preferences(self, context) -> None:
 		set_user_preferences(context, USER_PREFERENCES)
 		set_space_settings(SPACE_SETTINGS)
-		
+
 		# bpy.ops.wm.save_homefile()
 		bpy.ops.wm.save_userpref()
 		
@@ -135,15 +146,14 @@ class ARMORED_OT_unload_preferences(bpy.types.Operator):
 
 	@classmethod
 	def description(cls, context, event):
-		# sourcery skip: merge-list-appends-into-extend
+
+		SETTINGS = {**FACTORY_USER_PREFERENCES, **FACTORY_SPACE_SETTINGS}
 
 		list_description = []
-		for key, val in FACTORY_USER_PREFERENCES.items():
+		for key, val in SETTINGS.items():
 			_, attr_name = key.rsplit('.', 1)
 			attr_name = attr_name.replace('_', ' ')
 			list_description.append(f"{attr_name}: {val}")
-
-		list_description.append(f'grid scale: {USER_PREFERENCES.get("context.scene.unit_settings.scale_length")}')
 
 		return 'Restore the following preferences to factory defaults:\n' + '\u2022 ' + ('\n\u2022 '.join(list_description))
 

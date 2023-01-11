@@ -464,7 +464,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
         self.add('mesh.faces_select_linked_flat', 'F', 'PRESS', shift=True); self.prop('sharpness', math.radians(5))
         self.add('mesh.edge_face_add',            'F', 'PRESS', alt=True)
-        self.add('mesh.f2',                       'F', 'PRESS', alt=True) # Same keymap as above, but seems to take prio if f2 is installed and viceversa.
+        self.add('mesh.armored_f2',               'F', 'PRESS', alt=True)
         
         self.add('mesh.armored_flatten', 'F', 'PRESS', ctrl=True, alt=True)
 

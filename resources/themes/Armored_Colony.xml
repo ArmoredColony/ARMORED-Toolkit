@@ -65,7 +65,7 @@
           <ThemeWidgetColors
             outline="#3d3d3d"
             inner="#282828ff"
-            inner_sel="#969696ff"
+            inner_sel="#e7e7e7ff"
             item="#ffffffb3"
             text="#e6e6e6"
             text_sel="#000000"
@@ -366,7 +366,7 @@
     </user_interface>
     <view_3d>
       <ThemeView3D
-        grid="#00000080"
+        grid="#0000004d"
         clipping_border_3d="#3f3f3fff"
         wire="#000000"
         wire_edit="#000000"
@@ -467,7 +467,7 @@
             </gradients>
             <panelcolors>
               <ThemePanelColors
-                header="#3d3d3dff"
+                header="#2a2a2aff"
                 back="#3d3d3dff"
                 sub_back="#0000001f"
                 >
@@ -966,7 +966,7 @@
         grid="#282828"
         node_selected="#ed5700"
         node_active="#ffffff"
-        wire="#1a1a1a"
+        wire="#1a1a1aff"
         wire_inner="#8d8d8d"
         wire_select="#ffffffb3"
         selected_text="#7f7f7f"
