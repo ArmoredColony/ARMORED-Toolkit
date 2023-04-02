@@ -1,4 +1,4 @@
-version  = (1, 3, 0)
+version  = (1, 4, 0)
 
 import bpy
 
@@ -14,44 +14,48 @@ armoredColony.com '''
 
 	@classmethod
 	def poll(cls, context):
-		active = context.active_object
-		return (
-			active is not None and
-			active.type == 'MESH' and
-			context.mode in {'OBJECT', 'EDIT_MESH'} 
-			)
+		return context.active_object is not None and context.active_object.type == 'MESH'
 
 	def execute(self, context):
-		active = context.active_object
+		active_object = context.active_object
 
 		last_mode = context.mode
 		if last_mode == 'EDIT_MESH':
 			bpy.ops.object.mode_set(mode='OBJECT')
 
-		mod = active.modifiers.get('Mirror')
+		mod = active_object.modifiers.get('Mirror')
 
 		if mod is None:
-			self._add_mirror_modifier(active)
-		
+			self._add_mirror_modifier(active_object)
+
+		elif active_object.data.users > 1:
+			self.report({'WARNING'}, 'Cannot apply modifiers to multi-user data.')
+
+			return {'CANCELLED'}
+
 		else:
 			bpy.ops.object.modifier_copy(modifier='Mirror')
 			bpy.ops.object.modifier_apply(modifier='Mirror.001')
-		
+
 		if last_mode == 'EDIT_MESH':
 			bpy.ops.object.mode_set(mode='EDIT')
 
 		return {'FINISHED'}
 	
 
-	def _add_mirror_modifier(self, active) -> bpy.types.Modifier:
-		mod = active.modifiers.new(type='MIRROR', name='Mirror')
+	def _add_mirror_modifier(self, active_object) -> bpy.types.Modifier:
+		found_subsurf = bool(active_object.modifiers and active_object.modifiers[-1].type == 'SUBSURF')
+
+		mod = active_object.modifiers.new(type='MIRROR', name='Mirror')
 
 		mod.use_axis             = True,  False, False
 		mod.use_bisect_axis      = True,  True,  True
 		mod.use_bisect_flip_axis = False, True,  False
 
 		mod.use_clip = True
-		# mod.bisect_threshold = .01
+
+		if found_subsurf:
+			bpy.ops.object.modifier_move_up({'object': active_object}, modifier=mod.name)
 
 		return mod
 

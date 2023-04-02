@@ -1,8 +1,38 @@
-version = (1, 0, 0)
+version = (1, 1, 0)
 
 import bpy
 import abc
 import mathutils
+import math
+
+
+def get_active(active_object, selected_objects):	# sourcery skip: assign-if-exp, reintroduce-else
+	if active_object not in selected_objects:
+		return None
+
+	return active_object
+
+def get_rotation_quaternion(active_object, selected_objects, orientation='GLOBAL') -> mathutils.Quaternion:
+	'''
+	Return a quaternion rotatoin based on the selection/operator properties.
+	'''
+
+	if orientation == 'GLOBAL':
+		return mathutils.Quaternion()
+	
+	active = active_object
+
+	if active is None:
+		average_rotation = sum((mathutils.Vector(obj.rotation_euler) for obj in selected_objects), mathutils.Vector()) / len(selected_objects)
+		return mathutils.Euler(average_rotation, 'XYZ').to_quaternion()
+
+	if active.rotation_mode == 'QUATERNION':
+		return active.rotation_quaternion
+
+	if active.rotation_mode == 'AXIS_ANGLE':
+		return mathutils.Quaternion(mathutils.Vector(active.rotation_axis_angle).yzw, active.rotation_axis_angle[0])
+
+	return active.rotation_euler.to_quaternion()
 
 
 class BoundsCalculator(abc.ABC):
@@ -33,7 +63,7 @@ class BoundsCalculator(abc.ABC):
 class FromIndividualBoundingBoxes(BoundsCalculator):
 	'''
 	Calculate the transforms of a bounding box around the selected objects, based on their individual bounding boxes  
-	and the active object's rotation as world space.
+	and a quaternion rotation that defines the world space.
 	'''
 
 	def __init__(self, selected_objects: list[bpy.types.Object], rotation_quaternion: mathutils.Quaternion=None) -> None:
@@ -107,51 +137,6 @@ class FromIndividualBoundsEvaluated(FromIndividualBoundingBoxes):
 					(obj.matrix_world @ mathutils.Vector(point)) for point in obj.bound_box)
 		
 		return mathutils.Vector(map(min, *vertex_coords)), mathutils.Vector(map(max, *vertex_coords))	# NOT SURE WHY THIS WORKS
-
-
-# class Curve:
-
-# 	def __init__(self, context, point_count=3, curve_type='BEZIER') -> None:
-# 		self.context = context
-# 		self.point_count = point_count
-# 		self.curve_type = curve_type
-
-# 		data = bpy.data.curves.new('Curve', 'CURVE')
-# 		data.dimensions = '3D'
-
-# 		spline = data.splines.new(type=curve_type)
-
-# 		if curve_type == 'BEZIER':
-# 			spline.bezier_points.add(point_count-1)
-			
-# 			for p in spline.bezier_points:
-# 				p.handle_left_type = 'AUTO' 
-# 				p.handle_right_type = 'AUTO'
-# 		else:
-# 			spline.points.add(point_count-1)
-
-# 			# NURBS weight starts at 0 for some reason.
-# 			for point in spline.points:
-# 				point.co.w = 1.0
-
-# 			# Not sure why but apparently we also need this.
-# 			spline.use_endpoint_u = True
-
-# 		self.curve = bpy.data.objects.new('Curve', data)
-# 		self.curve.show_in_front = True
-
-# 		context.scene.collection.objects.link(self.curve)
-	
-# 	@property
-# 	def bl_object(self):
-# 		return self.curve
-
-# 	@property
-# 	def points(self):
-# 		if self.curve_type == 'BEZIER':
-# 			return self.curve.data.splines[0].bezier_points
-# 		else:
-# 			return self.curve.data.splines[0].points
 
 
 class BezierCurve:
@@ -236,8 +221,8 @@ armoredColony.com '''
 	point_count: bpy.props.IntProperty(
 		name='Point Count', default=3, min=3,)
 	
-	parent_to_curve: bpy.props.BoolProperty(
-		name='Parent to Curve', default=False,)
+	# parent_to_curve: bpy.props.BoolProperty(
+	# 	name='Parent to Curve', default=False,)
 	
 	def draw(self, context):
 		layout = self.layout
@@ -251,14 +236,17 @@ armoredColony.com '''
 		col.prop(self, 'point_count')
 		col.separator()
 
-		col.prop(self, 'parent_to_curve')
+		# col.prop(self, 'parent_to_curve')
 
 	def execute(self, context):
-
 		self.selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
-		self.active_object = self._get_active(context)
+		
+		if not self.selected_objects:
+			return {'CANCELLED'}
+			
+		self.active_object = get_active(context.active_object, self.selected_objects)
 
-		self.rotation_quaternion = self._get_rotation_quaternion(context)
+		self.rotation_quaternion = get_rotation_quaternion(self.active_object, self.selected_objects)
 		bounds_calculator = FromIndividualBoundsEvaluated(context, self.selected_objects, mathutils.Quaternion())
 		bounds_loc, bounds_rot, bounds_dim = bounds_calculator.calculate_transforms()
 
@@ -281,17 +269,18 @@ armoredColony.com '''
 		# THIS MAKES PARENTING WORK WITHOUT NEEDING A FULL SCENE UPDATE:
 		curve.bl_object.matrix_world = curve.bl_object.matrix_basis
 
-		if self.parent_to_curve:
-			for obj in context.selected_objects:
-				parent = curve.bl_object
-				obj.parent = parent
-				obj.matrix_parent_inverse = parent.matrix_world.inverted()
-				obj.select_set(False)
+		# if self.parent_to_curve:
+		# 	for obj in context.selected_objects:
+		# 		parent = curve.bl_object
+		# 		obj.parent = parent
+		# 		obj.matrix_parent_inverse = parent.matrix_world.inverted()
+		# 		obj.select_set(False)
 
 		for obj in self.selected_objects:
 			found_subsurf = bool(obj.modifiers and obj.modifiers[-1].type == 'SUBSURF')
 
 			mod = obj.modifiers.new(name='Curve', type='CURVE')
+
 			mod.deform_axis = 'POS_Z'
 			mod.object = curve.bl_object
 
@@ -305,40 +294,108 @@ armoredColony.com '''
 		bpy.ops.object.mode_set(mode='EDIT')
 		
 		return {'FINISHED'}
+
+
+class OBJECT_OT_armored_circle_deform(bpy.types.Operator):
+	'''Create a curve deformer for the selected objects with the correct size and orientation.
+
+armoredColony.com '''
+
+	bl_idname = 'object.armored_circle_deform'
+	bl_label = 'ARMORED Circle Deform'
+	bl_options = {'REGISTER', 'UNDO'}
+
+	bend_direction: bpy.props.EnumProperty(
+		name='Bend Direction', default='CONCAVE',
+		items=[	('CONCAVE', 'Concave', 'Bend the selected objects backwards'),
+			('CONVEX', 'Convex',  'Bend the selected objects forwards'), ])
 	
-
-	def _get_active(self, context):	# sourcery skip: assign-if-exp, reintroduce-else
-		if context.active_object not in self.selected_objects:
-			return None
-
-		return context.active_object
+	rotation: bpy.props.FloatProperty(
+		name='Rotation', default=0, 
+		min=-360, max=360, unit='ROTATION', subtype='ANGLE',)
 	
-	def _get_rotation_quaternion(self, context) -> mathutils.Quaternion:
-		'''
-		Get the rotation for the lattice based on the specified selection/operator properties.
-		'''
-
-		# if self.orientation == 'GLOBAL':
-		# 	return mathutils.Quaternion()
+	scale_multiplier: bpy.props.FloatProperty(
+		name='Scale', default=1, min=0,)
+	
+	# parent_to_curve: bpy.props.BoolProperty(
+	# 	name='Parent to Curve', default=False,)
+	
+	def draw(self, context):
+		layout = self.layout
+		layout.use_property_split = True
 		
+		col = layout.column()
+
+		row = col.row()
+		row.prop(self, 'bend_direction', expand=True)
+
+		col.prop(self, 'rotation')
+		col.prop(self, 'scale_multiplier')
+
+	def execute(self, context):
+		self.selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
+
+		if not self.selected_objects:
+			return {'CANCELLED'}
+
+		self.active_object = get_active(context.active_object, self.selected_objects)
+
+		self.rotation_quaternion = get_rotation_quaternion(self.active_object, self.selected_objects)
+		bounds_calculator = FromIndividualBoundsEvaluated(context, self.selected_objects, mathutils.Quaternion())
+		bounds_loc, bounds_rot, bounds_dim = bounds_calculator.calculate_transforms()
+
+		context.scene.tool_settings.use_transform_pivot_point_align = False
+
+		bpy.ops.curve.primitive_bezier_circle_add(radius=1, location=bounds_loc, align='WORLD', enter_editmode=False, scale=(1, 1, 1))
+		bpy.ops.transform.rotate(value=-math.pi / 2, orient_axis='Y')
+		bpy.ops.object.transform_apply(rotation=True)
+		curve = context.active_object
+		curve.data.resolution_u = 128
+
+		points = curve.data.splines[0].bezier_points
+		for p in points:
+			p.tilt = self.rotation + math.pi
+
+		origin_location = curve.matrix_world @ points[3].co
+		context.scene.cursor.location = origin_location
+		bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+		curve.location = bounds_loc
+
+		for obj in self.selected_objects:
+			obj.select_set(True)
+
+		# bpy.ops.object.parent_set(type='CURVE')
+		# bpy.ops.transform.rotate(value=math.pi, orient_axis='Y')
+		# bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
+
+		for obj in self.selected_objects:
+			found_subsurf = bool(obj.modifiers and obj.modifiers[-1].type == 'SUBSURF')
+
+			mod = obj.modifiers.new(name='Curve', type='CURVE')
+
+			mod.object = curve
+			mod.deform_axis = 'POS_Z'
+
+			if found_subsurf:
+				bpy.ops.object.modifier_move_up({'object': obj}, modifier=mod.name)
+
+		for obj in self.selected_objects:
+			obj.select_set(False)
+
+		scale = mathutils.Vector.Fill(3, bounds_dim.z / 2)	# Arbitrary Scale.
+		if self.bend_direction == 'CONCAVE':
+			curve.scale = scale * self.scale_multiplier
+		elif self.bend_direction == 'CONVEX':
+			curve.scale = scale * self.scale_multiplier * -1
+		else:
+			raise ValueError(f'{self.bend_direction} is not a valid bend direction.')
 		
-		active = self.active_object
+		return {'FINISHED'}
 
-		if active is None:
-			average = sum((mathutils.Vector(obj.rotation_euler) for obj in self.selected_objects), mathutils.Vector()) / len(self.selected_objects)
-			return mathutils.Euler(average, 'XYZ').to_quaternion()
-
-		if active.rotation_mode == 'QUATERNION':
-			return active.rotation_quaternion
-
-		if active.rotation_mode == 'AXIS_ANGLE':
-			return mathutils.Quaternion(mathutils.Vector(active.rotation_axis_angle).yzw, active.rotation_axis_angle[0])
-
-		return active.rotation_euler.to_quaternion()
-	
 
 classes = (
 	OBJECT_OT_armored_curve_deform,
+	OBJECT_OT_armored_circle_deform,
 )
 
 def register():

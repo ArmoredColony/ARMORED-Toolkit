@@ -723,44 +723,44 @@ class ModalGeometry:
 		return self.geometry_generator.event(event)
 
 
-class StatusBar:
-	def update_status_bar(self):
-		self.save_status_bar()
-		self.set_status_bar()
+# class StatusBar:
+# 	def update_status_bar(self):
+# 		self.save_status_bar()
+# 		self.set_status_bar()
 
-	def save_status_bar(self):
-		self.status_bar = STATUSBAR_HT_header.draw
+# 	def save_status_bar(self):
+# 		self.status_bar = STATUSBAR_HT_header.draw
 
-	def restore_status_bar(self):
-		STATUSBAR_HT_header.draw = self.status_bar
+# 	def restore_status_bar(self):
+# 		STATUSBAR_HT_header.draw = self.status_bar
 
-	def set_active_property(self, name: str):
-		self.active_prop_name = name
+# 	def set_active_property(self, name: str):
+# 		self.active_prop_name = name
 
-	def set_status_bar(self):
-		STATUSBAR_HT_header.draw = self.draw_status_bar(self.active_prop_name)
+# 	def set_status_bar(self):
+# 		STATUSBAR_HT_header.draw = self.draw_status_bar(self.active_prop_name)
 	
 
-	def draw_status_bar(self, active_prop_name):
-		def draw(self, context):
-			def key(icon, label, spacing=2):
-				row.label(text='', icon=icon)
-				row.label(text=label)
-				row.separator(factor=spacing)
+# 	def draw_status_bar(self, active_prop_name):
+# 		def draw(self, context):
+# 			def key(icon, label, spacing=2):
+# 				row.label(text='', icon=icon)
+# 				row.label(text=label)
+# 				row.separator(factor=spacing)
 
-			layout = self.layout
-			row = layout.row(align=True)
+# 			layout = self.layout
+# 			row = layout.row(align=True)
 			
-			row.label(text='Cube (modal)')
-			row.separator(factor=6)
+# 			row.label(text='Cube (modal)')
+# 			row.separator(factor=6)
 			
-			key('MOUSE_LMB', 'Finish')
-			key('MOUSE_MMB', active_prop_name)
-			key('MOUSE_RMB', 'Cancel', 6)
+# 			key('MOUSE_LMB', 'Finish')
+# 			key('MOUSE_MMB', active_prop_name)
+# 			key('MOUSE_RMB', 'Cancel', 6)
 
-			key('EVENT_R', 'Reset')
-			key('EVENT_TAB', 'Edit Mode', 2)
-		return draw
+# 			key('EVENT_R', 'Reset')
+# 			key('EVENT_TAB', 'Edit Mode', 2)
+# 		return draw
 
 
 class OperatorBase:
@@ -804,6 +804,7 @@ class ModalOperator(OperatorBase):
 		return {'RUNNING_MODAL'}
 
 	def modal(self, context, event):
+		print(event.type)
 		return self.modal_geometry.event(event)
 
 

@@ -391,7 +391,8 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
         self.add('view3d.zoom_border', 'BUTTON4MOUSE', 'PRESS')
 
         self.add('view3d.armored_paint_select', 'Q', 'PRESS') # Tapping this will activate select_box instead.
-        self.add('wm.call_menu_pie',            'Q', 'DOUBLE_CLICK'); self.prop('name', 'ARMORED_MT_PIE_select')
+        # self.add('wm.call_menu_pie',            'Q', 'DOUBLE_CLICK'); self.prop('name', 'ARMORED_MT_PIE_select')
+        self.add('wm.toolbar_fallback_pie',      'Q', 'DOUBLE_CLICK')
 
         self.add('wm.context_toggle',  'W', 'PRESS', shift=True); self.prop('data_path', 'space_data.overlay.show_wireframes')
         self.add('view3d.armored_toggle_overlays', 'W', 'PRESS', alt=True); self.prop('toggle_gizmos', False)

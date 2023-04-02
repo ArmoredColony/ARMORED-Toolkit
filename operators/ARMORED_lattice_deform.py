@@ -223,7 +223,7 @@ armoredColony.com '''
 	parent: bpy.props.EnumProperty(
 		name='Parent', 
 		description='Which object is the parent',
-		default='LATTICE',
+		default='NONE',
 		items=[	('LATTICE', 'Lattice', 'The Selected Objects are parented to the Lattice'),
 			('ACTIVE',  'Active',  'The Lattice is parented to the Active Object'),
 			('NONE',     'None',   'There is no parenting between the Lattice or your Selection'), ])

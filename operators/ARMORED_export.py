@@ -1,4 +1,4 @@
-# v2.0
+version = (2, 0, 1)
 
 import bpy
 import os
@@ -73,7 +73,13 @@ www.armoredColony.com '''
 		bpy.ops.wm.obj_export(
 			filepath=self.file_path,
 			export_selected_objects=True,
-			export_materials=False,
+			export_uv=False,
+			export_normals=False,
+			apply_modifiers=True,
+			export_materials=True,
+			export_pbr_extensions=True,
+			export_object_groups=False,
+			export_material_groups=True,
 		)
 
 

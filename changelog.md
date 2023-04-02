@@ -1,5 +1,27 @@
 # ARMORED TOOLKIT CHANGELOG
 
+## v0.7.0
+*01/Apr/2023*
+
+### Added
+- UI Buttons **Align Objects** to the snapping menu in the VIEW3D header. Aligns selected objects to the active object in the X, Y or Z axis.
+- Operator **Circle Deform** creates a curve circle deformer for the selected objects with the correct size and orientation
+- Operator **Rename** batch renames the selected objects by their dimensions (default), vertex count or creation order.
+- Operator **Filter Objects with Ngons/Triangles/Non-Quads** deselects any objects that do not match the specified criteria.
+- Operator **Remove Modifiers** removes specific modifiers from the selected objects (by type, name or all).
+- Operator **Camera from View** creates a camera based on the current view.
+- Operator **Rename** renames the object selected in the viewport.
+- Operator **Render** renders all, the selected or the active scene camera to a specified location without opening the render window.
+- Operator **Filter Objects by Sides** will deselect any objects that do not match the specified filter (ngons, triangles or non-quads).
+
+### Changed
+- Operators **Lattice Deform**, **Curve Deform** and **Circle Deform** will no longer be parented to anything by default.
+- Operator **Classic Mirror**: if the last modifier in the stack is a SUBSURF type, the mirror modifier will move up one position (keeping the SUBRURF last).
+- Operator **Subdivide**: I did something to it, don't remember what.
+- Operator **Transfer Data** renames the object data to match the object name.
+- Preferences: made EEVEE AO and SSR a little stronger.
+
+
 ## v0.6.3
 *10/Jan/2023*
 

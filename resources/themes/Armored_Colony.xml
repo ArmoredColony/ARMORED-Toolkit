@@ -65,7 +65,7 @@
           <ThemeWidgetColors
             outline="#3d3d3d"
             inner="#282828ff"
-            inner_sel="#e7e7e7ff"
+            inner_sel="#ccccccff"
             item="#ffffffb3"
             text="#e6e6e6"
             text_sel="#000000"

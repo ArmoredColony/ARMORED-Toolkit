@@ -1,8 +1,7 @@
-# v2.0
+version = (2, 1, 0)
 
 import bpy
 import bmesh
-from bpy.props import FloatProperty
 
 
 class ARMORED_OT_autosmooth(bpy.types.Operator):
@@ -19,33 +18,39 @@ www.armoredColony.com '''
 		return context.object is not None
 
 	def execute(self, context):
-		active = context.object
+		active_object = context.object
 		selected_objects = {ob for ob in context.selected_objects if ob.type == 'MESH'}
-		selected_objects.add(active)
+
+		if active_object.type == 'MESH':
+			selected_objects.add(active_object)
 
 		mode = context.mode
-		autosmooth = active.data.use_auto_smooth
+		autosmooth = active_object.data.use_auto_smooth
+
+		for ob in selected_objects:
+			ob.data.use_auto_smooth = not autosmooth
 
 		if context.mode == 'OBJECT':
+			# bpy.ops.object.shade_smooth(use_ob.data.use_auto_smooth)
 			for ob in selected_objects:
-				self._object_smooth_set(ob, value=not autosmooth)
+				self._object_smooth_set(ob, value=True)
 				
 		elif context.mode in {'EDIT_MESH', 'EDIT_CURVE'}:
 			for ob in selected_objects:
-				self._bmesh_smooth_set(ob, value=not autosmooth)
+				self._bmesh_smooth_set(ob, value=True)
 		else:
 			return {'CANCELLED'}
 				
-		for ob in selected_objects:
-			ob.data.use_auto_smooth = not autosmooth
+		# for ob in selected_objects:
+		# 	ob.data.use_auto_smooth = not autosmooth
 
 		return {'FINISHED'}
 
 
 	def _object_smooth_set(self, object: bpy.types.Object, value: bool) -> None:
 		'''
-		We do it this way because the bpy.ops requivalent only works on selections 
-		and I want the active object to always be affected.
+		We do it this way because the bpy.ops equivalent only works on selections 
+		and I want the active object to also be affected even when unselected.
 		'''
 
 		mesh = object.data

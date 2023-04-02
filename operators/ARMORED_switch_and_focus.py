@@ -1,3 +1,5 @@
+version = (1, 1, 0)
+
 import bpy
 
 
@@ -16,7 +18,7 @@ class OBJECT_OT_switch_and_focus(bpy.types.Operator):
 
 	def execute(self, context):
 		bpy.ops.object.transfer_mode('INVOKE_DEFAULT')
-		bpy.ops.view3d.armored_focus('INVOKE_DEFAULT')
+		bpy.ops.sculpt.armored_focus('INVOKE_DEFAULT')
 		return {'FINISHED'}
 
 

@@ -1,4 +1,4 @@
-version = (2, 0, 1)
+version = (2, 1, 0)
 
 import bpy
 
@@ -15,16 +15,20 @@ USER_PREFERENCES = {
 
 	'context.scene.unit_settings.scale_length': .01,
 	'context.scene.unit_settings.length_unit': 'CENTIMETERS',
-	'context.scene.eevee.use_gtao': True,
-	'context.scene.eevee.use_ssr': True,
 
 	'context.scene.world.color': [0.215861, 0.215861, 0.215861],
 
 	'context.scene.render.engine': 'CYCLES',
+
 	'context.scene.cycles.device': 'GPU',
 	'context.scene.cycles.use_preview_denoising': True,
 	'context.scene.cycles.denoiser': 'OPTIX',
+
+	'context.scene.eevee.use_gtao': True,
+	'context.scene.eevee.use_ssr': True,
 	'context.scene.eevee.taa_samples': 64,
+	'context.scene.eevee.gtao_distance': 50,	# Assuming scale_length of .01
+	'context.scene.eevee.ssr_thickness': 50,
 	'context.scene.eevee.use_ssr_halfres': False,
 	'context.scene.eevee.ssr_quality': 1,
 }
@@ -39,16 +43,20 @@ FACTORY_USER_PREFERENCES = {
 
 	'context.scene.unit_settings.scale_length': 1,
 	'context.scene.unit_settings.length_unit': 'METERS',
-	'context.scene.eevee.use_gtao': False,
-	'context.scene.eevee.use_ssr': False,
 
 	'context.scene.world.color': [0.050876, 0.050876, 0.050876],
 
-	'context.scene.cycles.device': 'CPU',
 	'context.scene.render.engine': 'BLENDER_EEVEE',
+
+	'context.scene.cycles.device': 'CPU',
 	'context.scene.cycles.use_preview_denoising': False,
 	'context.scene.cycles.denoiser': 'OPENIMAGEDENOISE',
+
+	'context.scene.eevee.use_gtao': False,
+	'context.scene.eevee.use_ssr': False,
 	'context.scene.eevee.taa_samples': 32,
+	'context.scene.eevee.gtao_distance': 20,	# Assuming scale_length of 1
+	'context.scene.eevee.ssr_thickness': 20,
 	'context.scene.eevee.use_ssr_halfres': True,
 	'context.scene.eevee.ssr_quality': .25,
 }

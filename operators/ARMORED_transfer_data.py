@@ -1,10 +1,12 @@
+version = (1, 1, 0)
+
 import bpy
 
 
 class VIEW3D_OT_armored_transfer_data(bpy.types.Operator):
 	'''Duplicate the `object.data` of the active object to all selected objects and optionally turn them into linked duplicates.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'view3d.armored_transfer_data'
 	bl_label = 'ARMORED Transfer Data'
@@ -21,7 +23,11 @@ armoredColony.com '''
 		selected = [obj for obj in context.selected_objects if obj is not active]
 
 		for obj in selected:
-			obj.data = active.data if self.linked else active.data.copy()
+			if self.linked:
+				obj.data = active.data
+			else:
+				obj.data = active.data.copy()
+				obj.data.name = obj.name
 
 		return {'FINISHED'}
 
