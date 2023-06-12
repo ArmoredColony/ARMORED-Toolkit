@@ -1,4 +1,4 @@
-version = (1, 0, 0)
+version = (1, 0, 1)
 
 import bpy
 import string
@@ -14,7 +14,6 @@ def rename_objects(objects: list[bpy.types.Object], base_string: str, start_int:
 		
 
 		if not obj.data or obj.data.users > 1:
-			found_error = True
 			print(f'ARMORED_Toolkit: Object {obj.name} has no data block or is linked to other objects.')
 			continue
 
@@ -24,7 +23,7 @@ def rename_objects(objects: list[bpy.types.Object], base_string: str, start_int:
 class OBJECT_OT_armored_rename(bpy.types.Operator):
 	'''Rename the selected objects.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'object.armored_rename'
 	bl_label = 'ARMORED Rename'

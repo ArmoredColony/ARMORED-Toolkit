@@ -1,43 +1,14 @@
-# ##### BEGIN GPL LICENSE BLOCK #####
-#
-#  This program is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU General Public License
-#  as published by the Free Software Foundation; either version 2
-#  of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software Foundation,
-#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-#
-# ##### END GPL LICENSE BLOCK #####
-# Contributed to Germano Cavalcante (mano-wii), Florian Meyer (testscreenings),
-# Brendon Murphy (meta-androcto),
-# Maintainer: Vladimir Spivak (cwolf3d)
-# Originally an addon by Bart Crouch
-
-bl_info = {
-    "name": "LoopTools",
-    "author": "Bart Crouch, Vladimir Spivak (cwolf3d)",
-    "version": (4, 7, 7),
-    "blender": (2, 80, 0),
-    "location": "View3D > Sidebar > Edit Tab / Edit Mode Context Menu",
-    "warning": "",
-    "description": "Mesh modelling toolkit. Several tools to aid modelling",
-    "doc_url": "{BLENDER_MANUAL_URL}/addons/mesh/looptools.html",
-    "category": "Mesh",
-}
+#######################
+# This is a copypasta of the 'Circle' Operator from the Lopoptools addon (since I don't use the rest of it and don't like the extra menus)
+#######################
 
 
-import bmesh
 import bpy
+import bmesh
 import collections
 import mathutils
 import math
+
 from bpy_extras import view3d_utils
 from bpy.types import (
         Operator,
@@ -46,6 +17,7 @@ from bpy.types import (
         PropertyGroup,
         AddonPreferences,
         )
+
 from bpy.props import (
         BoolProperty,
         EnumProperty,
@@ -64,7 +36,7 @@ looptools_cache = {}
 
 
 def get_strokes(self, context):
-    looptools =  context.window_manager.looptools
+    looptools =  context.window_manager.looptoolsmod
     if looptools.gstretch_use_guide == "Annotation":
         try:
             strokes = bpy.data.grease_pencils[0].layers.active.active_frame.strokes
@@ -860,7 +832,7 @@ def move_verts(object, bm, mapping, move, lock, influence):
 
 # load custom tool settings
 def settings_load(self):
-    lt = bpy.context.window_manager.looptools
+    lt = bpy.context.window_manager.looptoolsmod
     tool = self.name.split()[0].lower()
     keys = self.as_keywords().keys()
     for key in keys:
@@ -869,7 +841,7 @@ def settings_load(self):
 
 # store custom tool settings
 def settings_write(self):
-    lt = bpy.context.window_manager.looptools
+    lt = bpy.context.window_manager.looptoolsmod
     tool = self.name.split()[0].lower()
     keys = self.as_keywords().keys()
     for key in keys:
@@ -2900,7 +2872,7 @@ def gstretch_get_fake_strokes(object, bm_mod, loops):
 
 # get strokes
 def gstretch_get_strokes(self, context):
-    looptools =  context.window_manager.looptools
+    looptools =  context.window_manager.looptoolsmod
     gp = get_strokes(self, context)
     if not gp:
         return(None)
@@ -3046,7 +3018,7 @@ def gstretch_update_max(self, context):
             self.conversion_max = self.conversion_min
     # called from toolbar
     else:
-        lt = context.window_manager.looptools
+        lt = context.window_manager.looptoolsmod
         if lt.gstretch_conversion_min > lt.gstretch_conversion_max:
             lt.gstretch_conversion_max = lt.gstretch_conversion_min
 
@@ -3059,7 +3031,7 @@ def gstretch_update_min(self, context):
             self.conversion_min = self.conversion_max
     # called from toolbar
     else:
-        lt = context.window_manager.looptools
+        lt = context.window_manager.looptoolsmod
         if lt.gstretch_conversion_max < lt.gstretch_conversion_min:
             lt.gstretch_conversion_min = lt.gstretch_conversion_max
 
@@ -3358,7 +3330,7 @@ class Bridge(Operator):
 
     def invoke(self, context, event):
         # load custom settings
-        context.window_manager.looptools.bridge_loft = self.loft
+        context.window_manager.looptoolsmod.bridge_loft = self.loft
         settings_load(self)
         return self.execute(context)
 
@@ -3440,10 +3412,10 @@ class Bridge(Operator):
 
 
 # circle operator
-class Circle(Operator):
-    bl_idname = "mesh.looptools_circle"
-    bl_label = "Circle"
-    bl_description = "Move selected vertices into a circle shape"
+class ARMORED_OT_circle(Operator):
+    bl_idname = "mesh.armored_circularize"
+    bl_label = "ARMORED Circularize"
+    bl_description = "Exactly the same as Loptools Circle"
     bl_options = {'REGISTER', 'UNDO'}
 
     custom_radius: BoolProperty(
@@ -3914,7 +3886,7 @@ class RemoveGPencil(Operator):
     def execute(self, context):
 
         try:
-            looptools =  context.window_manager.looptools
+            looptools =  context.window_manager.looptoolsmod
             looptools.gstretch_guide.data.layers.data.clear()
             looptools.gstretch_guide.data.update_tag()
         except:
@@ -4030,7 +4002,7 @@ class GStretch(Operator):
         return(ob and ob.type == 'MESH' and context.mode == 'EDIT_MESH')
 
     def draw(self, context):
-        looptools =  context.window_manager.looptools
+        looptools =  context.window_manager.looptoolsmod
         layout = self.layout
         col = layout.column()
 
@@ -4448,7 +4420,7 @@ class VIEW3D_PT_tools_looptools(Panel):
     def draw(self, context):
         layout = self.layout
         col = layout.column(align=True)
-        lt = context.window_manager.looptools
+        lt = context.window_manager.looptoolsmod
 
         # bridge - first line
         split = col.split(factor=0.15, align=True)
@@ -4720,7 +4692,7 @@ class VIEW3D_PT_tools_looptools(Panel):
 class LoopToolsProps(PropertyGroup):
     """
     Fake module like class
-    bpy.context.window_manager.looptools
+    bpy.context.window_manager.looptoolsmod
     """
     # general display properties
     display_bridge: BoolProperty(
@@ -5166,8 +5138,8 @@ class LoopToolsProps(PropertyGroup):
         )
 
 # draw function for integration in menus
-def menu_func(self, context):
-    self.layout.operator("mesh.looptools_circle", text='Circularize')
+def circularize_menu(self, context):
+    self.layout.operator("mesh.armored_circularize", text='Circularize')
     # self.layout.menu("VIEW3D_MT_edit_mesh_looptools")
     self.layout.separator()
 
@@ -5219,19 +5191,19 @@ class LoopPreferences(AddonPreferences):
 
 # define classes for registration
 classes = (
-    VIEW3D_MT_edit_mesh_looptools,
-    VIEW3D_PT_tools_looptools,
+    # VIEW3D_MT_edit_mesh_looptools,
+    # VIEW3D_PT_tools_looptools,
     LoopToolsProps,
-    Bridge,
-    Circle,
-    Curve,
-    Flatten,
-    GStretch,
-    Relax,
-    Space,
+    # Bridge,
+    ARMORED_OT_circle,
+    # Curve,
+    # Flatten,
+    # GStretch,
+    # Relax,
+    # Space,
     # LoopPreferences,
-    RemoveAnnotation,
-    RemoveGPencil,
+    # RemoveAnnotation,
+    # RemoveGPencil,
 )
 
 
@@ -5239,18 +5211,18 @@ classes = (
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-    bpy.types.VIEW3D_MT_edit_mesh_context_menu.prepend(menu_func)
-    bpy.types.WindowManager.looptools = PointerProperty(type=LoopToolsProps)
+    bpy.types.VIEW3D_MT_edit_mesh_context_menu.prepend(circularize_menu)
+    bpy.types.WindowManager.looptoolsmod = PointerProperty(type=LoopToolsProps)
     # update_panel(None, bpy.context)
 
 
 # unregistering and removing menus
 def unregister():
-    for cls in reversed(classes):
+    for cls in classes:
         bpy.utils.unregister_class(cls)
-    bpy.types.VIEW3D_MT_edit_mesh_context_menu.remove(menu_func)
+    bpy.types.VIEW3D_MT_edit_mesh_context_menu.remove(circularize_menu)
     try:
-        del bpy.types.WindowManager.looptools
+        del bpy.types.WindowManager.looptoolsmod
     except Exception as e:
         print('unregister fail:\n', e)
         pass

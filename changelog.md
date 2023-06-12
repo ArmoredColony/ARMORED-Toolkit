@@ -1,5 +1,13 @@
 # ARMORED TOOLKIT CHANGELOG
 
+
+## v0.7.1
+*12/Jun/2023*
+
+### FIXED
+- Registration errors if the Looptools addon and the Armored-Toolkit were enabled at the same time.
+
+
 ## v0.7.0
 *01/Apr/2023*
 
