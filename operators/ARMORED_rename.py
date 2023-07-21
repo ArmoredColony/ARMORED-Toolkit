@@ -1,4 +1,4 @@
-version = (1, 0, 1)
+version = (1, 1, 0)
 
 import bpy
 import string
@@ -20,13 +20,13 @@ def rename_objects(objects: list[bpy.types.Object], base_string: str, start_int:
 		obj.data.name = obj.name
 
 
-class OBJECT_OT_armored_rename(bpy.types.Operator):
+class OBJECT_OT_armored_rename_objects(bpy.types.Operator):
 	'''Rename the selected objects.
 
 	armoredColony.com '''
 
-	bl_idname = 'object.armored_rename'
-	bl_label = 'ARMORED Rename'
+	bl_idname = 'object.armored_rename_objects'
+	bl_label = 'ARMORED Rename Objects'
 	bl_options = {'REGISTER', 'UNDO'}
 
 	base_string: bpy.props.StringProperty(
@@ -57,7 +57,7 @@ class OBJECT_OT_armored_rename(bpy.types.Operator):
 	def execute(self, context):
 		objects_to_rename = context.selected_objects
 
-		# Give the objects temporary names to avoid name conflicts.
+		# Give the objects temporary names first to avoid name conflicts.
 		for obj in objects_to_rename:
 			obj.name = 'temp_name'
 			obj.data.name = obj.name
@@ -78,8 +78,34 @@ class OBJECT_OT_armored_rename(bpy.types.Operator):
 		return {'FINISHED'}
 
 
+class OBJECT_OT_armored_rename_data(bpy.types.Operator):
+	'''Rename the data to match the name of the selected objects.
+
+	armoredColony.com '''
+
+	bl_idname = 'object.armored_rename_data'
+	bl_label = 'ARMORED Rename Data'
+	bl_options = {'REGISTER', 'UNDO'}
+
+	def execute(self, context):
+		selected_objects = context.selected_objects
+
+		objects_to_rename = [obj for obj in selected_objects if obj.data.name != obj.name]
+
+		# Give the data temporary names first to avoid name conflicts.
+		for obj in objects_to_rename:
+			obj.data.name = 'temp_name'
+		
+		for obj in objects_to_rename:
+			print(f'Renamed Data of \'{obj.name}\'')
+			obj.data.name = obj.name
+
+		return {'FINISHED'}
+
+
 classes = (
-	OBJECT_OT_armored_rename,
+	OBJECT_OT_armored_rename_objects,
+	OBJECT_OT_armored_rename_data,
 )
 
 def register():

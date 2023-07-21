@@ -1,11 +1,12 @@
-version = (1, 0, 0)
+version = (2, 0, 0)
 
 import bpy
+import pathlib
 import os
 
 
-# render_path = 'D:/Desktop/renders'
-render_path = 'D:\\Desktop\\DESIGN\\KITBASH\\Muscles\\Assorted Cyber Muscles\\Renders'
+default_path = str(pathlib.Path.home() / 'Desktop')
+
 
 class RENDER_OT_armored_render(bpy.types.Operator):
 	'''Render selected/all cameras.
@@ -16,12 +17,6 @@ class RENDER_OT_armored_render(bpy.types.Operator):
 	bl_label = 'ARMORED Render'
 	bl_options = {'REGISTER', 'UNDO'}
 
-	render_path: bpy.props.StringProperty(
-		name='Render Path',
-		default=render_path,
-		subtype='DIR_PATH',
-		)
-	
 	render_mode: bpy.props.EnumProperty(
 		name='Render Camera',
 		default='ALL',
@@ -43,6 +38,14 @@ class RENDER_OT_armored_render(bpy.types.Operator):
 		col.separator()
 
 	def invoke(self, context, event):
+		try:
+			self.render_path = self._get_path_from_addon(context)
+
+		except Exception as e:
+			print(e)
+			print(f'Could not get path from ARMORED-Toolkit, using default path \'{default_path}\'')
+			self.render_path = default_path
+
 		return context.window_manager.invoke_props_dialog(self)
 
 	def execute(self, context):
@@ -66,6 +69,12 @@ class RENDER_OT_armored_render(bpy.types.Operator):
 	
 
 	# PRIVATE METHODS
+
+	def _get_path_from_addon(self, context):
+		armored_toolkit = context.preferences.addons['ARMORED-Toolkit']
+		props = armored_toolkit.preferences
+
+		return getattr(props, 'render_path')
 
 	def _get_cameras_to_render(self, context, render_mode) -> list[bpy.types.Camera]:
 		if render_mode == 'SCENE':

@@ -1,6 +1,24 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.7.2
+*20/Jun/2023*
+
+### NEW
+- Operator **Fast Material** (alpha) assigns the first material in the active object to all selected objects.
+- Operator **Rename Data** Matches the data name to the object name for all selected objects. (basically `OBJECT.data.name = OBJECT.name`).
+  
+### CHANGED
+- Operator **Rename** is now called **Rename Objects**.
+- Operator **Muscle Rig** now considers the largest object to be the final parent if the active object is not part of the selection. It also works on multi-object selections.
+- Operator **Render** now looks for a default path set in the addon's preferences (`render_path`).
+- Operator **Export OBJ** and **Export FBX** now look for a default path set in the addon's preferences (`export_path`).
+  
+### FIXED
+- Operator **Muscle Rig** (part of the lattice_deform.py) was placing the empty controllers in the wrong location.
+- Operator **Transfer Data** was not renaming the data to match the object name consistently.
+
+
 ## v0.7.1
 *12/Jun/2023*
 

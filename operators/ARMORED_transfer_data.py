@@ -1,4 +1,4 @@
-version = (1, 1, 0)
+version = (1, 2, 0)
 
 import bpy
 
@@ -26,6 +26,7 @@ class VIEW3D_OT_armored_transfer_data(bpy.types.Operator):
 			if self.linked:
 				obj.data = active.data
 			else:
+				obj.data.name += '_old'
 				obj.data = active.data.copy()
 				obj.data.name = obj.name
 

@@ -1,4 +1,4 @@
-version = (4, 3, 0)
+version = (4, 4, 0)
 
 import bpy
 import bmesh
@@ -316,9 +316,8 @@ armoredColony.com '''
 		
 		active = self.active_object
 
-		if active is None:
-			average = sum((mathutils.Vector(obj.rotation_euler) for obj in self.selected_objects), mathutils.Vector()) / len(self.selected_objects)
-			return mathutils.Euler(average, 'XYZ').to_quaternion()
+		if active is None:	# Temporary treatment, no need to change the real active object.
+			active = self._get_largest_object()
 
 		if active.rotation_mode == 'QUATERNION':
 			return active.rotation_quaternion
@@ -327,6 +326,9 @@ armoredColony.com '''
 			return mathutils.Quaternion(mathutils.Vector(active.rotation_axis_angle).yzw, active.rotation_axis_angle[0])
 
 		return active.rotation_euler.to_quaternion()
+	
+	def _get_largest_object(self) -> bpy.types.Object:
+		return max(self.selected_objects, key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z)
 
 	def _offset_lattice_scale(self):
 		self.lattice.scale *= mathutils.Vector((1, 1, 1)) + mathutils.Vector(self.scale_offset)
@@ -392,6 +394,12 @@ armoredColony.com '''
 
 	hide_lattice: bpy.props.BoolProperty(
 		name='Hide Lattice', default=True,)
+	
+	# parent: bpy.props.EnumProperty(
+	# 	name='Parent', default='LARGEST', 
+	# 	description='Set the ideal parent for your selection',
+	# 	items=[ ('LARGEST', 'Largest', ''),
+	# 		('ACTIVE',  'Active', ''), ])
 
 	# hooks_in_editmode: BoolProperty(
 	# 	name='Hook in Edit Mode', default=False,)
@@ -414,16 +422,19 @@ armoredColony.com '''
 	# 	return self.execute(context)
 
 	def execute(self, context):
-		self.target = context.active_object
-		self.lattice = self._create_lattice(context)
-		self.controllers = self._create_empties()
+		self.selected_objects = self._get_selected_mesh_objects(context)
+		self.active_object    = self._get_active_object(context)
+
+		self.lattice     = self._create_lattice_object(context)
+		self.controllers = self._create_empty_objects()
 
 		self._reposition_empties()
 		self._scale_empties()
 		self._create_hooks()
-		# self._edit_hook_mod_settings()
-		self._parent_empties_to_mesh()
-		self._parent_lattice_to_mesh()	# MUST BE DONE AT THE END TO AVOID DEPENDENCY CYCLES?
+		self._edit_hook_mod_settings()
+		self._parent_original_selection_to_active_object()
+		self._parent_empties_to_active_object()
+		self._parent_lattice_to_active_object()	# MUST BE DONE AT THE END TO AVOID DEPENDENCY CYCLES?
 
 		if self.group_controllers:
 			self._move_controllers_to_collection()
@@ -431,12 +442,27 @@ armoredColony.com '''
 		bpy.ops.object.mode_set(mode='OBJECT')
 		bpy.ops.object.select_all(action='DESELECT')
 
-		context.view_layer.objects.active = self.target
-		self.target.select_set(True)
+		context.view_layer.objects.active = self.active_object
+		self.active_object.select_set(True)
 		return {'FINISHED'}
-	
 
-	def _create_lattice(self, context) -> bpy.types.Lattice:
+	def _get_active_object(self, context) -> bpy.types.Object:
+		'''
+		Returns the object with the largest dimensions if the active is not part of the selection.
+		'''
+
+		if context.active_object not in context.selected_objects:
+			return self._get_largest_object(context.selected_objects)
+		
+		return context.active_object
+	
+	def _get_selected_mesh_objects(self, context) -> list[bpy.types.Object]:
+		return [obj for obj in context.selected_objects if obj.type == 'MESH']
+
+	def _get_largest_object(self, objects: list[bpy.types.Object]) -> bpy.types.Object:
+		return max(objects, key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z)
+
+	def _create_lattice_object(self, context) -> bpy.types.Object:
 		bpy.ops.object.armored_lattice(
 			points_u=self.points_u, 
 			points_v=self.points_v, 
@@ -445,12 +471,12 @@ armoredColony.com '''
 			)
 
 		lattice = context.active_object
-		lattice.name = f'{self.target.name}_Lattice'
+		lattice.name = f'{self.active_object.name}_Lattice'
 		lattice.hide_set(self.hide_lattice)
 
 		return lattice
 
-	def _create_empties(self) -> list[bpy.types.Object]:
+	def _create_empty_objects(self) -> list[bpy.types.Object]:
 		
 		def _create_empty_object(name='Empty') -> bpy.types.Object:
 			empty = bpy.data.objects.new(name, None)
@@ -472,7 +498,7 @@ armoredColony.com '''
 		for i, obj in enumerate(self.controllers):
 			start = i * point_count
 			end = start + point_count
-			obj.location = matrix_world @ sum((p.co_deform for p in points[start:end]),  mathutils.Vector()) / point_count
+			obj.location = matrix_world @ (sum((p.co_deform for p in points[start:end]),  mathutils.Vector()) / point_count)	# MATRIX WORLD MULT MUST BE LAST
 			obj.rotation_euler = self.lattice.rotation_euler
 
 	def _scale_empties(self) -> None:
@@ -506,16 +532,25 @@ armoredColony.com '''
 	def _edit_hook_mod_settings(self) -> None:
 		hook_modifiers = [mod for mod in self.lattice.modifiers if mod.type == 'HOOK']
 		for mod in hook_modifiers:
-			mod.show_in_editmode = self.hooks_in_editmode
+			# mod.show_in_editmode = self.hooks_in_editmode
+			mod.show_in_editmode = True
 	
-	def _parent_empties_to_mesh(self) -> None:
-		for controller in self.controllers:
-			controller.parent = self.target
-			controller.matrix_parent_inverse = self.target.matrix_world.inverted()
+	def _parent_objects(self, objects: list[bpy.types.Object], parent: bpy.types.Object) -> None:
+		for obj in objects:
+			obj.parent = parent
+			obj.matrix_parent_inverse = parent.matrix_world.inverted()
 	
-	def _parent_lattice_to_mesh(self) -> None:
-		self.lattice.parent = self.target
-		self.lattice.matrix_parent_inverse = self.target.matrix_world.inverted()
+	def _parent_empties_to_active_object(self) -> None:
+		self._parent_objects(objects=self.controllers, parent=self.active_object)
+	
+	def _parent_original_selection_to_active_object(self):
+		selection_minus_active = self.selected_objects[:]
+		selection_minus_active.remove(self.active_object)
+
+		self._parent_objects(objects=selection_minus_active, parent=self.active_object)
+	
+	def _parent_lattice_to_active_object(self) -> None:
+		self._parent_objects(objects=[self.lattice], parent=self.active_object)
 	
 	def _create_collection(self, name='Collection') -> bpy.types.Collection:
 		collection = bpy.context.blend_data.collections.new(name=name)
@@ -524,7 +559,7 @@ armoredColony.com '''
 		return collection
 
 	def _move_controllers_to_collection(self) -> None:
-		controller_collection = self._create_collection(name=f'{self.target.name} Controls')
+		controller_collection = self._create_collection(name=f'{self.active_object.name} Controls')
 
 		controllers = [self.lattice, *self.controllers]
 		for obj in controllers:
