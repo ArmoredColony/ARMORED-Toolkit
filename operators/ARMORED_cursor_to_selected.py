@@ -1,4 +1,4 @@
-version = (1, 0, 0)
+version = (1, 0, 1)
 
 import bpy
 import bmesh
@@ -8,7 +8,7 @@ import mathutils
 class MESH_OT_armored_cursor_to_selected(bpy.types.Operator):
 	'''Move the cursor to the selected element and rotate it to match its normal.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'mesh.armored_cursor_to_selected'
 	bl_label = 'ARMORED Cursor to Selected'
@@ -22,24 +22,26 @@ armoredColony.com '''
 		ob = context.edit_object
 		me = ob.data
 		bm = bmesh.from_edit_mesh(me)
-		# bm.normal_update()
 
-		mode = context.tool_settings.mesh_select_mode[:]
+		selection_mode = context.tool_settings.mesh_select_mode[:]
 
-		if mode[0]:
+		if selection_mode[0]:
+
 			verts = [v for v in bm.verts if v.select]
 			if verts:
 				element = verts[0]
 				context.scene.cursor.location = ob.matrix_world @ element.co
 
-		elif mode[1]:
+		elif selection_mode[1]:
+
 			edges = [e for e in bm.edges if e.select]
 			if edges:
 				element = edges[0]
 				# context.scene.cursor.location = sum(map(lambda v: ob.matrix_world @ v.co, element.verts), mathutils.Vector()) / 2
 				context.scene.cursor.location = ob.matrix_world @ ((element.verts[0].co + element.verts[1].co) / 2)
 		
-		elif mode[2]:
+		elif selection_mode[2]:
+
 			faces = [f for f in bm.faces if f.select]
 			if faces:
 				element = faces[0]

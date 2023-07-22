@@ -1,10 +1,10 @@
+version = (1, 1, 0)
+
 import bpy
 import bmesh
+import mathutils
+
 import itertools
-from bpy.props import EnumProperty
-
-from mathutils import Vector
-
 from typing import Union
 
 
@@ -17,7 +17,7 @@ armoredColony.com '''
 	bl_label = 'ARMORED Align to active'
 	bl_options = {'REGISTER', 'UNDO'}
 
-	axis: EnumProperty(
+	axis: bpy.props.EnumProperty(
 		name='Axis', default={'X'}, 
 		description='Flatten selection to',
 		options={'ENUM_FLAG'},
@@ -66,8 +66,8 @@ armoredColony.com '''
 				return elem
 		return None
 	
-	def _get_average_coords(self, verts: bmesh.types.BMVertSeq) -> Vector:
-		return sum((v.co for v in verts), Vector()) / len(verts)
+	def _get_average_coords(self, verts: bmesh.types.BMVertSeq) -> mathutils.Vector:
+		return sum((v.co for v in verts), mathutils.Vector()) / len(verts)
 
 classes = (
 	MESH_OT_armored_align_to_active,

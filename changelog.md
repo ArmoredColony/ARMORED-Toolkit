@@ -1,8 +1,20 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.7.3
+*22/Jul/2023*
+
+### CHANGED
+- Operator **Connect** now remembers your previous settings (cuts and spacing) and allows for presets.
+- Operator **Control Loops** no longer selects hard edges by default.
+
+### FIXED
+- Operator **Primitives** would print modal events in the console.
+- Operator **Primitives** no longer uses the deprecated BGL module.
+- Operator **Increase Subdivision Levsls** would set new SUBSURF modifiers to level 2 instead of 1. 
+
 ## v0.7.2
-*20/Jun/2023*
+*20/Jul/2023*
 
 ### NEW
 - Operator **Fast Material** (alpha) assigns the first material in the active object to all selected objects.

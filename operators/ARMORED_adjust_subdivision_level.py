@@ -1,11 +1,11 @@
-# v2.2
+version = (2, 2, 1)
 
 import bpy
 
 
 class AdjustSubdivisionLevel:
 	'''
-	Abstract class to adjust the Subsurf Modifier level by the Property <subd_add>
+	Abstract class to increse/decrease the Subsurf Modifier level by the specified integer.
 	'''
 
 	bl_options = {'REGISTER'}
@@ -24,7 +24,9 @@ class AdjustSubdivisionLevel:
 		return {'FINISHED'}
 
 	def _get_subd_modifiers(self, selected_objects: list[bpy.types.Object]) -> list[bpy.types.Modifier]:
-		# Creates new Subsurf Modifier for each selected object that does NOT have one.
+		'''
+		Creates a new Subsurf Modifier for each selected object that does NOT have one.
+		'''
 
 		selected_objects = (ob for ob in selected_objects if ob.type in {'MESH'})
 
@@ -34,6 +36,7 @@ class AdjustSubdivisionLevel:
 			
 			if mod is None:
 				mod = ob.modifiers.new(name='Subdivision', type='SUBSURF')
+				mod.levels = 0
 			
 			subd_modifiers.append(mod)
 
@@ -43,7 +46,7 @@ class AdjustSubdivisionLevel:
 class VIEW3D_OT_increase_subd_mod_level(bpy.types.Operator, AdjustSubdivisionLevel):
 	'''Increase the current Subdivision modifier level by one (adds a subD modifier if none exists).
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'view3d.armored_increase_subd_mod_level'
 	bl_label = 'ARMORED Increase SubD modifier level'
@@ -53,7 +56,7 @@ armoredColony.com '''
 class VIEW3D_OT_decrease_subd_mod_level(bpy.types.Operator, AdjustSubdivisionLevel):
 	'''Decrease the current Subdivision modifier level by one (adds a subD modifier if none exists).
 
-armoredColony.com '''
+	armoredColony.com '''
     
 	bl_idname = 'view3d.armored_decrease_subd_mod_level'
 	bl_label = 'ARMORED Decrease SubD modifier level'

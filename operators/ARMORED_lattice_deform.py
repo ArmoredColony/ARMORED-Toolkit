@@ -1,10 +1,9 @@
-version = (4, 4, 0)
+version = (4, 4, 1)
 
 import bpy
 import bmesh
 import abc
 import mathutils
-
 
 
 class BoundsCalculator(abc.ABC):
@@ -313,10 +312,9 @@ armoredColony.com '''
 		if self.orientation == 'GLOBAL':
 			return mathutils.Quaternion()
 		
-		
 		active = self.active_object
 
-		if active is None:	# Temporary treatment, no need to change the real active object.
+		if active is None:	# Temporary adjustment, no need to change the real active object.
 			active = self._get_largest_object()
 
 		if active.rotation_mode == 'QUATERNION':
@@ -330,23 +328,24 @@ armoredColony.com '''
 	def _get_largest_object(self) -> bpy.types.Object:
 		return max(self.selected_objects, key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z)
 
-	def _offset_lattice_scale(self):
+	def _offset_lattice_scale(self) -> None:
 		self.lattice.scale *= mathutils.Vector((1, 1, 1)) + mathutils.Vector(self.scale_offset)
 	
-	def _set_parent(self):
+	def _set_parent(self) -> None:
 		self.lattice.matrix_world = self.lattice.matrix_basis 	# Update the matrix to save us a scene update.
+		
 		if self.parent == 'LATTICE':
 			self._parent_objects(parent=self.lattice, children=self.selected_objects)
 
 		elif self.parent == 'ACTIVE':
 			self._parent_objects(parent=self.active_object, children=[self.lattice])
 
-	def _parent_objects(self, parent, children):
+	def _parent_objects(self, parent, children) -> None:
 		for obj in children:
 			obj.parent = parent
 			obj.matrix_parent_inverse = parent.matrix_world.inverted()
 	
-	def _select_lattice(self, context):
+	def _select_lattice(self, context) -> None:
 		for obj in self.selected_objects:
 			obj.select_set(False)
 

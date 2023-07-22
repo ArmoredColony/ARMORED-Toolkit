@@ -1,19 +1,16 @@
-# v3.0
+version = (3, 1, 0)
 
 import bpy
 import blf
-import bgl
-import contextlib
 import gpu
+
+import mathutils
+import bpy_extras
+import gpu_extras
 
 import math
 import dataclasses
 import itertools
-
-from mathutils import Vector
-from bpy_extras.view3d_utils import location_3d_to_region_2d, region_2d_to_vector_3d, region_2d_to_origin_3d, region_2d_to_location_3d
-from gpu_extras.batch import batch_for_shader
-# from bl_ui.space_statusbar import STATUSBAR_HT_header
 
 	
 class IntConcatenator:
@@ -159,7 +156,7 @@ class PLANE_DATA(GeometryData):
 class CUBE_DATA(GeometryData):
 	
 	NODE_DATA = [
-			NodeData(name='Cube', type='GeometryNodeMeshCube', defaults={0: Vector((2, 2, 2))}),
+			NodeData(name='Cube', type='GeometryNodeMeshCube', defaults={0: mathutils.Vector((2, 2, 2))}),
 			NodeData(name='Transform', type='GeometryNodeTransform'),
 		]
 
@@ -196,7 +193,7 @@ class CYLINDER_DATA(GeometryData):
 class QUADSPHERE_DATA(GeometryData):
 	
 	NODE_DATA = [
-			NodeData(name='Cube', type='GeometryNodeMeshCube', defaults={0: Vector((2, 2, 2))}),
+			NodeData(name='Cube', type='GeometryNodeMeshCube', defaults={0: mathutils.Vector((2, 2, 2))}),
 			NodeData(name='SubD', type='GeometryNodeSubdivisionSurface'),
 			NodeData(name='Transform', type='GeometryNodeTransform'),
 		]
@@ -316,6 +313,10 @@ class EventManager:
 #####################
 
 class GeometryGenerator(EventManager):
+	'''
+	SOme way of generating Blender Meshes in the scene.
+	'''
+
 	pass
 
 
@@ -389,7 +390,7 @@ class NodeGeometry(GeometryGenerator):
 
 	def rotate(self, event):
 		# We do the initial rotation on the Node Container bl_object instead of the Transform node in the Node Editor Class
-		# because we wan't to keep the rotation after the geometry nodes modifier is applied.
+		# because we want to keep the rotation after the geometry nodes modifier is applied.
 
 		if next(self.align_to_cursor):
 			self.node_container.rotation_euler = self.context.scene.cursor.rotation_euler
@@ -431,7 +432,7 @@ class NodeEditor(GeometryEditor):
 	ABSTRACT CLASS: Edit GeometryNode Inputs.
 	'''
 	
-	def __init__(self, operator, context, geometry_origin: Vector, nodes: list[bpy.types.GeometryNode], input_data) -> None:
+	def __init__(self, operator, context, geometry_origin: mathutils.Vector, nodes: list[bpy.types.GeometryNode], input_data) -> None:
 		self.operator = operator
 		self.context = context
 		self.geometry_origin = geometry_origin
@@ -449,8 +450,8 @@ class NodeEditor(GeometryEditor):
 			val = getattr(self.operator, input_data.prop_name)
 
 			for node_input in input_data.inputs:
-				if isinstance(node_input.default_value, Vector):
-					node_input.default_value = Vector.Fill(len(node_input.default_value), val)
+				if isinstance(node_input.default_value, mathutils.Vector):
+					node_input.default_value = mathutils.Vector.Fill(len(node_input.default_value), val)
 				else:
 					node_input.default_value = val
 		
@@ -507,8 +508,8 @@ class NodeEditor(GeometryEditor):
 	# TRANSFORMS
 
 	def mousemove(self, event):
-		self.mouse_position = Vector((event.mouse_region_x, event.mouse_region_y))
-		self.geometry_origin_2d = location_3d_to_region_2d(
+		self.mouse_position = mathutils.Vector((event.mouse_region_x, event.mouse_region_y))
+		self.geometry_origin_2d = bpy_extras.view3d_utils.location_3d_to_region_2d(
 				self.context.region, self.context.space_data.region_3d, self.geometry_origin)
 
 		if not self.scaling:
@@ -536,7 +537,7 @@ class NodeEditor(GeometryEditor):
 			return
 			
 		self.scaling = not self.scaling
-		self.start_position = Vector((event.mouse_region_x, event.mouse_region_y))
+		self.start_position = mathutils.Vector((event.mouse_region_x, event.mouse_region_y))
 
 		# This value allows imitating Blender's scale behavior (scale faster the closer you are to the object origin).
 		self.scale_multiplier = (self.geometry_origin_2d - self.start_position).length
@@ -567,7 +568,7 @@ class HeadsUpDisplay(UserInterface):
 	Heads Up Display for the active property being tweaked and it's value.
 	'''
 
-	def __init__(self, context, geometry_origin: Vector, nodes: list[bpy.types.GeometryNode], input_data, event) -> None:
+	def __init__(self, context, geometry_origin: mathutils.Vector, nodes: list[bpy.types.GeometryNode], input_data, event) -> None:
 		self.context = context
 		self.geometry_origin = geometry_origin
 		self.nodes = nodes
@@ -579,8 +580,8 @@ class HeadsUpDisplay(UserInterface):
 		self.context.window.cursor_modal_set('CROSSHAIR')
 
 		# Event parameter is only used here.
-		self.mouse_position = Vector((event.mouse_region_x, event.mouse_region_y))
-		self.geometry_origin_2d = location_3d_to_region_2d(self.context.region, self.context.space_data.region_3d, self.geometry_origin)
+		self.mouse_position = mathutils.Vector((event.mouse_region_x, event.mouse_region_y))
+		self.geometry_origin_2d = bpy_extras.view3d_utils.location_3d_to_region_2d(self.context.region, self.context.space_data.region_3d, self.geometry_origin)
 	
 		self._props_handle = bpy.types.SpaceView3D.draw_handler_add(self.draw_callback_props, (), 'WINDOW', 'POST_PIXEL')
 		self._scale_handle = None
@@ -631,21 +632,16 @@ class HeadsUpDisplay(UserInterface):
 			blf.disable(font_id, blf.ROTATION)
 	
 	def draw_line_2d(self, coords, color=(1, 1, 1, 1)):
-		bgl.glLineWidth(1)
-		bgl.glEnable(bgl.GL_BLEND)
-		bgl.glEnable(bgl.GL_LINE_SMOOTH)
-		bgl.glEnable(bgl.GL_DEPTH_TEST)
-
-		shader = gpu.shader.from_builtin('2D_UNIFORM_COLOR')
-		batch = batch_for_shader(shader, 'LINES', {"pos": coords})
-		shader.bind()
-		shader.uniform_float('color', color)
+		shader = gpu.shader.from_builtin('UNIFORM_COLOR')
+		gpu.state.blend_set('ALPHA')
+		# gpu.state.line_width_set(2.0)
+		batch = gpu_extras.batch.batch_for_shader(shader, 'LINE_STRIP', {'pos': coords})
+		shader.uniform_float("color", color)
 		batch.draw(shader)
 
-		bgl.glLineWidth(1)
-		bgl.glDisable(bgl.GL_BLEND)
-		bgl.glDisable(bgl.GL_LINE_SMOOTH)
-		bgl.glEnable(bgl.GL_DEPTH_TEST)
+		# RESTORE OPENGL DEFAULTS.
+		# gpu.state.line_width_set(1.0)
+		gpu.state.blend_set('NONE')
 	
 	def any(self, event):
 		self.update_hud(event)
@@ -655,8 +651,8 @@ class HeadsUpDisplay(UserInterface):
 		Update the required 2d coordinate for the HUD.
 		'''
 
-		self.mouse_position = Vector((event.mouse_region_x, event.mouse_region_y))
-		self.geometry_origin_2d = location_3d_to_region_2d(
+		self.mouse_position = mathutils.Vector((event.mouse_region_x, event.mouse_region_y))
+		self.geometry_origin_2d = bpy_extras.view3d_utils.location_3d_to_region_2d(
 				self.context.region, self.context.space_data.region_3d, self.geometry_origin)
 
 	def increase(self, event):
@@ -723,46 +719,6 @@ class ModalGeometry:
 		return self.geometry_generator.event(event)
 
 
-# class StatusBar:
-# 	def update_status_bar(self):
-# 		self.save_status_bar()
-# 		self.set_status_bar()
-
-# 	def save_status_bar(self):
-# 		self.status_bar = STATUSBAR_HT_header.draw
-
-# 	def restore_status_bar(self):
-# 		STATUSBAR_HT_header.draw = self.status_bar
-
-# 	def set_active_property(self, name: str):
-# 		self.active_prop_name = name
-
-# 	def set_status_bar(self):
-# 		STATUSBAR_HT_header.draw = self.draw_status_bar(self.active_prop_name)
-	
-
-# 	def draw_status_bar(self, active_prop_name):
-# 		def draw(self, context):
-# 			def key(icon, label, spacing=2):
-# 				row.label(text='', icon=icon)
-# 				row.label(text=label)
-# 				row.separator(factor=spacing)
-
-# 			layout = self.layout
-# 			row = layout.row(align=True)
-			
-# 			row.label(text='Cube (modal)')
-# 			row.separator(factor=6)
-			
-# 			key('MOUSE_LMB', 'Finish')
-# 			key('MOUSE_MMB', active_prop_name)
-# 			key('MOUSE_RMB', 'Cancel', 6)
-
-# 			key('EVENT_R', 'Reset')
-# 			key('EVENT_TAB', 'Edit Mode', 2)
-# 		return draw
-
-
 class OperatorBase:
 
 	bl_options = {'REGISTER', 'UNDO'}
@@ -804,7 +760,6 @@ class ModalOperator(OperatorBase):
 		return {'RUNNING_MODAL'}
 
 	def modal(self, context, event):
-		print(event.type)
 		return self.modal_geometry.event(event)
 
 
@@ -877,8 +832,9 @@ armoredColony.com '''
 def draw_menu(self, context):
     layout = self.layout
     layout.separator()
+    
     layout.operator(MESH_OT_armored_plane.bl_idname,	  text='Plane (modal)',      icon='MESH_PLANE')
-    layout.operator(MESH_OT_armored_cube .bl_idname,	  text='Cube (modal)',       icon='MESH_CUBE')
+    layout.operator(MESH_OT_armored_cube.bl_idname,	  text='Cube (modal)',       icon='MESH_CUBE')
     layout.operator(MESH_OT_armored_cylinder.bl_idname,   text='Cylinder (modal)',   icon='MESH_CYLINDER')
     layout.operator(MESH_OT_armored_quadsphere.bl_idname, text='Quadsphere (modal)', icon='MESH_UVSPHERE')
     layout.operator(MESH_OT_armored_vertex.bl_idname,     text='Single Vert',        icon='DOT')

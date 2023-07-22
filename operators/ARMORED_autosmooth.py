@@ -1,4 +1,4 @@
-version = (2, 1, 0)
+version = (2, 1, 1)
 
 import bpy
 import bmesh
@@ -7,7 +7,7 @@ import bmesh
 class ARMORED_OT_autosmooth(bpy.types.Operator):
 	'''Switches between Autosmooth by angle and Flat Shading (ignores any selections that are not Meshes).
 
-www.armoredColony.com '''
+	armoredColony.com '''
 	
 	bl_idname = 'view3d.armored_autosmooth'
 	bl_label = 'ARMORED Autosmooth'

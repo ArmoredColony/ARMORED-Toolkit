@@ -1,174 +1,241 @@
-# v2.3
+version = (3, 0, 0)
 
-import bpy, bmesh
-from bpy.props import IntProperty, FloatProperty, BoolProperty
+import bpy
+import bmesh
 
-    
-class ARMORED_OT_connect(bpy.types.Operator):
-    '''Inserts edges based on the context of your selection, it basically combines vert connect, subdivide and knife.
 
-(www.armoredColony.com)'''
+def any_elements_selected(context) -> bool:
+	objects = context.objects_in_mode
+	selection = sum(obj.data.total_vert_sel for obj in objects)
 
-    bl_idname = 'mesh.armored_connect'
-    bl_label = 'ARMORED Connect'
-    bl_options = {'REGISTER', 'UNDO'}
+	return bool(selection)
 
-    edge_count : IntProperty   (name='Edge Count', default=1, min=1,   max=20, options={'SKIP_SAVE'})
-    stretch    : FloatProperty (name='Stretch',    default=0, min=-99, max=99, options={'SKIP_SAVE'})
-    grid_fill  : BoolProperty  (name='Grid Fill',  default=True, description='Affects intersecting edge loops')
 
-    def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
+def set_property_percent(self, context) -> None:
+	c = self.cuts-1
+	self.width_percent = c / (c + 2) * 100
 
-        layout.prop(self, 'edge_count')
 
-        sub = layout.row()
-        sub.prop(self, 'stretch')
-        sub.enabled = self.edge_count > 1 
+class MESH_OT_armored_connect(bpy.types.Operator):
+	'''Connects the selected components with the specified number of edges.
 
-        layout.prop(self, 'grid_fill')
-    
-    @classmethod
-    def poll(cls, context):
-        return context.mode == 'EDIT_MESH'
+	armoredColony.com '''
 
-    def execute(self, context):
-        ob = context.edit_object
-        me = ob.data
-        bm = bmesh.from_edit_mesh(me)
+	bl_idname = 'mesh.armored_connect'
+	bl_label = 'ARMORED Connect'
+	bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
-        sel_mode = bpy.context.tool_settings.mesh_select_mode[:]
+	cuts: bpy.props.IntProperty(
+		name='Cuts', default=1, min=1, max=24, update=set_property_percent)
+	
+	width_percent: bpy.props.FloatProperty(
+		name='Width Percent', default=0, min=0, max=100, step=100)
+	
+	grid_fill: bpy.props.BoolProperty(
+		name='Grid Fill', default=True, description='Affects perpendicular face loop selections')
 
-        # VERTEX MODE
-        if sel_mode[0]:
-            vert_sel = {v for v in bm.verts if v.select}
+	def draw(self, context):
+		layout = self.layout
+		layout.use_property_split = True
 
-            if not vert_sel or len(vert_sel) == 1:
-                bpy.ops.mesh.knife_tool('INVOKE_DEFAULT')
-                return {'FINISHED'}
+		col = layout.column(align=True)
+		col.separator()
 
-            elif len(vert_sel) > 1:
-                try:
-                    bpy.ops.mesh.vert_connect_path()  
-                except Exception:
-                    bpy.ops.mesh.vert_connect()  
-                return {'FINISHED'}
+		col.prop(self, 'cuts')
 
-        # EDGE MODE
-        elif sel_mode[1]:
-            edge_sel = set(e for e in bm.edges if e.select)
+		sub = col.row()
+		sub.prop(self, 'width_percent')
+		sub.enabled = self.cuts > 1 
+		col.separator()
 
-            if not edge_sel:
-                bpy.ops.mesh.knife_tool('INVOKE_DEFAULT')
-                return {'FINISHED'}
+		col.prop(self, 'grid_fill')
+		col.separator()
 
-            bpy.ops.mesh.select_all(action='DESELECT')
-            
-            new_edges  = bmesh.ops.subdivide_edges(bm, edges=list(edge_sel), cuts=1, use_grid_fill=self.grid_fill)
-            bad_edges  = set(e for e in new_edges['geom_split'] if isinstance(e, bmesh.types.BMEdge))   # Only store edges.
-            
-            for e in new_edges['geom_inner']:
-                e.select = True
-            for e in bad_edges:
-                e.select = False
+		col.operator("wm.operator_defaults")
 
-            bm.select_flush_mode()  
-            # bpy.ops.mesh.loop_multi_select(ring=False)
+	
+	@classmethod
+	def poll(cls, context):
+		return context.mode == 'EDIT_MESH'
 
-            if len(edge_sel) == 1:
-                if self.edge_count > 1:
-                    c = self.edge_count-1
-                    pc = c/(c+2) * 100
-                    sel = bmesh.ops.bevel(bm, geom=new_edges['geom_inner'], affect='VERTICES', 
-                                            offset_type='PERCENT', offset=pc+self.stretch, segments=self.edge_count-1, loop_slide=True,)
-                    for e in sel['verts']: e.select = True
+	def execute(self, context):
 
-                else:
-                    # Reselect that single vert
-                    new_edges['geom_inner'][0].select = True
+		if not any_elements_selected(context):
+			bpy.ops.mesh.knife_tool('INVOKE_DEFAULT')
+			return {'FINISHED'}
 
-                bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='VERT')
+		ob = context.edit_object
+		me = ob.data
+		bm = bmesh.from_edit_mesh(me)
 
-            else:
-                if self.edge_count > 1:
-                    c = self.edge_count-1
-                    pc = c/(c+2) * 100
-                    sel = bmesh.ops.bevel(bm, geom=new_edges['geom_inner'], affect='EDGES', 
-                                            offset_type='PERCENT', offset=pc+self.stretch, segments=self.edge_count-1, loop_slide=True,)
-                    for e in sel['faces']: 
-                        e.select = True
-            
-        # FACE MODE
-        elif sel_mode[2]:
-            face_sel = {f for f in bm.faces if f.select}
-            edge_sel = {e for e in bm.edges if e.select}
+		# VERTEX MODE
+		if self._in_vertex_mode(context):
+			
+			selected_verts = self._get_selected_verts(bm)
 
-            if not face_sel:
-                bpy.ops.mesh.knife_tool('INVOKE_DEFAULT')
-                return {'FINISHED'}
+			if len(selected_verts) == 1:
+				bpy.ops.mesh.knife_tool('INVOKE_DEFAULT')
+				return {'FINISHED'}
 
-            if len(face_sel) == 1:
-                bpy.ops.mesh.subdivide(number_cuts=self.edge_count)
-                return {'FINISHED'}
+			elif len(selected_verts) > 1:
+				try:
+					bpy.ops.mesh.vert_connect_path()  
+				except Exception:
+					bpy.ops.mesh.vert_connect()  
+				return {'FINISHED'}
 
-            elif len(face_sel) > 1:
-                # face_sel = {f for f in bm.faces if f.select}
 
-                bpy.ops.mesh.region_to_loop()
-                perimeter_edges = set(e for e in bm.edges if e.select)
-                contained_edges = edge_sel - perimeter_edges
-                
-                # We have to do some extra stuff just in case we only selected a partial loop of faces
-                # or a partial loop that changes direction
-                bpy.ops.mesh.select_all(action='DESELECT')     
-                for e in contained_edges: 
-                    e.select = True                  
+		# EDGE MODE
+		if self._in_edge_mode(context):
 
-                # Extend and store the full ring because (contained_edges) is missing the first and last
-                # edges of the ring if you only selected a partial loop of faces
-                bpy.ops.mesh.loop_multi_select(ring=True)
-                ring_edges =  set(e for e in bm.edges if e.select)
+			selected_edges = self._get_selected_edges(bm)
+			self._select_set(selected_edges, False)
 
-                # Extending the full ring gives us some corner edges we dont need if we changed direction so lets get them!
-                bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='FACE')
-                bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='EDGE')
-                corner_edges = set(e for e in bm.edges if e.select).intersection(perimeter_edges)
+			if len(selected_edges) == 1:
+				bevel_mode = 'VERTICES'
+				self.cuts = 1
+			else:
+				bevel_mode = 'EDGES'
 
-                # Update our ring edges. Still just in case we had a partial loop of faces
-                ring_edges -= corner_edges
+			# I JUST ASSUME THE USER SELECTED AN EDGE RING.
+			cuts = self._connect_edge_ring(bm, edges=list(selected_edges), cuts=self.cuts, bevel_mode=bevel_mode)
+			self._select_set(cuts, True)
 
-                # Lets just create a new Set at this point and do everything we need in one line. It works though!
-                final_ring_sel = (perimeter_edges.intersection(ring_edges) - corner_edges).union(contained_edges)
+			if bevel_mode == 'VERTICES':
+				bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='VERT')
 
-                bpy.ops.mesh.select_all(action='DESELECT')
+			bmesh.update_edit_mesh(me)
 
-                # SINGLE EDGE BEVEL METHOD >>
-                new_edges = bmesh.ops.subdivide_edges(bm, edges=list(final_ring_sel), cuts=1, use_grid_fill=self.grid_fill)
-                for e in new_edges['geom_inner']: 
-                    e.select = True
-            
-                if self.edge_count > 1:
-                    c = self.edge_count-1
-                    pc = c/(c+2) * 100
-                    # self.offset = pc+self.stretch
-                    sel = bmesh.ops.bevel(bm, geom=new_edges['geom_inner'], offset_type='PERCENT', offset=pc+self.stretch, segments=self.edge_count-1, loop_slide=True, clamp_overlap=True, affect='EDGES')
-                    for e in sel['faces']: e.select = True
+			return {'FINISHED'}
 
-                    bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='FACE')
+			
+		#  FACE MODE
+		if self._in_face_mode(context):
+			
+			selected_faces = self._get_selected_faces(bm)
+			selected_edges = self._get_selected_edges(bm)
+			# ... DO NOT DESELECT ANYTHING YET.
+			
+			# CONVERT OUT SELECTION OF FACES INTO AN EDGE RING.
+			border_edges = self._get_selection_border_edges(selected_edges)
+			contained_edges = selected_edges - border_edges
 
-        bmesh.update_edit_mesh(me)
-        return {'FINISHED'}
+			# WE LOSE 2 EDGES BECAUSE OF THE BORDER EDGE SUBSTRACTION
+			# THIS IS PROBABLY SUB-OPTIMAL BUT IT WORKS TO GET THEM BACK.
+			self._select_set(selected_faces, False)
+			self._select_set(selected_edges, False)
+			self._select_set(contained_edges, True)
+
+			linked_faces = set()
+			missing_edges = set()
+			for e in contained_edges:
+				for f in e.link_faces:
+					linked_faces.add(f)
+				# linked_faces.union(set(e.link_faces))	# THIS DOES NOT WORK FOR SOME REASON.
+			
+			for f in linked_faces:
+				for e in f.edges:
+					if not e.verts[0].select and not e.verts[1].select:
+						missing_edges.add(e)
+			
+			edge_ring_to_connect = contained_edges.union(missing_edges)
+			self._select_set(contained_edges, False)
+
+			# NOW WE CAN CONNECT THE EDGE RING.
+			cuts = self._connect_edge_ring(bm, edges=list(edge_ring_to_connect), cuts=self.cuts)
+			self._select_set(cuts, True)
+
+			bmesh.update_edit_mesh(me)
+
+			return {'FINISHED'}
+
+		return {'FINISHED'}	# JUST IN CASE.
+
+
+	# MAIN CONNECT METHOD >>
+
+	def _connect_edge_ring(self, bm: bmesh.types.BMesh, edges: bmesh.types.BMEdgeSeq, cuts: int, bevel_mode='EDGES') -> bmesh.types.BMElemSeq:
+		'''
+		Connects the input edge ring(s) with the specified ammount of edge loops ('Cuts' in Blender lingo).
+		Supports both open and closed edge rings.
+		Supports multiple, unconnected edge rings.
+
+		Return: BMEdgeSeq to be selected.
+		'''
+
+		# WE CREATE A SINGLE CUT WITH SUBDIVIDE BECAUSE IT DOES NOT HAVE
+		# ANY SPACING PARAMETER WE CAN USE FOR THE NEW CUTS.
+		subdivided_edges = bmesh.ops.subdivide_edges(bm, edges=edges, cuts=1, use_grid_fill=self.grid_fill)
+
+		if cuts == 1:
+			# THIS ONLY FIXES THE OUTPUT FROM PERPENDICULAR FACE LOOP SELECTIONS, BUT I'M A PERFECTIONIS SO HERE IT IS.
+			bad_faces = {elem for elem in subdivided_edges['geom_inner'] if isinstance(elem, bmesh.types.BMFace)}
+
+			return set(subdivided_edges['geom_inner']).difference(bad_faces)
+
+		# IF WE NEED MULTIPLE CUTS...
+		# WE RELY ON THE BEVEL OPERATOR TO ADD MORE CUTS AND LET THE 
+		# USER CONTROL THE SPACING BY MODIFYING THE PERCENT ARGUMENT.
+		beveled_edges = bmesh.ops.bevel(
+			bm,
+			segments=cuts-1,
+			offset_type='PERCENT', 
+			offset=self.width_percent,
+			geom=subdivided_edges['geom_inner'], 
+			loop_slide=True, 
+			clamp_overlap=True, 
+			affect=bevel_mode)
+
+		return beveled_edges['faces']
+
+
+
+	# SELECTION MODE CHECK >>
+
+	def _in_vertex_mode(self, context) -> bool:
+		return context.tool_settings.mesh_select_mode[0]
+	
+	def _in_edge_mode(self, context) -> bool:
+		return context.tool_settings.mesh_select_mode[1]
+	
+	def _in_face_mode(self, context) -> bool:
+		return context.tool_settings.mesh_select_mode[2]
+	
+
+	# SELECTION GETTERS >>
+
+	def _get_selected_verts(self, bm: bmesh.types.BMesh) -> set[bmesh.types.BMVertSeq]:
+		return {v for v in bm.verts if v.select}
+	
+	def _get_selected_edges(self, bm: bmesh.types.BMesh) -> set[bmesh.types.BMEdgeSeq]:
+		return {e for e in bm.edges if e.select}
+	
+	def _get_selected_faces(self, bm: bmesh.types.BMesh) -> set[bmesh.types.BMFaceSeq]:
+		return {f for f in bm.faces if f.select}
+	
+	def _get_selection_border_edges(self, selected_edges) -> set[bmesh.types.BMEdgeSeq]:
+		'''
+		Requires edges to be selected for accurate results.
+		'''
+
+		return {e for e in selected_edges if (e.is_boundary or not all(f.select for f in e.link_faces))}
+	
+
+	# SELECTION SETTERS >>
+
+	def _select_set(self, elements: list[bmesh.types.BMElemSeq], state: bool) -> None:
+		for element in elements:
+			element.select = state
 
 
 classes = (
-    ARMORED_OT_connect,
+	MESH_OT_armored_connect,
 )
 
 def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
-    
+	for cls in classes:
+		bpy.utils.register_class(cls)
+	
 def unregister():
-    for cls in classes:
-        bpy.utils.unregister_class(cls)
+	for cls in classes:
+		bpy.utils.unregister_class(cls)
