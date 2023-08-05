@@ -1,4 +1,4 @@
-version = (3, 1, 0)
+version = (3, 2, 0)
 
 import bpy
 import blf
@@ -15,7 +15,8 @@ import itertools
 	
 class IntConcatenator:
 	'''
-	Concatenates numeric key inputs into a single integer.
+	Concatenates numeric key inputs into a single integer (made to be used with keyboard events).
+	EXAMPLE: Keypressing 1 and then 2 creates the int 12. Can set up the BACKSPACE event to remove the last digit and go back to 1.
 	'''
 
 	def __init__(self, empty_default: int=0, element_cap: int=3) -> None:
@@ -95,7 +96,10 @@ class InputData:
 	input_indexes: tuple[int]
 	prop_name: str
 
-	offset: int = 0		# The offset required to match `input.default_value`.
+	offset: int = 0		# The offset required for the user-controlled property to match the 
+				# `input.default_value` of whatever node was used to create the geometry.
+				# EXAMPLE: the user creates a plane by specifying how many Cuts. 
+				# 1 Cut requires 3 vertices in the MeshGrid node, so the offset should be 2
 
 	node: bpy.types.GeometryNode          = NotImplemented
 	inputs: list[bpy.types.NodeSocketInt] = NotImplemented
@@ -110,8 +114,8 @@ class NodeData:
 	name: str
 	type: str
 	
-	defaults: dict = None
-
+	defaults: dict = None	# NOTE: USER-CONTROLLED PROPERTIES SHOULD BE DEFINED BY OPERATOR PROPERTIES.
+				# This is used to change any default node values we don't like (EXAMPLE: the starting dimensions of a plane).
 
 class GeometryData:
 	
@@ -132,6 +136,23 @@ class VERTEX_DATA(GeometryData):
 	
 	INPUT_DATA = {
 			False: InputData(prop_name='points', node_name='Mesh Line', input_indexes=(0,)),
+		}
+	
+
+class CIRCLE_DATA(GeometryData):
+	
+	NODE_DATA = [
+			NodeData(name='Mesh Circle', type='GeometryNodeMeshCircle', defaults={1: 2}),	# Radius of 2.
+			NodeData(name='Transform', type='GeometryNodeTransform'),
+		]
+
+	LINK_DATA = [
+			('Mesh Circle', 0, 'Transform', 0),
+			('Transform', 0, 'Group Output', 0),
+		]
+	
+	INPUT_DATA = {
+			False: InputData(prop_name='sides', node_name='Mesh Circle', input_indexes=(0,), offset=0),
 		}
 
 
@@ -212,7 +233,8 @@ class QUADSPHERE_DATA(GeometryData):
 
 def fill_missing_data(input_data, nodes: list[bpy.types.GeometryNode]):
 	'''
-	Fill out missing <node> and <inputs> properties in the input_data: dataclass by using <node_name> and <input_indexes> as keys on the <node_tree.nodes>.
+	Fill out missing <node> and <inputs> properties in the input_data: dataclass by using 
+	<node_name> and <input_indexes> as keys on the <node_tree.nodes>.
 	'''
 
 	for _input_data in input_data.values():
@@ -314,7 +336,7 @@ class EventManager:
 
 class GeometryGenerator(EventManager):
 	'''
-	SOme way of generating Blender Meshes in the scene.
+	Some way of generating Blender Meshes in the scene.
 	'''
 
 	pass
@@ -325,7 +347,8 @@ class NodeGeometry(GeometryGenerator):
 	ABSTRACT CLASS: Create Geometry using Nodes.
 	'''
 
-	def __init__(self, context, node_data, link_data):
+	def __init__(self, operator, context, node_data, link_data):
+		self.operator = operator
 		self.context = context
 		self.node_data = node_data
 		self.link_data = link_data
@@ -367,6 +390,7 @@ class NodeGeometry(GeometryGenerator):
 			node = self.node_tree.nodes.new(node_data.type)
 			node.name = node_data.name
 
+			# NOTE: This will not affect user-controlled inputs, which will be overriden by the NodeEditor class.
 			if node_data.defaults is None:
 				continue
 
@@ -411,6 +435,8 @@ class NodeGeometry(GeometryGenerator):
 		
 		if event.type == 'TAB':
 			bpy.ops.object.mode_set(mode='EDIT')
+		
+		self.operator.post_function(self.context) # EMPTY FUNCTION. OVERRIDE IN OPERATOR SUBCLASS.
 	
 	def _cleanup(self):
 		bpy.ops.object.modifier_apply(modifier=self.mod_name)
@@ -424,6 +450,10 @@ class NodeGeometry(GeometryGenerator):
 #####################
 
 class GeometryEditor(EventManager):
+	'''
+	Some way to edit geometry in the scene.
+	'''
+	
 	pass
 
 
@@ -704,7 +734,8 @@ class HeadsUpDisplay(UserInterface):
 
 class ModalGeometry:
 	'''
-	Creates a geometry object in the scene that can be adjusted with a modal (ex. scroll to add sides to cylinder).
+	Creates a geometry object in the scene that can be adjusted with a modal (ex. scroll to add sides to cylinder)
+	and a UI to visuallize the editable properties.
 	'''
 
 	def __init__(self, geometry_generator: GeometryGenerator, geometry_editor: GeometryEditor, user_interface: UserInterface) -> None:
@@ -719,6 +750,11 @@ class ModalGeometry:
 		return self.geometry_generator.event(event)
 
 
+#####################
+# BLENDER OPERATORS
+#####################
+
+
 class OperatorBase:
 
 	bl_options = {'REGISTER', 'UNDO'}
@@ -729,14 +765,24 @@ class OperatorBase:
 	
 	def invoke(self, context, event):
 		raise NotImplementedError
+	
+	def post_function(self, context):
+		'''
+		Optional commands to run after the Operator finishes (this is executed by 
+		a finisher event sent to the GeometryGenerator in the Compositor Class).
+		
+		EXAMPLE: enter Edit Mode and select something.
+		'''
+
+		pass
 
 
 class NonModalOperator(OperatorBase):
 
 
 	def invoke(self, context, event):
-		geometry_generator = NodeGeometry(context, self.DATA.NODE_DATA, self.DATA.LINK_DATA)
-		geometry_editor    = NodeEditor(self, context, geometry_generator.location, geometry_generator.nodes, self.DATA.INPUT_DATA)
+		geometry_generator = NodeGeometry(self, context, self.DATA.NODE_DATA, self.DATA.LINK_DATA)
+		geometry_editor    = NodeEditor(self, context, geometry_generator.location, geometry_generator.nodes, self.DATA.INPUT_DATA)	# The editor initializes stuff, even if we don't use it again after this.
 		user_interface     = HeadsUpDisplay(context, geometry_generator.location, geometry_generator.nodes, self.DATA.INPUT_DATA, event)
 
 		geometry_generator.finish(event)
@@ -748,7 +794,7 @@ class NonModalOperator(OperatorBase):
 class ModalOperator(OperatorBase):
 
 	def invoke(self, context, event):
-		geometry_generator = NodeGeometry(context, self.DATA.NODE_DATA, self.DATA.LINK_DATA)
+		geometry_generator = NodeGeometry(self, context, self.DATA.NODE_DATA, self.DATA.LINK_DATA)
 		geometry_editor    = NodeEditor(self, context, geometry_generator.location, geometry_generator.nodes, self.DATA.INPUT_DATA)
 		user_interface     = HeadsUpDisplay(context, geometry_generator.location, geometry_generator.nodes, self.DATA.INPUT_DATA, event)
 
@@ -763,10 +809,23 @@ class ModalOperator(OperatorBase):
 		return self.modal_geometry.event(event)
 
 
+class MESH_OT_armored_circle(bpy.types.Operator, ModalOperator):
+	'''Modal Circle primitive.
+
+	armoredColony.com '''
+
+	bl_idname = 'mesh.armored_circle'
+	bl_label  = 'ARMORED Circle'
+	DATA = CIRCLE_DATA
+
+	sides: bpy.props.IntProperty(default=32, min=3, max=1024)
+	scale: bpy.props.FloatVectorProperty(default=(1, 1, 1))
+
+
 class MESH_OT_armored_plane(bpy.types.Operator, ModalOperator):
 	'''Modal Plane primitive.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'mesh.armored_plane'
 	bl_label  = 'ARMORED Plane'
@@ -779,7 +838,7 @@ armoredColony.com '''
 class MESH_OT_armored_cube(bpy.types.Operator, ModalOperator):
 	'''Modal Cube primitive.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'mesh.armored_cube'
 	bl_label  = 'ARMORED Cube'
@@ -792,7 +851,7 @@ armoredColony.com '''
 class MESH_OT_armored_cylinder(bpy.types.Operator, ModalOperator):
 	'''Modal Cylinder primitive.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'mesh.armored_cylinder'
 	bl_label  = 'ARMORED Cylinder'
@@ -806,13 +865,13 @@ armoredColony.com '''
 class MESH_OT_armored_quadsphere(bpy.types.Operator, ModalOperator):
 	'''Modal Quadsphere primitive.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'mesh.armored_quadsphere'
 	bl_label  = 'ARMORED Quadsphere'
 	DATA = QUADSPHERE_DATA
 
-	subdivisions: bpy.props.IntProperty(default=1, min=1, max=6)
+	subdivisions: bpy.props.IntProperty(default=1, min=1, max=8)
 	scale: bpy.props.FloatVectorProperty(default=(1, 1, 1))
 
 
@@ -820,13 +879,19 @@ armoredColony.com '''
 class MESH_OT_armored_vertex(bpy.types.Operator, NonModalOperator):
 	'''Add a single vertex and enter edit mode.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'mesh.armored_vertex'
 	bl_label  = 'ARMORED Vertex'
 	DATA = VERTEX_DATA
 
 	points: bpy.props.IntProperty(default=1, min=1, max=1)
+
+	def post_function(self, context):
+		context.view_layer.objects.active = context.active_object
+		bpy.ops.object.mode_set(mode='EDIT')
+		bpy.ops.mesh.select_mode(type='VERT')
+		bpy.ops.mesh.select_all(action='SELECT')
 
 
 def draw_menu(self, context):
@@ -835,6 +900,7 @@ def draw_menu(self, context):
     
     layout.operator(MESH_OT_armored_plane.bl_idname,	  text='Plane (modal)',      icon='MESH_PLANE')
     layout.operator(MESH_OT_armored_cube.bl_idname,	  text='Cube (modal)',       icon='MESH_CUBE')
+    layout.operator(MESH_OT_armored_circle.bl_idname,	  text='Circle (modal)',     icon='MESH_CIRCLE')
     layout.operator(MESH_OT_armored_cylinder.bl_idname,   text='Cylinder (modal)',   icon='MESH_CYLINDER')
     layout.operator(MESH_OT_armored_quadsphere.bl_idname, text='Quadsphere (modal)', icon='MESH_UVSPHERE')
     layout.operator(MESH_OT_armored_vertex.bl_idname,     text='Single Vert',        icon='DOT')
@@ -843,6 +909,7 @@ def draw_menu(self, context):
 classes = (
 	MESH_OT_armored_plane,
 	MESH_OT_armored_cube,
+	MESH_OT_armored_circle,
 	MESH_OT_armored_cylinder,
 	MESH_OT_armored_quadsphere,
 	MESH_OT_armored_vertex,

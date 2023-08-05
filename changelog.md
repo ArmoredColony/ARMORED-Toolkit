@@ -1,6 +1,17 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.7.4
+*04/Aug/2023*
+
+### ADDED
+- Operator **Circle (Modal)**.
+
+### CHANGED
+- Preferences **Load Theme** button now sets the sculpting workspace matcap to 'ARC Default', the same matcap I use in ZBrush (mostly neutral but with a slight blue tint).
+- Operator **Single Vert** now enters edit mode and selects the vertex after creating it.
+
+
 ## v0.7.3
 *22/Jul/2023*
 

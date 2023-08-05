@@ -1,13 +1,10 @@
-# v2.0
+version = (2, 0, 1)
 
 import bpy
 import os
 import dataclasses
 
-from .. utils import(
-	addon,
-	paths,
-	)
+from .. import utils
 
 
 @dataclasses.dataclass(frozen=True)
@@ -21,7 +18,7 @@ SHADING_PREFERENCES = {
 
 	'Layout':         Shading('SOLID', 'MATCAP', 'ARC Lambert NVil.png'),
 	'Modeling':       Shading('SOLID', 'MATCAP', 'ARC Lambert NVil.png'),
-	'Sculpting':      Shading('SOLID', 'MATCAP', 'ARC Blinn Maya Light.png'),
+	'Sculpting':      Shading('SOLID', 'MATCAP', 'ARC Default.png'),
 	'UV Editing':     Shading('SOLID', 'MATCAP', 'ARC Lambert NVil.png'),
 	'Animation':      Shading('SOLID', 'MATCAP', 'ARC Lambert NVil.png'),
 	'Geometry Nodes': Shading('SOLID', 'MATCAP', 'ARC Lambert NVil.png'),
@@ -45,18 +42,18 @@ def enable_required_resources(required_resources: list[str]):
 	'''
 
 	for resource in required_resources:
-		if getattr(addon.prefs(), resource) is None:
-			if addon.debug():
+		if getattr(utils.addon.prefs(), resource) is None:
+			if utils.addon.debug():
 				print(f'ARMORED-Toolkit: Resource {resource} not found. Skipping.')
 			continue
 
-		if getattr(addon.prefs(), resource) is True:
-			if addon.debug():
+		if getattr(utils.addon.prefs(), resource) is True:
+			if utils.addon.debug():
 				print(f'ARMORED-Toolkit: Resource {resource} is already ENABLED. Skipping.')
 			continue
 
-		setattr(addon.prefs(), resource, True)
-		if addon.debug():
+		setattr(utils.addon.prefs(), resource, True)
+		if utils.addon.debug():
 			print(f'ARMORED-Toolkit: \'Load Preferences\' ENABLED Resource {resource}.')
 
 
@@ -89,7 +86,7 @@ def set_viewport_shading(shading_preferences: dict[str, Shading]):
 		screen = bpy.data.screens.get(key)
 
 		if screen is None:
-			if addon.debug():
+			if utils.addon.debug():
 				print(f'ARMORED-Toolkit: Screen \'{key}\' not found. Skipping.')
 			continue
 
@@ -119,7 +116,7 @@ armoredColony.com '''
 	filename: bpy.props.StringProperty(name='Theme File Name', default='Armored_Colony.xml')
 	
 	def execute(self, context):
-		file_path = os.path.join(paths.AddonPaths.themes, self.filename)    # The source, not the target.
+		file_path = os.path.join(utils.paths.AddonPaths.themes, self.filename)    # The source, not the target.
 		bpy.ops.preferences.theme_install(filepath=file_path, overwrite=True)
 
 		enable_required_resources(['matcaps', 'hdris', 'studio_lights'])
