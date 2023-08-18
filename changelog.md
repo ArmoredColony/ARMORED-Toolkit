@@ -1,6 +1,13 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.7.5
+*17/Aug/2023*
+
+### CHANGED
+- Some internal variable names and the like.
+
+
 ## v0.7.4
 *04/Aug/2023*
 

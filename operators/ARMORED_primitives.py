@@ -1,4 +1,4 @@
-version = (3, 2, 0)
+version = (3, 2, 1)
 
 import bpy
 import blf
@@ -36,12 +36,14 @@ class IntConcatenator:
 			return self.result
 			
 		self.list_of_integers.append(value)
+
 		return self.result
 	
-	@property
+	# @property
 	def pop(self):
 		if self.list_of_integers:
 			self.list_of_integers.pop()
+			
 		return self.result
 
 
@@ -170,7 +172,6 @@ class PLANE_DATA(GeometryData):
 	
 	INPUT_DATA = {
 			False: InputData(prop_name='cuts', node_name='Plane', input_indexes=(2, 3), offset=2),
-			# 'scale': InputData(prop_name='scale', node_name='Plane', input_indexes=(0, 1))
 		}
 
 
@@ -188,7 +189,6 @@ class CUBE_DATA(GeometryData):
 	
 	INPUT_DATA = {
 			False: InputData(prop_name='cuts', node_name='Cube', input_indexes=(1, 2, 3), offset=2),
-			# 'scale': InputData(prop_name='scale', node_name='Cube', input_indexes=(0,))
 		}
 
 
@@ -207,7 +207,6 @@ class CYLINDER_DATA(GeometryData):
 	INPUT_DATA = {
 			False: InputData(prop_name='sides', node_name='Cylinder', input_indexes=(0,)),
 			True:  InputData(prop_name='cuts', node_name='Cylinder', input_indexes=(1,), offset=1),
-			# 'scale': InputData(prop_name='scale', node_name='Cylinder', input_indexes=(3, 4))
 		}
 
 
@@ -227,7 +226,6 @@ class QUADSPHERE_DATA(GeometryData):
 	
 	INPUT_DATA = {
 			False: InputData(prop_name='subdivisions', node_name='SubD', input_indexes=[1]),
-			# 'scale': InputData(prop_name='scale', node_name='Cube', input_indexes=(0,))
 		}
 
 
@@ -390,7 +388,8 @@ class NodeGeometry(GeometryGenerator):
 			node = self.node_tree.nodes.new(node_data.type)
 			node.name = node_data.name
 
-			# NOTE: This will not affect user-controlled inputs, which will be overriden by the NodeEditor class.
+			# This will not really affect user-controlled inputs, 
+			# because those will be overriden by the NodeEditor class immediately after.
 			if node_data.defaults is None:
 				continue
 
@@ -400,14 +399,14 @@ class NodeGeometry(GeometryGenerator):
 		
 	def _link_nodes(self):
 		
-		for male, out, female, _in in self.link_data:
-			male   = self.node_tree.nodes.get(male)
-			female = self.node_tree.nodes.get(female)
+		for male_node_name, output_index, female_node_name, input_index in self.link_data:
+			male_node   = self.node_tree.nodes.get(male_node_name)
+			female_node = self.node_tree.nodes.get(female_node_name)
 
-			if male is None or female is None:
-				raise ValueError(f'You cannot link node {male} to node {female}')
+			if male_node is None or female_node is None:
+				raise ValueError(f'You cannot link node {male_node} to node {female_node}')
 
-			self.node_tree.links.new(male.outputs[out], female.inputs[_in])
+			self.node_tree.links.new(male_node.outputs[output_index], female_node.inputs[input_index])
 
 
 	# TRANSFORMS
@@ -473,7 +472,7 @@ class NodeEditor(GeometryEditor):
 
 		self.scaling = False
 
-		self.cuts = IntConcatenator(0)
+		self.property_value = IntConcatenator(0)
 
 	def _set_node_input_defaults(self):  # sourcery skip: assign-if-exp
 		for input_data in self.input_data.values():
@@ -517,9 +516,9 @@ class NodeEditor(GeometryEditor):
 		if input_data is None:
 			return
 		
-		self.cuts.append(number)
+		self.property_value.append(number)
 
-		setattr(self.operator, input_data.prop_name, self.cuts.result + input_data.offset)
+		setattr(self.operator, input_data.prop_name, self.property_value.result + input_data.offset)
 		for input in input_data.inputs:
 			input.default_value = getattr(self.operator, input_data.prop_name)
 	
@@ -528,9 +527,9 @@ class NodeEditor(GeometryEditor):
 		if input_data is None:
 			return
 
-		self.cuts.pop
+		self.property_value.pop()
 
-		setattr(self.operator, input_data.prop_name, self.cuts.result + input_data.offset)
+		setattr(self.operator, input_data.prop_name, self.property_value.result + input_data.offset)
 		for input in input_data.inputs:
 			input.default_value = getattr(self.operator, input_data.prop_name)
 	
