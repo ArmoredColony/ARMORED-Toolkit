@@ -1,6 +1,13 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.7.6
+*17/Aug/2023*
+
+### FIXED
+- Console error when starting Blender. `bpy.utils` has no Attribute `previews`. Fixed by explicitly importing with `bpy.utils.previews`.
+
+
 ## v0.7.5
 *17/Aug/2023*
 
