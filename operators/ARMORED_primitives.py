@@ -1,4 +1,4 @@
-version = (3, 2, 1)
+version = (3, 3, 0)
 
 import bpy
 import blf
@@ -632,10 +632,11 @@ class HeadsUpDisplay(UserInterface):
 		y = self.mouse_position.y + offset_y
 		
 		dpi   = self.context.preferences.system.dpi
-		scale = self.context.preferences.system.ui_scale
+		ui_scale = self.context.preferences.system.ui_scale
 
 		font_id = 1
-		blf.size(font_id, font_size*scale, dpi)
+		# blf.size(font_id, font_size*ui_scale, dpi)		# WILL NOT WORK ANYMORE.
+		blf.size(font_id, font_size * ui_scale * dpi / 72)	# The Blender 4.0 way.
 		blf.color(font_id, *color)
 		blf.position(font_id, x, y, 0)
 

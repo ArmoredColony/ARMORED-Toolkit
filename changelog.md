@@ -1,6 +1,13 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.7.7
+*18/Nov/2023*
+
+### FIXED
+- Certain Operators were not drawing in the viewport in Blender 4.0 because of the phased-out `dpi` parameter in the `blf.size` command.
+
+
 ## v0.7.6
 *17/Aug/2023*
 

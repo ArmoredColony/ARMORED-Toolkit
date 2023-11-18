@@ -1,17 +1,18 @@
-# v1.2
+version = (1, 3, 0)
 
 import bpy
-from bpy.props import IntProperty, FloatProperty, BoolProperty
-import bgl
 import blf
 
 
 def draw_callback_px(self, context):
     font_id = 0  # need to find out how best to get this.
+    font_size = 20
+    dpi   = self.context.preferences.system.dpi
+    ui_scale = self.context.preferences.system.ui_scale
 
     # draw some text
     blf.position(font_id, self.pos_x+30, self.pos_y+30, 0)
-    blf.size(font_id, 20, 72)
+    blf.size(font_id, font_size * ui_scale * dpi / 72)
     blf.draw(font_id, str(self.pipe.data.bevel_resolution*2+4) + " Sides")
 
 
@@ -24,11 +25,11 @@ class ARMORED_OT_edge_to_pipe(bpy.types.Operator):
     bl_label = 'ARMORED Edge to Pipe'
     bl_options = {'REGISTER', 'UNDO'}
 
-    start_mouse_x : IntProperty()   
-    pipe_radius   : FloatProperty()
-    pos_x         : IntProperty()
-    pos_y         : IntProperty()
-    flat_shade    : BoolProperty(default=True)
+    start_mouse_x : bpy.props.IntProperty()   
+    pipe_radius   : bpy.props.FloatProperty()
+    pos_x         : bpy.props.IntProperty()
+    pos_y         : bpy.props.IntProperty()
+    flat_shade    : bpy.props.BoolProperty(default=True)
 
     @classmethod
     def poll(cls, context):
