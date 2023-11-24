@@ -1,6 +1,13 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.7.9
+*24/Nov/2023*
+
+### FIXED
+- Operator **Fast Crease** stopped working in Blender 4.0 (they changed how creasing works again).
+
+
 ## v0.7.7
 *18/Nov/2023*
 
@@ -59,7 +66,7 @@
 - Operator **Export OBJ** and **Export FBX** now look for a default path set in the addon's preferences (`export_path`).
   
 ### FIXED
-- Operator **Muscle Rig** (part of the lattice_deform.py) was placing the empty controllers in the wrong location.
+- Operator **Muscle Rig** (a subset of the lattice_deform.py script) was placing the empty controllers in the wrong location.
 - Operator **Transfer Data** was not renaming the data to match the object name consistently.
 
 

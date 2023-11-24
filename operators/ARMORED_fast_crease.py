@@ -1,4 +1,4 @@
-# v2.1
+version = (2, 2, 0)
 
 import bpy
 import bmesh
@@ -30,12 +30,21 @@ armoredColony.com '''
 		# options={'HIDDEN'},
 		)
 
+	edge_limit_method: bpy.props.EnumProperty( 
+		name='Limit Method', 
+		description='Which edges do you want to affect.', 
+		default='NONE', 
+		items=[ ('NONE',   'None',   'Crease normally'),
+			('BORDER', 'Border', 'Crease the border edges of the selection'),
+			('ANGLE',  'Angle',  'Crease the edges over a certain angle'), ])
+	
 	face_limit_method: bpy.props.EnumProperty( 
 		name='Limit Method', 
 		description='Which edges do you want to affect.', 
 		default='BORDER', 
-		items=[ ('BORDER', 'Border', 'Only affect border edges'),
-			('ANGLE',  'Angle',  'Affect edges based on their angle'), ])
+		items=[ ('NONE',   'None',   'Crease normally'),
+			('BORDER', 'Border', 'Crease the border edges of the selection'),
+			('ANGLE',  'Angle',  'Crease the edges over a certain angle'), ])
 			
 	edge_angle: bpy.props.FloatProperty(
 		name='Edge Angle', default=30,
@@ -55,16 +64,24 @@ armoredColony.com '''
 		layout = self.layout
 		layout.use_property_split = True
 
+		select_mode = context.tool_settings.mesh_select_mode[:]
+
 		col = layout.column(align=True)
 
 		col.prop(self, 'crease_value')
 		col.separator()
 
 		row = col.row()
-		row.prop(self, 'face_limit_method', expand=True)
-
-		if self.face_limit_method == 'ANGLE':
-			col.prop(self, 'edge_angle')
+		if select_mode[1]:
+			row.prop(self, 'edge_limit_method', expand=True)
+			if self.edge_limit_method == 'ANGLE':
+				col.prop(self, 'edge_angle')
+			
+		elif select_mode[2]:
+			row.prop(self, 'face_limit_method', expand=True)
+			if self.face_limit_method == 'ANGLE':
+				col.prop(self, 'edge_angle')
+			
 		col.separator()
 
 		col.prop(self, 'deselect_after')
@@ -81,57 +98,117 @@ armoredColony.com '''
 			me = ob.data
 			bm = bmesh.from_edit_mesh(me)
 
-			mode = context.tool_settings.mesh_select_mode[:]
+			crease_layer = self._get_crease_layer(context, bm)
+			elements_to_crease = self._get_elements_to_crease(context, bm)
 
-			if mode[0]:
-				crease_layer = bm.verts.layers.crease.verify()
-				crease_elements = self._check_for_selected_verts(context, bm.verts)
-
-			elif mode[1] or mode[2]:
-				crease_layer = bm.edges.layers.crease.verify()
-				crease_elements = self._check_for_selected_edges(context, bm.edges)
-
-				if mode[2]:
-					crease_elements = self._filter_edges(context, self.face_limit_method, crease_elements)
-
-			self._crease(crease_layer, crease_elements, self.crease_value)
+			self._crease(crease_layer, elements_to_crease, self.crease_value)
 			bmesh.update_edit_mesh(me)
 			
 		if self.deselect_after:
 			bpy.ops.mesh.select_all(action='DESELECT')
 
-		return {'FINISHED'}	
+		return {'FINISHED'}
 	
 
+	# GET ELEMENTS TO CREASE >>
+
+	def _get_elements_to_crease(self, context, bm):
+		select_mode = context.tool_settings.mesh_select_mode[:]
+
+		# THIS PRIORITY IS IMPORTANT (TO ME).
+		if select_mode[1]:
+			return self._filter_edges(context, self.edge_limit_method, self._check_for_selected_edges(context, bm.edges))
+		
+		if select_mode[2]:
+			return self._filter_edges(context, self.face_limit_method, self._check_for_selected_edges(context, bm.edges))
+		
+		if select_mode[0]:
+			return self._check_for_selected_verts(context, bm.verts)
+		
+
 	def _check_for_selected_verts(self, context, verts: list[bmesh.types.BMVert]) -> list[bmesh.types.BMVert]:
+		'''
+		Return ALL Verts if nothing is selected.
+		'''
+
 		if any_components_selected(context):
 			return [v for v in verts if v.select]
 		
 		return verts
 
 	def _check_for_selected_edges(self, context, edges: list[bmesh.types.BMEdge]) -> list[bmesh.types.BMEdge]:
+		'''
+		Return ALL Edges if nothing is selected.
+		'''
+
 		if any_components_selected(context):
 			return [e for e in edges if e.select]
 		
 		return edges
 
+
+	# FILTER EDGES BY TRAIT >>
+
 	def _filter_edges(self, context, limit_method, edges: list[bmesh.types.BMEdge]) -> list[bmesh.types.BMEdge]:
+		if limit_method == 'NONE':
+			return edges
+		 
 		if limit_method == 'BORDER':
 			return self._get_border_edges(context, edges)
 
 		if limit_method == 'ANGLE':
 			return self._get_edges_by_angle(edges)
 	
-	def _get_border_edges(self, context, edges):
+	def _get_border_edges(self, context, edges: list[bmesh.types.BMEdge]) -> list[bmesh.types.BMEdge]:
 		if any_components_selected(context):
 			return [e for e in edges if e.is_boundary or not all(f.select for f in e.link_faces)]
-		else:
-			return [e for e in edges if e.is_boundary]
+
+		return [e for e in edges if e.is_boundary]
 	
-	def _get_edges_by_angle(self, edges):
+	def _get_edges_by_angle(self, edges: list[bmesh.types.BMEdge]) -> list[bmesh.types.BMEdge]:
 		return [e for e in edges if e.is_boundary 
-					or (len(e.link_faces) == 2 and e.calc_face_angle() * 180 / math.pi > self.edge_angle)]
-	
+					or (len(e.link_faces) == 2 and math.degrees(e.calc_face_angle()) > self.edge_angle)]
+
+
+	# GET CREASE LAYERS >>
+
+	def _get_crease_layer(self, context, bm):
+		'''
+		Return a single crease layer based on the selection mode
+		'''
+
+		select_mode = context.tool_settings.mesh_select_mode[:]
+
+		# THIS PRIORITY IS IMPORTANT (TO ME).
+		if select_mode[1] or select_mode[2]:
+			return self._get_edge_crease_layer(bm)
+		
+		return self._get_vertex_crease_layer(bm)
+
+	def _get_edge_crease_layer(self, bm):
+		'''
+		Return the existing layer or create a new one.
+		'''
+
+		if bpy.app.version < (4, 0, 0):
+			return bm.edges.layers.crease.verify()
+		
+		return bm.edges.layers.float.get('crease_edge', bm.edges.layers.float.new('crease_edge'))
+		
+
+	def _get_vertex_crease_layer(self, bm):
+		'''
+		Return the existing layer or create a new one.
+		'''
+
+		if bpy.app.version < (4, 0, 0):
+			return bm.verts.layers.crease.verify()
+
+		return bm.verts.layers.float.get('crease_vert', bm.verts.layers.float.new('crease_vert'))
+		
+
+	# CREASE >>
+
 	def _crease(self, layer, elements, value: float) -> None:
 		for e in elements:
 			e[layer] = value
