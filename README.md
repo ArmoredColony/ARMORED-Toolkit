@@ -36,7 +36,8 @@ armoredcolony@gmail.com
 [Youtube]
 
 
-[Artstation]: https://armoredcolony.com
+[Website]: https://armoredcolony.com
+[Artstation]: https://armoredcolony.artstation.com
 [Email]: armoredcolony@gmail.com
 [Youtube]: https://youtube.com/armoredcolony
 
