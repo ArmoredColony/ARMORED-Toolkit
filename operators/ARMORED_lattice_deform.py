@@ -1,4 +1,4 @@
-version = (4, 4, 1)
+version = (4, 5, 0)
 
 import bpy
 import bmesh
@@ -34,13 +34,13 @@ class BoundsCalculator(abc.ABC):
 class FromIndividualBoundingBoxes(BoundsCalculator):
 	'''
 	Calculate the transforms of a bounding box around the selected objects, based on their individual bounding boxes  
-	and the active object's rotation as world space.
+	and treating the active object's rotation as world space.
 	'''
 
 	def __init__(self, selected_objects: list[bpy.types.Object], rotation_quaternion: mathutils.Quaternion=None) -> None:
 		self.selected_objects = selected_objects
-
 		self.rotation_quaternion = mathutils.Quaternion() if rotation_quaternion is None else rotation_quaternion
+
 		self.bounds_min, self.bounds_max = self._get_min_max_vectors_from_bounds()
 		
 	def calculate_location(self) -> mathutils.Vector:
@@ -72,7 +72,6 @@ class FromIndividualBoundingBoxes(BoundsCalculator):
 		Returns (min: mathutils.Vector, max: mathutils.Vector) corners of a bounding box around the selected objects.
 		'''
 
-		print(f'class selected {self.selected_objects}')
 		vertex_coords = []
 		for obj in self.selected_objects:
 			vertex_coords.extend(
@@ -85,6 +84,7 @@ class FromIndividualBoundingBoxes(BoundsCalculator):
 class FromIndividualBoundingBoxesEvaluated(FromIndividualBoundingBoxes):
 	'''
 	Same as FromIndividualBoundingBoxes, but uses evaluated objects to get the bounding box.
+	DOES NOT SEEM TO WORK IN BL4.1
 	'''
 
 	def __init__(self, context, selected_objects: list[bpy.types.Object], rotation_quaternion: mathutils.Quaternion) -> None:
@@ -118,8 +118,9 @@ class LatticeDeformer:
 	Transform a Lattice to encapsulate the selected objects and create the necessary deform modifiers.
 	'''
 
-	def __init__(self, lattice: bpy.types.Object, bounds_calculator: BoundsCalculator) -> None:
+	def __init__(self, context, lattice: bpy.types.Object, bounds_calculator: BoundsCalculator) -> None:
 		self.lattice = lattice
+		self.context = context
 		self.bounds_calculator = bounds_calculator
 		self.selected_objects = bounds_calculator.selected_objects
 
@@ -148,9 +149,9 @@ class LatticeDeformer:
 			mod.object = self.lattice
 
 			if found_subsurf:
-				bpy.ops.object.modifier_move_up({'object': obj}, modifier=mod.name)
-
-
+				with self.context.temp_override(object=obj):
+					bpy.ops.object.modifier_move_up(modifier=mod.name)
+	
 
 # ===============
 # BLENDER OBJECTS
@@ -161,8 +162,8 @@ def WireCube(context) -> bpy.types.Object:
 	Create a Wireframe Cube (for debugging purposes).
 	'''
 
-	mesh = bpy.data.meshes.new('Cube')
-	cube = bpy.data.objects.new('Cube', mesh)
+	data = bpy.data.meshes.new('Cube')
+	cube = bpy.data.objects.new('Cube', data)
 	context.collection.objects.link(cube)
 
 	bm = bmesh.new()
@@ -198,7 +199,7 @@ def Lattice(context, points_u: int=2, points_v: int=2, points_w: int=2, name='La
 class OBJECT_OT_armored_lattice(bpy.types.Operator):
 	'''Creates a lattice that matches your object dimensions and transforms.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'object.armored_lattice'
 	bl_label  = 'ARMORED Lattice'
@@ -217,7 +218,7 @@ armoredColony.com '''
 		name='V', default=2, min=2, max=24)
 
 	points_w: bpy.props.IntProperty(
-		name='W', default=3, min=2, max=24)
+		name='W', default=2, min=2, max=24)
 
 	parent: bpy.props.EnumProperty(
 		name='Parent', 
@@ -280,11 +281,13 @@ armoredColony.com '''
 
 		self.lattice = Lattice(context, self.points_u, self.points_v, self.points_w)
 
-		# bounds_calculator = FromIndividualBoundingBoxes(self.selected_objects, self.rotation_quaternion)
-		bounds_calculator = FromIndividualBoundingBoxesEvaluated(context, self.selected_objects, self.rotation_quaternion)
+		if bpy.app.version >= (4, 1, 0):
+			bounds_calculator = FromIndividualBoundingBoxes(self.selected_objects, self.rotation_quaternion)
+		else:
+			bounds_calculator = FromIndividualBoundingBoxesEvaluated(context, self.selected_objects, self.rotation_quaternion)
 
-		# # self.draw_individual_bounds()		# TEST
-		self.lattice = LatticeDeformer(self.lattice, bounds_calculator).bl_object
+		# self.draw_individual_bounds(context)		# TEST
+		self.lattice = LatticeDeformer(context, self.lattice, bounds_calculator).bl_object
 
 		self._offset_lattice_scale()	# MUST REMAIN ABOVE THE SCENE UPDATE?
 		self._set_parent()
@@ -356,9 +359,9 @@ armoredColony.com '''
 
 	# TESTS >>
 	
-	def draw_individual_bounds(self) -> None:
+	def draw_individual_bounds(self, context) -> None:
 		for obj in self.selected_objects:
-			bbox = WireCube()
+			bbox = WireCube(context)
 			loc, rot, dim = FromIndividualBoundingBoxes([obj], self.rotation_quaternion).calculate_transforms()
 			bbox.location = loc
 			bbox.rotation_euler = rot
@@ -372,7 +375,7 @@ armoredColony.com '''
 class OBJECT_OT_armored_muscle_rig(bpy.types.Operator):
 	'''Creates a lattice and hooks the control points to 3 Empties aligned vertically. Made to be used with vertical cyber muscle kitbash.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'object.armored_muscle_rig'
 	bl_label = 'ARMORED Muscle Rig'
@@ -564,7 +567,6 @@ armoredColony.com '''
 		for obj in controllers:
 			controller_collection.objects.link(obj)
 			bpy.context.collection.objects.unlink(obj)
-
 
 
 classes = (

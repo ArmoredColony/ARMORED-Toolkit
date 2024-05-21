@@ -110,23 +110,32 @@ def set_viewport_shading(shading_preferences: dict[str, Shading]):
 class ARMORED_OT_theme_install(bpy.types.Operator):
 	'''Install my personal Blender Theme with it's matching Matcap and HDRI.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'armored.theme_install'
 	bl_label = 'ARMORED Theme Install'
 	bl_options = {'REGISTER', 'INTERNAL'}
 
-	filename: bpy.props.StringProperty(name='Theme File Name', default='Armored_Colony.xml')
+	theme_filename: bpy.props.StringProperty(name='Theme File Name', default='Armored_Colony.xml')
 	
 	def execute(self, context):
-		file_path = os.path.join(paths.AddonPaths.themes, self.filename)    # The source, not the target.
-		bpy.ops.preferences.theme_install(filepath=file_path, overwrite=True)
+		# We used to install the theme from the addon 'resources' folder, which did not require enabling the 'themes' resource.
+		# This meant the addon would remove the theme preset after restarting if the user never enabled the 'themes' resource manually.
+		# The theme remained applied visually, but the preset would be gone from the themes preset list in the Blender preferences.
+		# file_path = os.path.join(paths.AddonPaths.themes, self.theme_filename)    # The source, not the target.
+		# bpy.ops.preferences.theme_install(filepath=file_path, overwrite=True)
 
-		enable_required_resources(['matcaps', 'hdris', 'studio_lights'])
+		enable_required_resources(['matcaps', 'hdris', 'studio_lights', 'themes'])
+
+		bpy.ops.script.execute_preset(
+			filepath=os.path.join(paths.BlenderPaths.themes, self.theme_filename),	# Should now exist after enabling the resource.
+			menu_idname='USERPREF_MT_interface_theme_presets'
+		)
+
 		set_favorite_hdri('ARC 2 Panels Tilted 4K.hdr')
 		set_viewport_shading(SHADING_PREFERENCES)
 		
-		self.report({'INFO'}, f'ARMORED-Toolkit: LOADED Theme `{self.filename}` with Matcap `ARC Lambert NVil.png` and HDRI `ARC 2 Panels Tilted 4K.hdr`.')
+		self.report({'INFO'}, f'ARMORED-Toolkit: LOADED Theme `{self.theme_filename}` with Matcap `ARC Lambert NVil.png` and HDRI `ARC 2 Panels Tilted 4K.hdr`.')
 		
 		return {'FINISHED'}
 
@@ -134,7 +143,7 @@ armoredColony.com '''
 class ARMORED_OT_theme_uninstall(bpy.types.Operator):
 	'''Restore Blender's default theme, matcap and HDRI.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'armored.theme_uninstall'
 	bl_label = 'ARMORED Theme Uninstall'

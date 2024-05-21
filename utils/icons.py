@@ -7,6 +7,7 @@ from . import paths
 def load_icons(preview_collections):
 	pcoll = bpy.utils.previews.new()
 
+	pcoll.load('armored_colony32',	os.path.join(paths.AddonPaths.icons, 'armored_colony32.png'),	'IMAGE')
 	pcoll.load('artstation32',	os.path.join(paths.AddonPaths.icons, 'artstation32.png'),	'IMAGE')
 	pcoll.load('blender_market32',	os.path.join(paths.AddonPaths.icons, 'blender_market32.png'),	'IMAGE')
 	pcoll.load('github32',		os.path.join(paths.AddonPaths.icons, 'github32.png'),		'IMAGE')

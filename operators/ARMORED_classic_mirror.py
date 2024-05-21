@@ -1,4 +1,4 @@
-version  = (1, 4, 0)
+version = (1, 5, 0)
 
 import bpy
 
@@ -6,7 +6,7 @@ import bpy
 class MESH_OT_armored_classic_mirror(bpy.types.Operator):
 	'''Creates a mirror modifier with my usual settings. If one already exists, it duplicates and applies it.
 
-armoredColony.com '''
+	armoredColony.com '''
 
 	bl_idname = 'mesh.armored_classic_mirror'
 	bl_label = 'ARMORED Classic Mirror'
@@ -26,7 +26,7 @@ armoredColony.com '''
 		mod = active_object.modifiers.get('Mirror')
 
 		if mod is None:
-			self._add_mirror_modifier(active_object)
+			self._add_mirror_modifier(context, active_object)
 
 		elif active_object.data.users > 1:
 			self.report({'WARNING'}, 'Cannot apply modifiers to multi-user data.')
@@ -43,7 +43,7 @@ armoredColony.com '''
 		return {'FINISHED'}
 	
 
-	def _add_mirror_modifier(self, active_object) -> bpy.types.Modifier:
+	def _add_mirror_modifier(self, context, active_object) -> bpy.types.Modifier:
 		found_subsurf = bool(active_object.modifiers and active_object.modifiers[-1].type == 'SUBSURF')
 
 		mod = active_object.modifiers.new(type='MIRROR', name='Mirror')
@@ -55,9 +55,15 @@ armoredColony.com '''
 		mod.use_clip = True
 
 		if found_subsurf:
-			bpy.ops.object.modifier_move_up({'object': active_object}, modifier=mod.name)
+			self._move_modifier_up(context, object=active_object, modifier_name=mod.name)
 
 		return mod
+	
+	def _move_modifier_up(self, context, object: bpy.types.Object, modifier_name: str):
+		
+		# Required for Blender 4.0 and later.
+		with context.temp_override(object=object):
+			bpy.ops.object.modifier_move_up(modifier=modifier_name)
 
 
 classes = (

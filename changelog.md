@@ -1,6 +1,26 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.8.0
+*21/May/2024*
+
+### NEW
+- Operator **Ge Curve Length** prints the lenth of the first spline in the active curve object.
+- Resource **ARC Toon** Matcap.
+
+### CHANGED
+- Theme **Armored Colony** (also available from the **Load Theme** button in the addon preferences) was updated for Blender 4.1 (probably not ideal for older versions anymore).
+- Theme **Candy Orange** changed somehow. I cannot remember what I changed.
+
+### FIXED
+- Operator **Autosmooth** now works in Blender 4.1 (it only adds the NEW *Smooth by Angle* modifier). The previous Operator still exists but is now named **Autosmooth (Legacy)** for older Blender versions.
+- Operator **Classic Mirror** no longer throws a context override error in Blender 4.1.
+- Operator **Lattice Deform** was creating a lattice of incorrect size in Blender 4.1 (the old depsgraph method does not work anymore).
+- Operator **Primitives** no longer has HUD drawing issues, which were caused by how the `gpu_extras` module was being imported.
+- Addon Preferences **Load  Theme** now enables the Theme Resources so you can always switch away and back to the **Armored Colony Theme** without having to click the load button again.
+- Preferences **URL Buttons** had an outdated Artstation URL.
+
+
 ## v0.7.9
 *24/Nov/2023*
 

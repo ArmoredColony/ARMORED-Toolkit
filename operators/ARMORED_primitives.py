@@ -1,4 +1,4 @@
-version = (3, 3, 0)
+version = (3, 4, 0)
 
 import bpy
 import blf
@@ -6,7 +6,7 @@ import gpu
 
 import mathutils
 import bpy_extras
-import gpu_extras
+from gpu_extras.batch import batch_for_shader	# Must immport like this.
 
 import math
 import dataclasses
@@ -665,7 +665,7 @@ class HeadsUpDisplay(UserInterface):
 		shader = gpu.shader.from_builtin('UNIFORM_COLOR')
 		gpu.state.blend_set('ALPHA')
 		# gpu.state.line_width_set(2.0)
-		batch = gpu_extras.batch.batch_for_shader(shader, 'LINE_STRIP', {'pos': coords})
+		batch = batch_for_shader(shader, 'LINE_STRIP', {'pos': coords})
 		shader.uniform_float("color", color)
 		batch.draw(shader)
 
@@ -778,7 +778,6 @@ class OperatorBase:
 
 
 class NonModalOperator(OperatorBase):
-
 
 	def invoke(self, context, event):
 		geometry_generator = NodeGeometry(self, context, self.DATA.NODE_DATA, self.DATA.LINK_DATA)

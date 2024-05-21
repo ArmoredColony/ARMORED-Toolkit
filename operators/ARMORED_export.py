@@ -1,4 +1,4 @@
-version = (3, 0, 0)
+version = (3, 0, 1)
 
 import bpy
 import os
@@ -30,7 +30,7 @@ class Export:
 
 	def execute(self, context):
 		if self.dir_path_override:
-			print('Using override path')
+			print('Using override path: ', self.dir_path_override)
 			self.export_path = self.dir_path_override
 
 		else:

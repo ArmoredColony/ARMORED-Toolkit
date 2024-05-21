@@ -1,74 +1,62 @@
-version = (2, 1, 1)
+version = (1, 0, 0)
 
 import bpy
-import bmesh
+import math
+# import bmesh
 
 
 class ARMORED_OT_autosmooth(bpy.types.Operator):
-	'''Switches between Autosmooth by angle and Flat Shading (ignores any selections that are not Meshes).
-
+	'''Applies a 'Smooth by Angle' Modifier to the selected objects
+	
 	armoredColony.com '''
 	
 	bl_idname = 'view3d.armored_autosmooth'
 	bl_label = 'ARMORED Autosmooth'
-	bl_options = {'REGISTER'}
+	bl_options = {'REGISTER', 'UNDO'}
+
+	angle: bpy.props.FloatProperty(
+		name='Angle', default=math.radians(30), min=0, max=math.radians(180), unit='ROTATION', 
+		description='The angle in degrees that will be used to determine the smoothing of the mesh.')
 	
 	@classmethod
 	def poll(cls, context):
-		return context.object is not None
+		return bpy.app.version >= (4, 1, 0)
+	
+	def draw(self, context):
+		layout = self.layout
+		layout.use_property_split = True
+		layout.prop(self, 'angle')
+		layout.separator()
+		layout.operator('wm.operator_defaults', text='Reset')
 
+	
 	def execute(self, context):
-		active_object = context.object
-		selected_objects = {ob for ob in context.selected_objects if ob.type == 'MESH'}
+		active_object = context.active_object
 
-		if active_object.type == 'MESH':
-			selected_objects.add(active_object)
-
-		mode = context.mode
-		autosmooth = active_object.data.use_auto_smooth
-
-		for ob in selected_objects:
-			ob.data.use_auto_smooth = not autosmooth
-
-		if context.mode == 'OBJECT':
-			# bpy.ops.object.shade_smooth(use_ob.data.use_auto_smooth)
-			for ob in selected_objects:
-				self._object_smooth_set(ob, value=True)
-				
-		elif context.mode in {'EDIT_MESH', 'EDIT_CURVE'}:
-			for ob in selected_objects:
-				self._bmesh_smooth_set(ob, value=True)
-		else:
-			return {'CANCELLED'}
-				
-		# for ob in selected_objects:
-		# 	ob.data.use_auto_smooth = not autosmooth
+		selected_objects = [ob for ob in context.selected_objects if ob.type == 'MESH']
+		self._add_smooth_by_angle_modifier(context, selected_objects)
+		bpy.ops.object.shade_smooth()
+		
+		context.view_layer.objects.active = active_object
 
 		return {'FINISHED'}
 
+	def _add_smooth_by_angle_modifier(self, context, objects: list[bpy.types.Object]):
 
-	def _object_smooth_set(self, object: bpy.types.Object, value: bool) -> None:
-		'''
-		We do it this way because the bpy.ops equivalent only works on selections 
-		and I want the active object to also be affected even when unselected.
-		'''
+		for obj in objects:
+			mod = obj.modifiers.get('Smooth by Angle')
 
-		mesh = object.data
-		values = [value] * len(mesh.polygons)
-		mesh.polygons.foreach_set('use_smooth', values)
-		mesh.update()
+			if mod is None or mod.type != 'NODES':
+				context.view_layer.objects.active = obj
+				bpy.ops.object.modifier_add_node_group(
+					asset_library_type='ESSENTIALS', 
+					asset_library_identifier="", 
+					relative_asset_identifier="geometry_nodes\\smooth_by_angle.blend\\NodeTree\\Smooth by Angle"
+				)
 
-	def _bmesh_smooth_set(self, object: bpy.types.Object, value: bool) -> None:
-		'''
-		Bmesh smoothing works best for Edit mode.
-		'''
-
-		me = object.data
-		bm = bmesh.from_edit_mesh(me)
-		for f in bm.faces:
-			f.smooth = value
-		
-		bmesh.update_edit_mesh(me)
+			mod = obj.modifiers.get('Smooth by Angle')
+			# mod.node_group.nodes['Group Input.001'].outputs['Angle'].default_value = 40
+			mod['Input_1'] = self.angle
 
 
 classes = (

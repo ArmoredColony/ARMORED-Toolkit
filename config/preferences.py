@@ -48,7 +48,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 	def closure(prop, category):
 		return lambda a, b: update(a, b, prop, category)   # a, b = self, context
 	
-	# KEYMAP GROUPS >>
+	# KEYMAP OVERRIDES >>
 
 	maya_navigation: bpy.props.BoolProperty(name='Maya Navigation', default=False,
 		description='Maya style navigation (ALT + Mouse Buttons)', 
@@ -124,7 +124,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 	# THEMES >>
 
 	themes: bpy.props.BoolProperty(name='Themes', default=False,
-		description='Mostly personal themes of mine.\n' + descriptions.theme_files, 
+		description='Some themes I made or found.\n' + descriptions.theme_files, 
 		update=closure(prop='themes', category='themes'),)
 	
 
@@ -140,7 +140,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 	# DEBUGGING >>
 
 	debug: bpy.props.BoolProperty(name='Debug', default=False,
-		description='Prints developer oriented information in the console window. Not really meant for end users.')
+		description='Prints developer oriented information in the console window. Not really meant for end users')
 
 
 	def draw(self, context):
@@ -150,11 +150,13 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 		web_icons = preview_collections['web_icons']
 
 		col = layout.column(align=True)
-		row = col.row()
-		row.operator('wm.url_open', text='GitHub', icon_value=web_icons['github32'].icon_id).url = 'https://github.com/ArmoredColony/ARMORED-Toolkit'
-		row.operator('wm.url_open', text='Youtube', icon_value=web_icons['youtube32'].icon_id).url = 'https://www.youtube.com/armoredColony'
-		row.operator('wm.url_open', text='Blender Market', icon_value=web_icons['blender_market32'].icon_id).url = 'https://blendermarket.com/creators/armoredcolony'
-		row.operator('wm.url_open', text='Artstation', icon_value=web_icons['artstation32'].icon_id).url = 'https://armoredColony.com'
+		row = col.row(align=True)
+		row.scale_y = 1.5
+		row.operator('wm.url_open', text='Armored Colony',	icon_value=web_icons['armored_colony32'].icon_id).url 	= 'https://armoredColony.com'
+		row.operator('wm.url_open', text='Artstation', 		icon_value=web_icons['artstation32'].icon_id).url 	= 'https://armoredColony.artstation.com'
+		row.operator('wm.url_open', text='Blender Market', 	icon_value=web_icons['blender_market32'].icon_id).url 	= 'https://blendermarket.com/creators/armoredcolony'
+		row.operator('wm.url_open', text='GitHub', 		icon_value=web_icons['github32'].icon_id).url 		= 'https://github.com/ArmoredColony/ARMORED-Toolkit'
+		row.operator('wm.url_open', text='Youtube', 		icon_value=web_icons['youtube32'].icon_id).url 		= 'https://www.youtube.com/armoredColony'
 		layout.separator()
 
 		def prop_line(prop, icon, url='www.youtube.com/armoredcolony', text=''):
