@@ -1,8 +1,8 @@
-version = (1, 0, 0)
+version = (1, 1, 1)
 
 import bpy
+import bmesh
 import math
-# import bmesh
 
 
 class ARMORED_OT_autosmooth(bpy.types.Operator):
@@ -31,32 +31,69 @@ class ARMORED_OT_autosmooth(bpy.types.Operator):
 
 	
 	def execute(self, context):
-		active_object = context.active_object
+		selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
 
-		selected_objects = [ob for ob in context.selected_objects if ob.type == 'MESH']
-		self._add_smooth_by_angle_modifier(context, selected_objects)
-		bpy.ops.object.shade_smooth()
+		if context.mode == 'OBJECT':
+			self._shade_smooth(objects=selected_objects, value=True)
+				
+		elif context.mode in {'EDIT_MESH', 'EDIT_CURVE'}:
+			self._shade_smooth_bmesh(objects=selected_objects, value=True)
+
+		self._add_smooth_by_angle_modifier(context, objects=selected_objects)
+			
 		
-		context.view_layer.objects.active = active_object
-
 		return {'FINISHED'}
 
+
 	def _add_smooth_by_angle_modifier(self, context, objects: list[bpy.types.Object]):
+		'''
+		Apply the new Smooth by Angle Modifier for Blender 4.1 and later.
+		'''
+
+		active_object = context.active_object
 
 		for obj in objects:
 			mod = obj.modifiers.get('Smooth by Angle')
 
 			if mod is None or mod.type != 'NODES':
 				context.view_layer.objects.active = obj
+
 				bpy.ops.object.modifier_add_node_group(
 					asset_library_type='ESSENTIALS', 
-					asset_library_identifier="", 
-					relative_asset_identifier="geometry_nodes\\smooth_by_angle.blend\\NodeTree\\Smooth by Angle"
+					asset_library_identifier='', 
+					relative_asset_identifier='geometry_nodes\\smooth_by_angle.blend\\NodeTree\\Smooth by Angle'
 				)
 
 			mod = obj.modifiers.get('Smooth by Angle')
 			# mod.node_group.nodes['Group Input.001'].outputs['Angle'].default_value = 40
 			mod['Input_1'] = self.angle
+		
+		context.view_layer.objects.active = active_object
+	
+	def _shade_smooth(self, objects: list[bpy.types.Object], value: bool) -> None:
+		'''
+		Alternative to `object.shade_smooth()` that works on the specified objects instead of the current selection.
+		Useful when the active object is not selected.
+		'''
+
+		for obj in objects:
+			mesh = obj.data
+			values = [value] * len(mesh.polygons)
+			mesh.polygons.foreach_set('use_smooth', values)
+			mesh.update()
+
+	def _shade_smooth_bmesh(self, objects: list[bpy.types.Object], value: bool) -> None:
+		'''
+		Smoothing for geometry that is still being edited.
+		'''
+
+		for obj in objects:
+			me = obj.data
+			bm = bmesh.from_edit_mesh(me)
+			for f in bm.faces:
+				f.smooth = value
+		
+		bmesh.update_edit_mesh(me)
 
 
 classes = (

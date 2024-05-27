@@ -1,6 +1,13 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.8.1
+*27/May/2024*
+
+### FIXED
+- Operator **Autosmooth** no longer crashes in Edit Mode.
+
+
 ## v0.8.0
 *21/May/2024*
 
