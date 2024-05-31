@@ -1,4 +1,4 @@
-# v2.0
+version = (2, 0, 1)
 
 import bpy
 
@@ -46,6 +46,7 @@ class FastSubdivision:
 		mod.use_limit_surface = self.use_limit_surface
 		mod.quality = 1
 		mod.levels = self.level
+		mod.show_in_editmode = False
 	
 	def _nothing_selected(self, context):
 		return not context.selected_objects

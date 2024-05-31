@@ -19,7 +19,7 @@ class ARMORED_OT_autosmooth(bpy.types.Operator):
 
 	def execute(self, context):
 		if bpy.app.version >= (4, 1, 0):
-			self.report({'ERROR'}, 'This operator is only works in Blender 4.0 and below.')
+			self.report({'ERROR'}, 'This operator only works in Blender 4.0 and below.')
 			return {'CANCELLED'}
 
 		active_object = context.object

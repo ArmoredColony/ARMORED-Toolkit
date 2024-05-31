@@ -1,6 +1,13 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.8.2
+*31/May/2024*
+
+### FIXED
+- Operator **Autosmooth (Legacy)**: Error Message typo
+
+
 ## v0.8.1
 *27/May/2024*
 
