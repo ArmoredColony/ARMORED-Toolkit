@@ -88,7 +88,8 @@ class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
         self.add('graph.view_selected', key, 'PRESS')
 
         self.km = kc.keymaps.new('Image', space_type='IMAGE_EDITOR')
-        self.add('image.view_selected', key, 'PRESS')
+        # self.add('image.view_selected', key, 'PRESS')
+        self.add('image.armored_focus', key, 'PRESS')
 
         self.km = kc.keymaps.new('Node Editor', space_type='NODE_EDITOR')
         # self.add('node.view_selected', key, 'PRESS')

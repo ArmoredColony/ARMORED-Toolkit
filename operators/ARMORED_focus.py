@@ -1,4 +1,4 @@
-# v4.0
+version = (4, 1, 0)
 
 import bpy
 
@@ -145,6 +145,15 @@ class NODE_OT_armored_focus(bpy.types.Operator, Focus):
 			return
 
 		bpy.ops.node.view_all('INVOKE_DEFAULT')
+
+
+class IMAGE_OT_armored_focus(bpy.types.Operator, Focus):
+	
+	bl_idname = 'image.armored_focus'
+	poll_mode = None
+
+	def _focus(self, context):
+		bpy.ops.image.view_all('INVOKE_DEFAULT', fit_view=True)
 	
 	
 classes = (
@@ -154,6 +163,7 @@ classes = (
 	CURVE_OT_armored_focus,
 	SCULPT_OT_armored_focus,
 	NODE_OT_armored_focus,
+	IMAGE_OT_armored_focus,
 )
 
 def register():

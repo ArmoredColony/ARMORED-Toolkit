@@ -1,6 +1,16 @@
 # ARMORED TOOLKIT CHANGELOG
 
 
+## v0.8.3
+*24/Jun/2024*
+
+### CHANGED
+- Operator **Classic Mirror** now works on multi-object selections and not just the active object.
+
+### ADDED
+- Operator **Focus** can also focus with F in the Image Viewer.
+
+
 ## v0.8.2
 *31/May/2024*
 
@@ -19,7 +29,7 @@
 *21/May/2024*
 
 ### NEW
-- Operator **Ge Curve Length** prints the lenth of the first spline in the active curve object.
+- Operator **Get Curve Length** prints the lenth of the first spline in the active curve object.
 - Resource **ARC Toon** Matcap.
 
 ### CHANGED
