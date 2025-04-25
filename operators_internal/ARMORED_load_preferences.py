@@ -1,4 +1,4 @@
-version = (2, 1, 0)
+version = (2, 2, 0)
 
 import bpy
 
@@ -6,59 +6,35 @@ from .. utils import addon
 
 
 USER_PREFERENCES = {
-
 	'context.preferences.view.show_splash': False,
 	'context.preferences.view.show_tooltips_python': True,
 	'context.preferences.inputs.drag_threshold_mouse': 1,
 	'context.preferences.inputs.invert_mouse_zoom': True,
 	'context.preferences.edit.undo_steps': 150,
 
-	'context.scene.unit_settings.scale_length': .01,
-	'context.scene.unit_settings.length_unit': 'CENTIMETERS',
+	# 'context.scene.render.engine': 'CYCLES',
 
 	'context.scene.world.color': [0.215861, 0.215861, 0.215861],
-
-	'context.scene.render.engine': 'CYCLES',
 
 	'context.scene.cycles.device': 'GPU',
 	'context.scene.cycles.use_preview_denoising': True,
 	'context.scene.cycles.denoiser': 'OPTIX',
-
-	'context.scene.eevee.use_gtao': True,
-	'context.scene.eevee.use_ssr': True,
-	'context.scene.eevee.taa_samples': 64,
-	'context.scene.eevee.gtao_distance': 50,	# Assuming scale_length of .01
-	'context.scene.eevee.ssr_thickness': 50,
-	'context.scene.eevee.use_ssr_halfres': False,
-	'context.scene.eevee.ssr_quality': 1,
 }
 
 FACTORY_USER_PREFERENCES = {
-
 	'context.preferences.view.show_splash': True,
 	'context.preferences.view.show_tooltips_python': False,
 	'context.preferences.inputs.drag_threshold_mouse': 3,
 	'context.preferences.inputs.invert_mouse_zoom': False,
 	'context.preferences.edit.undo_steps': 32,
 
-	'context.scene.unit_settings.scale_length': 1,
-	'context.scene.unit_settings.length_unit': 'METERS',
+	# 'context.scene.render.engine': 'BLENDER_EEVEE_NEXT',
 
 	'context.scene.world.color': [0.050876, 0.050876, 0.050876],
 
-	'context.scene.render.engine': 'BLENDER_EEVEE',
-
 	'context.scene.cycles.device': 'CPU',
 	'context.scene.cycles.use_preview_denoising': False,
-	'context.scene.cycles.denoiser': 'OPENIMAGEDENOISE',
-
-	'context.scene.eevee.use_gtao': False,
-	'context.scene.eevee.use_ssr': False,
-	'context.scene.eevee.taa_samples': 32,
-	'context.scene.eevee.gtao_distance': 20,	# Assuming scale_length of 1
-	'context.scene.eevee.ssr_thickness': 20,
-	'context.scene.eevee.use_ssr_halfres': True,
-	'context.scene.eevee.ssr_quality': .25,
+	'context.scene.cycles.denoiser': 'AUTO',
 }
 
 # Use str 'space_data' instead of 'context.space_data'
@@ -128,7 +104,13 @@ class ARMORED_OT_load_preferences(bpy.types.Operator):
 			attr_name = attr_name.replace('_', ' ')
 			list_description.append(f"{attr_name}: {val}")
 
-		return 'Loads my custom system preferences\n NOTE: these settings persist when the addon is disabled; use the Unload button to return Blender to factory defaults:\n' + '\u2022 ' + ('\n\u2022 '.join(list_description))
+		return (
+			'Loads my custom system preferences \n'
+			'NOTE: these settings persist when the addon is disabled; '
+			'use the Unload button to return Blender to factory defaults:\n'
+			'\u2022 ' + '\n\u2022 '.join(list_description)
+		)
+
 	
 	def execute(self, context):
 		self._load_custom_preferences(context)
