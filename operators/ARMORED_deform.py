@@ -1,10 +1,18 @@
-version = (5, 0, 0)
+version = (1, 0, 0)
 
 import bpy
+import math
 import mathutils
 
 
 # UTILS  __________________________________________________
+
+def get_active(context, selected_objects: list[bpy.types.Object]) -> bpy.types.Object:
+	if context.active_object not in selected_objects:
+		return None
+
+	return context.active_object
+
 
 def evaluate_objects(depsgraph:bpy.types.Depsgraph, objects: list[bpy.types.Object]) -> list[bpy.types.Object]:
 	'''
@@ -63,22 +71,129 @@ def add_lattice_modifier(objects: list[bpy.types.Object], lattice: bpy.types.Obj
 		mod.object = lattice
 
 
+def add_curve_modifier(objects: list[bpy.types.Object], curve: bpy.types.Object) -> None:
+	'''
+	Adds a curve modifier to each object in the list.
+	'''
+
+	for obj in objects:
+		mod = obj.modifiers.new(name='Curve', type='CURVE')
+		mod.object = curve
+		mod.deform_axis = 'POS_Z'
+
+
+def get_rotation_quaternion(active_object, evaluated_objects, orientation='GLOBAL') -> mathutils.Quaternion:
+	'''
+	Return the quaternion rotation of the active object when in LOCAL space,
+	and fallback to the largest object's rotation when the active is not available.
+	'''
+
+	if orientation == 'GLOBAL':
+		return mathutils.Quaternion()
+		
+	# LOCAL OPTIONS  __________________________________________________
+
+	if active_object is None:
+		active_object = find_largest_object(evaluated_objects)
+
+	if active_object.rotation_mode == 'QUATERNION':
+		return active_object.rotation_quaternion
+
+	elif active_object.rotation_mode == 'AXIS_ANGLE':
+		return mathutils.Quaternion(
+			mathutils.Vector(active_object.rotation_axis_angle).yzw, active_object.rotation_axis_angle[0])
+		
+	return active_object.rotation_euler.to_quaternion()
+
+
+def parent_to_object(children: list[bpy.types.Object], parent: bpy.types.Object) -> None:
+	parent.matrix_world = parent.matrix_basis 	# Update the matrix to save us a scene update.
+
+	for obj in children:
+		obj.parent = parent
+		obj.matrix_parent_inverse = parent.matrix_world.inverted()
+
+
+def replace_selection(context, deselect: list[bpy.types.Object], select: list[bpy.types.Object], active: bpy.types.Object = None) -> None:
+	'''
+	Deselect and select objects manually to avoid bpy.ops calls.
+	'''
+	
+	for obj in deselect:
+		obj.select_set(False)
+
+	for obj in select:
+		obj.select_set(True)
+
+	context.view_layer.objects.active = active
+
+
 # BLENDER OBJECTS  __________________________________________________
 
 def create_lattice_object(context, points_u: int=2, points_v: int=2, points_w: int=2, name='Lattice') -> bpy.types.Object:
 	'''
-	Create a lattice Object.
+	Create a lattice object.
 	'''
 
 	data = bpy.data.lattices.new(name)
 	lattice = bpy.data.objects.new(name, data)
-	context.collection.objects.link(lattice)
 
 	data.points_u = points_u
 	data.points_v = points_v
 	data.points_w = points_w
 
+	context.collection.objects.link(lattice)
+
 	return lattice
+
+
+def create_bezier_curve_object(context, point_count=3, name='Curve', handle_type='AUTO') -> None:
+	'''
+	Create a curve object.
+	'''
+
+	data = bpy.data.curves.new(name, 'CURVE')
+	data.dimensions = '3D'
+
+	spline = data.splines.new(type='BEZIER')
+	spline.bezier_points.add(point_count - 1)
+
+	for point in spline.bezier_points:
+		point.handle_left_type  = handle_type 
+		point.handle_right_type = handle_type
+
+	curve = bpy.data.objects.new(name, data)
+	curve.show_in_front = True
+
+	context.scene.collection.objects.link(curve)
+
+	return curve
+	
+
+def create_nurbs_curve_object(context, point_count=3, name='Curve') -> None:
+	'''
+	Create a curve object.
+	'''
+
+	data = bpy.data.curves.new(name, 'CURVE')
+	data.dimensions = '3D'
+
+	spline = data.splines.new(type='NURBS')
+	spline.points.add(point_count - 1)
+
+	# NURBS weight starts at 0 for some reason.
+	for point in spline.points:
+		point.co.w = 1.0
+
+	# Not sure why but apparently we also need this.
+	spline.use_endpoint_u = True
+
+	curve = bpy.data.objects.new(name, data)
+	curve.show_in_front = True
+
+	context.scene.collection.objects.link(curve)
+
+	return curve
 	
 
 # LATTICE DEFORM OPERATOR __________________________________________________
@@ -161,16 +276,17 @@ class OBJECT_OT_armored_lattice(bpy.types.Operator):
 	
 	def execute(self, context):
 		selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
-		active_object = self._get_active(context, selected_objects)
+		active_object = get_active(context, selected_objects)
 		
 		evaluated_objects = evaluate_objects(
 			depsgraph = context.evaluated_depsgraph_get(), 
 			objects   = selected_objects,
 		)
 
-		rotation_quaternion = self._get_rotation_quaternion(
+		rotation_quaternion = get_rotation_quaternion(
 			active_object     = active_object, 
-			evaluated_objects = evaluated_objects
+			evaluated_objects = evaluated_objects,
+			orientation       = self.orientation,
 		)
 
 		bounds_min, bounds_max = calculate_object_bounds(
@@ -189,9 +305,9 @@ class OBJECT_OT_armored_lattice(bpy.types.Operator):
 		add_lattice_modifier(objects=selected_objects, lattice=lattice)
 
 		if self.parent_to_lattice:
-			self._parent_to_lattice(objects=selected_objects, lattice=lattice)
+			parent_to_object(children=selected_objects, parent=lattice)
 			
-		self._select_lattice(context, deselect_objects=selected_objects, lattice=lattice)
+		replace_selection(context, deselect=selected_objects, select=[lattice], active=lattice)
 
 		if self.enter_edit:
 			bpy.ops.object.mode_set(mode='EDIT')
@@ -199,55 +315,181 @@ class OBJECT_OT_armored_lattice(bpy.types.Operator):
 		return {'FINISHED'}
 
 
-	# PRIVATE HELPERS >>
+# CURVE DEFORM OPERATOR __________________________________________________
+
+class OBJECT_OT_armored_curve_deform(bpy.types.Operator):
+	'''Create a curve deformer for the selected objects with the correct size and orientation.
+
+	armoredColony.com '''
+
+	bl_idname = 'object.armored_curve_deform'
+	bl_label = 'ARMORED Curve Deform'
+	bl_options = {'REGISTER', 'UNDO'}
+
+	curve_type: bpy.props.EnumProperty(
+		name='Type', 
+		default='NURBS',
+		items=[	
+			('BEZIER', 'Bezier', 'Use a Bezier curve for the deformer'),
+			('NURBS',  'NURBS',  'Use a NURBS curve for the deformer'), 
+		]
+	)
 	
-	def _get_active(self, context, selected_objects: list[bpy.types.Object]) -> bpy.types.Object:
-		if context.active_object not in selected_objects:
-			return None
-
-		return context.active_object
+	point_count: bpy.props.IntProperty(
+		name='Point Count', default=3, min=3,)
 	
-	def _get_rotation_quaternion(self, active_object, evaluated_objects) -> mathutils.Quaternion:
-		'''
-		Return the quaternion rotation of the active object when in LOCAL space,
-		and fallback to the largest object's rotation when the active is not available.
-		'''
-
-		if self.orientation == 'GLOBAL':
-			return mathutils.Quaternion()
-			
-		# LOCAL OPTIONS  __________________________________________________
-
-		if active_object is None:
-			active_object = find_largest_object(evaluated_objects)
-
-		if active_object.rotation_mode == 'QUATERNION':
-			return active_object.rotation_quaternion
-
-		elif active_object.rotation_mode == 'AXIS_ANGLE':
-			return mathutils.Quaternion(
-				mathutils.Vector(active_object.rotation_axis_angle).yzw, active_object.rotation_axis_angle[0])
-			
-		return active_object.rotation_euler.to_quaternion()
+	# parent_to_curve: bpy.props.BoolProperty(
+	# 	name='Parent to Curve', default=False,)
 	
-	def _parent_to_lattice(self, objects, lattice) -> None:
-		lattice.matrix_world = lattice.matrix_basis 	# Update the matrix to save us a scene update.
-
-		for obj in objects:
-			obj.parent = lattice
-			obj.matrix_parent_inverse = lattice.matrix_world.inverted()
-
-	def _select_lattice(self, context, deselect_objects, lattice) -> None:
-		'''
-		Deselect the specified objects and select the lattice and make it active.
-		'''
+	def draw(self, context):
+		layout = self.layout
+		layout.use_property_split = True
 		
-		for obj in deselect_objects:
-			obj.select_set(False)
+		col = layout.column()
 
-		lattice.select_set(True)
+		row = col.row()
+		row.prop(self, 'curve_type', expand=True)
 
-		context.view_layer.objects.active = lattice
+		col.prop(self, 'point_count')
+		col.separator()
+
+		# col.prop(self, 'parent_to_curve')
+
+	def execute(self, context):
+		selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
+		active_object = get_active(context, selected_objects)
+		
+		evaluated_objects = evaluate_objects(
+			depsgraph = context.evaluated_depsgraph_get(), 
+			objects   = selected_objects,
+		)
+
+		rotation_quaternion = get_rotation_quaternion(
+			active_object     = active_object, 
+			evaluated_objects = evaluated_objects,
+			# orientation       = self.orientation,
+		)
+
+		bounds_min, bounds_max = calculate_object_bounds(
+			objects  = evaluated_objects,
+			rotation = rotation_quaternion,
+		)
+
+		if self.curve_type == 'BEZIER':
+			curve = create_bezier_curve_object(context, self.point_count)
+			points = curve.data.splines[0].bezier_points
+
+		else:
+			curve = create_nurbs_curve_object(context, self.point_count)
+			points = curve.data.splines[0].points
+		
+		dimensions = bounds_max - bounds_min
+
+		# We only care about a single axis because the curve begins straight.
+		step = dimensions.z / (self.point_count -1)
+		for i, point in enumerate(points):
+			point.co.z = (i * step) # -dimensions.z / 2
+			# point.co = self.rotation_quaternion @ point.co
+
+		curve.location = rotation_quaternion @ (bounds_min + bounds_max) / 2
+		curve.location.z -= dimensions.z / 2
+		curve.rotation_euler = rotation_quaternion.to_euler()
+
+		add_curve_modifier(objects=selected_objects, curve=curve)
+
+		replace_selection(context, deselect=selected_objects, select=[curve], active=curve)
+
+		bpy.ops.object.mode_set(mode='EDIT')
+		
+		return {'FINISHED'}
+
+
+class OBJECT_OT_armored_circle_deform(bpy.types.Operator):
+	'''Create a curve deformer for the selected objects with the correct size and orientation.
+
+	armoredColony.com '''
+
+	bl_idname = 'object.armored_circle_deform'
+	bl_label = 'ARMORED Circle Deform'
+	bl_options = {'REGISTER', 'UNDO'}
+
+	bend_direction: bpy.props.EnumProperty(
+		name='Bend Direction', default='CONCAVE',
+		items=[	('CONCAVE', 'Concave', 'Bend the selected objects backwards'),
+			('CONVEX', 'Convex',  'Bend the selected objects forwards'), ])
+	
+	rotation: bpy.props.FloatProperty(
+		name='Rotation', default=0, 
+		min=-360, max=360, unit='ROTATION', subtype='ANGLE',)
+	
+	scale_multiplier: bpy.props.FloatProperty(
+		name='Scale', default=1, min=0,)
+	
+	# parent_to_curve: bpy.props.BoolProperty(
+	# 	name='Parent to Curve', default=False,)
+	
+	def draw(self, context):
+		layout = self.layout
+		layout.use_property_split = True
+		
+		col = layout.column()
+
+		row = col.row()
+		row.prop(self, 'bend_direction', expand=True)
+
+		col.prop(self, 'rotation')
+		col.prop(self, 'scale_multiplier')
+
+	def execute(self, context):
+		selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
+		active_object = get_active(context, selected_objects)
+		
+		evaluated_objects = evaluate_objects(
+			depsgraph = context.evaluated_depsgraph_get(), 
+			objects   = selected_objects,
+		)
+
+		rotation_quaternion = get_rotation_quaternion(
+			active_object     = active_object, 
+			evaluated_objects = evaluated_objects,
+			# orientation       = self.orientation,
+		)
+
+		bounds_min, bounds_max = calculate_object_bounds(
+			objects  = evaluated_objects,
+			rotation = rotation_quaternion,
+		)
+
+		bounds_loc = rotation_quaternion @ (bounds_min + bounds_max) / 2
+		bpy.ops.curve.primitive_bezier_circle_add(radius=1, location=bounds_loc, align='WORLD', enter_editmode=False, scale=(1, 1, 1))
+		bpy.ops.transform.rotate(value=-math.pi / 2, orient_axis='Y')
+		bpy.ops.object.transform_apply(rotation=True)
+		curve = context.active_object
+		curve.data.resolution_u = 128
+
+		points = curve.data.splines[0].bezier_points
+		for p in points:
+			p.tilt = self.rotation + math.pi
+
+		origin_location = curve.matrix_world @ points[3].co
+		context.scene.cursor.location = origin_location
+		bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+		curve.location = bounds_loc
+
+		add_curve_modifier(objects=selected_objects, curve=curve)
+
+		dimensions = bounds_max - bounds_min
+		scale = mathutils.Vector.Fill(3, dimensions.z / 2)	# Arbitrary Scale.
+		if self.bend_direction == 'CONCAVE':
+			curve.scale = scale * self.scale_multiplier
+
+		elif self.bend_direction == 'CONVEX':
+			curve.scale = scale * self.scale_multiplier * -1
+
+		else:
+			raise ValueError(f'{self.bend_direction} is not a valid bend direction.')
+		
+		return {'FINISHED'}
 
 
 # MUSCLE RIG OPERATOR  __________________________________________________
@@ -452,6 +694,8 @@ class OBJECT_OT_armored_muscle_rig(bpy.types.Operator):
 classes = (
 	OBJECT_OT_armored_lattice,
 	OBJECT_OT_armored_muscle_rig,
+	OBJECT_OT_armored_curve_deform,
+	OBJECT_OT_armored_circle_deform,
 )
 
 def register():
