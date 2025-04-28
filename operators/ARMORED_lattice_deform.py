@@ -1,187 +1,76 @@
-version = (4, 5, 0)
+version = (5, 0, 0)
 
 import bpy
-import bmesh
-import abc
 import mathutils
 
 
-class BoundsCalculator(abc.ABC):
+# UTILS  __________________________________________________
+
+def evaluate_objects(depsgraph:bpy.types.Depsgraph, objects: list[bpy.types.Object]) -> list[bpy.types.Object]:
 	'''
-	Abstract Base Class for calculating the location, rotation and dimensions of a bounding box.
-	'''
-
-	@abc.abstractmethod
-	def calculate_location(self):
-		pass
-
-	@abc.abstractmethod
-	def calculate_rotation(self):
-		pass
-
-	@abc.abstractmethod
-	def calculate_dimensions(self):
-		pass
-
-	def calculate_transforms(self) -> tuple[mathutils.Vector, mathutils.Vector, mathutils.Vector]:
-		loc = self.calculate_location()
-		rot = self.calculate_rotation()
-		dim = self.calculate_dimensions()
-
-		return loc, rot, dim
-
-
-class FromIndividualBoundingBoxes(BoundsCalculator):
-	'''
-	Calculate the transforms of a bounding box around the selected objects, based on their individual bounding boxes  
-	and treating the active object's rotation as world space.
+	Returns a new list of depsgraph evaluated objects.
 	'''
 
-	def __init__(self, selected_objects: list[bpy.types.Object], rotation_quaternion: mathutils.Quaternion=None) -> None:
-		self.selected_objects = selected_objects
-		self.rotation_quaternion = mathutils.Quaternion() if rotation_quaternion is None else rotation_quaternion
+	evaluated_objects = []
+	for obj in objects:
+		if obj.modifiers:
+			evaluated_objects.append(obj.evaluated_get(depsgraph))
+		else:
+			evaluated_objects.append(obj)
 
-		self.bounds_min, self.bounds_max = self._get_min_max_vectors_from_bounds()
-		
-	def calculate_location(self) -> mathutils.Vector:
-		return self.rotation_quaternion @ ((self.bounds_min + self.bounds_max) / 2)
+	return evaluated_objects
 
-	def calculate_rotation(self) -> mathutils.Vector:
-		return self.rotation_quaternion.to_euler()
 
-	def calculate_dimensions(self) -> mathutils.Vector:
-		return self._get_dimensions_from_min_max_bounds()
+def find_largest_object(objects: list[bpy.types.Object]) -> bpy.types.Object:
+	'''
+	Returns the object with the largest volume (determined by dimensions).
+	'''
+
+	if not objects:
+		return None
 	
+	return max(objects, key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z)
 
-	# PRIVATE HELPERS >>
 
-	def _get_dimensions_from_min_max_bounds(self) -> mathutils.Vector:
-		'''
-		Returns (x, y, z): mathutils.Vector dimensions of a bounding box based on 2 opposite corners.
-		'''
-
-		return mathutils.Vector((
-			abs(self.bounds_min.x - self.bounds_max.x), 
-			abs(self.bounds_min.y - self.bounds_max.y), 
-			abs(self.bounds_min.z - self.bounds_max.z)
-			))
+def calculate_object_bounds(
+		objects: list[bpy.types.Object], 
+		rotation: mathutils.Quaternion | mathutils.Matrix,
+	) -> tuple[mathutils.Vector, mathutils.Vector]:
+	'''
+	Returns the minimum and maximum corners (vectors) of a bounding box that contains all input objects. 
+	Uses each object's `bound_box` property for efficiency.
+	'''
 	
-	def _get_min_max_vectors_from_bounds(self) -> tuple[mathutils.Vector, mathutils.Vector]:
-
-		'''
-		Returns (min: mathutils.Vector, max: mathutils.Vector) corners of a bounding box around the selected objects.
-		'''
-
-		vertex_coords = []
-		for obj in self.selected_objects:
-			vertex_coords.extend(
-				self.rotation_quaternion.inverted() @ 
-				(obj.matrix_world @ mathutils.Vector(point)) for point in obj.bound_box)
-		
-		return mathutils.Vector(map(min, *vertex_coords)), mathutils.Vector(map(max, *vertex_coords))	# NOT SURE WHY THIS WORKS
-
-
-class FromIndividualBoundingBoxesEvaluated(FromIndividualBoundingBoxes):
-	'''
-	Same as FromIndividualBoundingBoxes, but uses evaluated objects to get the bounding box.
-	DOES NOT SEEM TO WORK IN BL4.1
-	'''
-
-	def __init__(self, context, selected_objects: list[bpy.types.Object], rotation_quaternion: mathutils.Quaternion) -> None:
-		self.context = context
-		super().__init__(selected_objects, rotation_quaternion)
-
-	def _get_min_max_vectors_from_bounds(self) -> tuple[mathutils.Vector, mathutils.Vector]:
-		'''
-		Returns (min: mathutils.Vector, max: mathutils.Vector) corners of a bounding box around the selected objects.
-		'''
-
-		depsgraph = self.context.evaluated_depsgraph_get()
-
-		vertex_coords = []
-		for obj in self.selected_objects:
-			if obj.modifiers:
-				obj = obj.evaluated_get(depsgraph)
-				
-			vertex_coords.extend(
-				self.rotation_quaternion.inverted() @ 
-					(obj.matrix_world @ mathutils.Vector(point)) for point in obj.bound_box)
-		
-		return mathutils.Vector(map(min, *vertex_coords)), mathutils.Vector(map(max, *vertex_coords))	# NOT SURE WHY THIS WORKS
-
-# ===============
-# COMPOSITOR CLASS
-# ===============
-
-class LatticeDeformer:
-	'''
-	Transform a Lattice to encapsulate the selected objects and create the necessary deform modifiers.
-	'''
-
-	def __init__(self, context, lattice: bpy.types.Object, bounds_calculator: BoundsCalculator) -> None:
-		self.lattice = lattice
-		self.context = context
-		self.bounds_calculator = bounds_calculator
-		self.selected_objects = bounds_calculator.selected_objects
-
-		self.loc, self.rot, self.dim = self.bounds_calculator.calculate_transforms()
-
-		self._set_transforms()
-		self._add_modifiers()
+	vertex_coords = []
+	for obj in objects:
+		vertex_coords.extend(
+			rotation.inverted() @ 
+			(obj.matrix_world @ mathutils.Vector(point)) for point in obj.bound_box)
 	
-	@property
-	def bl_object(self):
-		return self.lattice
-	
+	return (
+		mathutils.Vector(map(min, *vertex_coords)), # unpacking will give us the min of each individual axis.
+		mathutils.Vector(map(max, *vertex_coords))
+	)
 
-	# PRIVATE HELPERS
 
-	def _set_transforms(self) -> None:
-		self.lattice.location       = self.loc
-		self.lattice.rotation_euler = self.rot
-		self.lattice.dimensions     = self.dim
-	
-	def _add_modifiers(self) -> None:
-		for obj in self.selected_objects:
-			found_subsurf = bool(obj.modifiers and obj.modifiers[-1].type == 'SUBSURF')
-
-			mod = obj.modifiers.new('Lattice', 'LATTICE')
-			mod.object = self.lattice
-
-			if found_subsurf:
-				with self.context.temp_override(object=obj):
-					bpy.ops.object.modifier_move_up(modifier=mod.name)
-	
-
-# ===============
-# BLENDER OBJECTS
-# ===============
-
-def WireCube(context) -> bpy.types.Object:
+def add_lattice_modifier(objects: list[bpy.types.Object], lattice: bpy.types.Object) -> None:
 	'''
-	Create a Wireframe Cube (for debugging purposes).
+	Adds a lattice modifier to each object in the list.
 	'''
 
-	data = bpy.data.meshes.new('Cube')
-	cube = bpy.data.objects.new('Cube', data)
-	context.collection.objects.link(cube)
-
-	bm = bmesh.new()
-	bmesh.ops.create_cube(bm, size=2, calc_uvs=False)
-	bm.to_mesh(mesh)
-	bm.free()
-
-	cube.display_type = 'BOUNDS'
-
-	return cube
+	for obj in objects:
+		mod = obj.modifiers.new(name='Lattice', type='LATTICE')
+		mod.object = lattice
 
 
-def Lattice(context, points_u: int=2, points_v: int=2, points_w: int=2, name='Lattice') -> bpy.types.Object:
+# BLENDER OBJECTS  __________________________________________________
+
+def create_lattice_object(context, points_u: int=2, points_v: int=2, points_w: int=2, name='Lattice') -> bpy.types.Object:
 	'''
 	Create a lattice Object.
 	'''
 
-	data = bpy.data.lattices.new('Lattice')
+	data = bpy.data.lattices.new(name)
 	lattice = bpy.data.objects.new(name, data)
 	context.collection.objects.link(lattice)
 
@@ -190,11 +79,9 @@ def Lattice(context, points_u: int=2, points_v: int=2, points_w: int=2, name='La
 	data.points_w = points_w
 
 	return lattice
+	
 
-
-# ===============
-# OPERATOR 1
-# ===============
+# LATTICE DEFORM OPERATOR __________________________________________________
 
 class OBJECT_OT_armored_lattice(bpy.types.Operator):
 	'''Creates a lattice that matches your object dimensions and transforms.
@@ -208,36 +95,36 @@ class OBJECT_OT_armored_lattice(bpy.types.Operator):
 	orientation: bpy.props.EnumProperty(
 		name='Orientation',
 		default='LOCAL',
-		items=[	('GLOBAL', 'Global', 'Align the lattice axes to world space'),
-			('LOCAL',  'Local',  'Align the lattice axes to the selected/active object\'s local space'), ])
+		items=[	
+			('GLOBAL', 'Global', 'Align the lattice axes to world space'),
+			('LOCAL',  'Local',  'Align the lattice axes to the selected/active object\'s local space'), 
+		]
+	)
 
 	points_u: bpy.props.IntProperty(
-		name='U', default=2, min=2, max=24)
+		name='U', default=2, min=1, max=24)
 
 	points_v: bpy.props.IntProperty(
-		name='V', default=2, min=2, max=24)
+		name='V', default=2, min=1, max=24)
 
 	points_w: bpy.props.IntProperty(
-		name='W', default=2, min=2, max=24)
+		name='W', default=2, min=1, max=24)
+	
+	parent_to_lattice: bpy.props.BoolProperty(
+		name='Parent to Lattice', default=False)
 
-	parent: bpy.props.EnumProperty(
-		name='Parent', 
-		description='Which object is the parent',
-		default='NONE',
-		items=[	('LATTICE', 'Lattice', 'The Selected Objects are parented to the Lattice'),
-			('ACTIVE',  'Active',  'The Lattice is parented to the Active Object'),
-			('NONE',     'None',   'There is no parenting between the Lattice or your Selection'), ])
+	offset_transforms: bpy.props.BoolProperty(
+		name='Offset Transforms', default=False,
+		description='Use offsets to adjust the lattice transforms.'
+	)
 
 	scale_offset: bpy.props.FloatVectorProperty(
 		name='Scale Offset', 
-		#step=0.1, 
-		description='Makes the lattice larger than the object')
+		description='Makes the lattice bigger or smaller'
+	)
 
 	enter_edit: bpy.props.BoolProperty(
 		default=True)
-	
-	lattice_name: bpy.props.StringProperty()
-
 	
 	def draw(self, context):
 		layout = self.layout
@@ -255,43 +142,56 @@ class OBJECT_OT_armored_lattice(bpy.types.Operator):
 		col.prop(self, 'points_w')
 		col.separator()
 
-		col.prop(self, 'parent')
+		col.prop(self, 'offset_transforms', text='Use Offset')
+		if self.offset_transforms:
+			col.prop(self, 'scale_offset')
+			col.separator()
+
+		col.prop(self, 'parent_to_lattice')
 		col.separator()
 
-		# col.prop(self, 'scale_offset')
-		# col.separator()
+		col.prop(self, 'enter_edit', text='Enter Edit Mode')
+		col.separator()
 
 		col.operator('wm.operator_defaults', text='Reset')
-
+	
 	@classmethod
 	def poll(cls, context):
 		return context.selected_objects
 	
-	def invoke(self, context, event):
-		bpy.ops.ed.undo_push()
-
-		return self.execute(context)
-	
-	
 	def execute(self, context):
-		self.selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
-		self.active_object    = self._get_active(context)	# Can return None.
+		selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
+		active_object = self._get_active(context, selected_objects)
 		
-		self.rotation_quaternion = self._get_rotation_quaternion(context)
+		evaluated_objects = evaluate_objects(
+			depsgraph = context.evaluated_depsgraph_get(), 
+			objects   = selected_objects,
+		)
 
-		self.lattice = Lattice(context, self.points_u, self.points_v, self.points_w)
+		rotation_quaternion = self._get_rotation_quaternion(
+			active_object     = active_object, 
+			evaluated_objects = evaluated_objects
+		)
 
-		if bpy.app.version >= (4, 1, 0):
-			bounds_calculator = FromIndividualBoundingBoxes(self.selected_objects, self.rotation_quaternion)
-		else:
-			bounds_calculator = FromIndividualBoundingBoxesEvaluated(context, self.selected_objects, self.rotation_quaternion)
+		bounds_min, bounds_max = calculate_object_bounds(
+			objects  = evaluated_objects,
+			rotation = rotation_quaternion,
+		)
+		
+		lattice = create_lattice_object(context, self.points_u, self.points_v, self.points_w)
+		lattice.location       = rotation_quaternion @ (bounds_min + bounds_max) / 2	 # No need for abs since max is always greater.
+		lattice.rotation_euler = rotation_quaternion.to_euler()
+		lattice.dimensions     = bounds_max - bounds_min
 
-		# self.draw_individual_bounds(context)		# TEST
-		self.lattice = LatticeDeformer(context, self.lattice, bounds_calculator).bl_object
+		# Optional scale offset defined by the user.
+		lattice.scale *= mathutils.Vector(self.scale_offset) + mathutils.Vector((1, 1, 1))
 
-		self._offset_lattice_scale()	# MUST REMAIN ABOVE THE SCENE UPDATE?
-		self._set_parent()
-		self._select_lattice(context)
+		add_lattice_modifier(objects=selected_objects, lattice=lattice)
+
+		if self.parent_to_lattice:
+			self._parent_to_lattice(objects=selected_objects, lattice=lattice)
+			
+		self._select_lattice(context, deselect_objects=selected_objects, lattice=lattice)
 
 		if self.enter_edit:
 			bpy.ops.object.mode_set(mode='EDIT')
@@ -301,76 +201,56 @@ class OBJECT_OT_armored_lattice(bpy.types.Operator):
 
 	# PRIVATE HELPERS >>
 	
-	def _get_active(self, context):	# sourcery skip: assign-if-exp, reintroduce-else
-		if context.active_object not in self.selected_objects:
+	def _get_active(self, context, selected_objects: list[bpy.types.Object]) -> bpy.types.Object:
+		if context.active_object not in selected_objects:
 			return None
 
 		return context.active_object
 	
-	def _get_rotation_quaternion(self, context) -> mathutils.Quaternion:
+	def _get_rotation_quaternion(self, active_object, evaluated_objects) -> mathutils.Quaternion:
 		'''
-		Get the rotation for the lattice based on the specified selection/operator properties.
+		Return the quaternion rotation of the active object when in LOCAL space,
+		and fallback to the largest object's rotation when the active is not available.
 		'''
 
 		if self.orientation == 'GLOBAL':
 			return mathutils.Quaternion()
+			
+		# LOCAL OPTIONS  __________________________________________________
+
+		if active_object is None:
+			active_object = find_largest_object(evaluated_objects)
+
+		if active_object.rotation_mode == 'QUATERNION':
+			return active_object.rotation_quaternion
+
+		elif active_object.rotation_mode == 'AXIS_ANGLE':
+			return mathutils.Quaternion(
+				mathutils.Vector(active_object.rotation_axis_angle).yzw, active_object.rotation_axis_angle[0])
+			
+		return active_object.rotation_euler.to_quaternion()
+	
+	def _parent_to_lattice(self, objects, lattice) -> None:
+		lattice.matrix_world = lattice.matrix_basis 	# Update the matrix to save us a scene update.
+
+		for obj in objects:
+			obj.parent = lattice
+			obj.matrix_parent_inverse = lattice.matrix_world.inverted()
+
+	def _select_lattice(self, context, deselect_objects, lattice) -> None:
+		'''
+		Deselect the specified objects and select the lattice and make it active.
+		'''
 		
-		active = self.active_object
-
-		if active is None:	# Temporary adjustment, no need to change the real active object.
-			active = self._get_largest_object()
-
-		if active.rotation_mode == 'QUATERNION':
-			return active.rotation_quaternion
-
-		if active.rotation_mode == 'AXIS_ANGLE':
-			return mathutils.Quaternion(mathutils.Vector(active.rotation_axis_angle).yzw, active.rotation_axis_angle[0])
-
-		return active.rotation_euler.to_quaternion()
-	
-	def _get_largest_object(self) -> bpy.types.Object:
-		return max(self.selected_objects, key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z)
-
-	def _offset_lattice_scale(self) -> None:
-		self.lattice.scale *= mathutils.Vector((1, 1, 1)) + mathutils.Vector(self.scale_offset)
-	
-	def _set_parent(self) -> None:
-		self.lattice.matrix_world = self.lattice.matrix_basis 	# Update the matrix to save us a scene update.
-		
-		if self.parent == 'LATTICE':
-			self._parent_objects(parent=self.lattice, children=self.selected_objects)
-
-		elif self.parent == 'ACTIVE':
-			self._parent_objects(parent=self.active_object, children=[self.lattice])
-
-	def _parent_objects(self, parent, children) -> None:
-		for obj in children:
-			obj.parent = parent
-			obj.matrix_parent_inverse = parent.matrix_world.inverted()
-	
-	def _select_lattice(self, context) -> None:
-		for obj in self.selected_objects:
+		for obj in deselect_objects:
 			obj.select_set(False)
 
-		self.lattice.select_set(True)
+		lattice.select_set(True)
 
-		context.view_layer.objects.active = self.lattice
+		context.view_layer.objects.active = lattice
 
 
-	# TESTS >>
-	
-	def draw_individual_bounds(self, context) -> None:
-		for obj in self.selected_objects:
-			bbox = WireCube(context)
-			loc, rot, dim = FromIndividualBoundingBoxes([obj], self.rotation_quaternion).calculate_transforms()
-			bbox.location = loc
-			bbox.rotation_euler = rot
-			bbox.dimensions = dim
-			
-
-# ===============
-# OPERATOR 2
-# ===============
+# MUSCLE RIG OPERATOR  __________________________________________________
 
 class OBJECT_OT_armored_muscle_rig(bpy.types.Operator):
 	'''Creates a lattice and hooks the control points to 3 Empties aligned vertically. Made to be used with vertical cyber muscle kitbash.
@@ -469,8 +349,8 @@ class OBJECT_OT_armored_muscle_rig(bpy.types.Operator):
 			points_u=self.points_u, 
 			points_v=self.points_v, 
 			points_w=self.points_w, 
-			parent='NONE'	# KEEP AT NONE AND DO PARENTING LATER
-			)
+			parent_to_lattice=False,
+		)
 
 		lattice = context.active_object
 		lattice.name = f'{self.active_object.name}_Lattice'
