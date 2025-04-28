@@ -65,7 +65,7 @@ class MESH_OT_armored_mirror(bpy.types.Operator):
 		Apply the Mirror modifier and re-link any previously linked users.
 		'''
 
-		last_mode = context.obj.mode
+		last_mode = obj.mode
 
 		if last_mode != 'OBJECT':
 			bpy.ops.object.mode_set(mode='OBJECT')
