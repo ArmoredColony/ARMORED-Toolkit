@@ -1,7 +1,7 @@
-version = (1, 1, 0)
+version = (1, 2, 0)
 
 import bpy
-import string
+# import string
 
 
 def rename_objects(objects: list[bpy.types.Object], base_string: str, start_int: int, digits: int) -> None:
@@ -90,15 +90,34 @@ class OBJECT_OT_armored_rename_data(bpy.types.Operator):
 	def execute(self, context):
 		selected_objects = context.selected_objects
 
-		objects_to_rename = [obj for obj in selected_objects if obj.data.name != obj.name]
+		objects_to_rename = [obj for obj in selected_objects if obj.type != 'EMPTY' and obj.data.name != obj.name]
+
+		if not objects_to_rename:
+			self.report({'INFO'}, 'Nothing needed renaming')
+			return {'CANCELLED'}
+
+		for obj in objects_to_rename:
+			print(f'Renaming {obj}')
 
 		# Give the data temporary names first to avoid name conflicts.
 		for obj in objects_to_rename:
 			obj.data.name = 'temp_name'
 		
 		for obj in objects_to_rename:
-			print(f'Renamed Data of \'{obj.name}\'')
+			print(f'Renaming Data of \'{obj.name}\'')
 			obj.data.name = obj.name
+		
+		# Check again for any objects that were NOT renamed.
+		objects_to_rename = [obj for obj in selected_objects if obj.type != 'EMPTY' and obj.data.name != obj.name]
+
+		if objects_to_rename:
+			self.report({'ERROR'}, 'Failed to rename. Check for unused Data-Blocks holding the required name')
+			print('Failed to rename the following Objects. Check for unused Data-Blocks holding the required name:')
+			for obj in objects_to_rename:
+				print(obj.name)
+		
+		else:
+			self.report({'INFO'}, 'Renaming Completed without Errors')
 
 		return {'FINISHED'}
 
