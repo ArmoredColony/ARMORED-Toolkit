@@ -1,4 +1,4 @@
-# v2.5
+version = (2, 5, 1)
 
 import bpy
 import mathutils
@@ -42,6 +42,7 @@ class VIEW3D_OT_armored_silhouette(bpy.types.Operator):
 
 		'context.scene.tool_settings.sculpt.show_face_sets': False,
 	}
+
 	def execute(self, context):
 
 		if context.space_data.shading.light == 'FLAT':
