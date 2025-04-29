@@ -1,4 +1,4 @@
-# v3.1
+version = (3, 1, 1)
 
 
 import bpy
@@ -8,7 +8,7 @@ from bpy.props import StringProperty
 class ARMORED_OT_toggle_tool(bpy.types.Operator):
 	'''Toggles the specified tool.
 
-armoredColony.com '''
+	armoredColony.com '''
  
 	bl_idname = 'view3d.armored_toggle_tool'
 	bl_label = 'ARMORED Toggle Tool'
@@ -24,10 +24,10 @@ armoredColony.com '''
 
 		if current_tool != self.name:
 			self.previous_tool = current_tool
-			bpy.ops.wm.tool_set_by_id(name=self.name)
+			bpy.ops.wm.tool_set_by_id(name=self.name, cycle=False)
 
 		else:
-			bpy.ops.wm.tool_set_by_id(name=self.previous_tool)
+			bpy.ops.wm.tool_set_by_id(name=self.previous_tool, cycle=False)
 		
 		if self.fallback_tool:
 			bpy.ops.wm.tool_set_by_id(name=self.fallback_tool, as_fallback=True)
