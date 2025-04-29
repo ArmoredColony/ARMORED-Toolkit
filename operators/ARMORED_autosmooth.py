@@ -1,4 +1,4 @@
-version = (1, 1, 1)
+version = (1, 2, 0)
 
 import bpy
 import bmesh
@@ -28,7 +28,6 @@ class ARMORED_OT_autosmooth(bpy.types.Operator):
 		layout.prop(self, 'angle')
 		layout.separator()
 		layout.operator('wm.operator_defaults', text='Reset')
-
 	
 	def execute(self, context):
 		selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
@@ -44,6 +43,8 @@ class ARMORED_OT_autosmooth(bpy.types.Operator):
 		
 		return {'FINISHED'}
 
+
+	# PRIVATE METHODS __________________________________________________
 
 	def _add_smooth_by_angle_modifier(self, context, objects: list[bpy.types.Object]):
 		'''
@@ -65,15 +66,15 @@ class ARMORED_OT_autosmooth(bpy.types.Operator):
 				)
 
 			mod = obj.modifiers.get('Smooth by Angle')
-			# mod.node_group.nodes['Group Input.001'].outputs['Angle'].default_value = 40
 			mod['Input_1'] = self.angle
+			mod.use_pin_to_last = True
 		
 		context.view_layer.objects.active = active_object
 	
 	def _shade_smooth(self, objects: list[bpy.types.Object], value: bool) -> None:
 		'''
 		Alternative to `object.shade_smooth()` that works on the specified objects instead of the current selection.
-		Useful when the active object is not selected.
+		THis is useful in case your selection includes non-mesh objects or if the active is not part of the selection.
 		'''
 
 		for obj in objects:
@@ -88,12 +89,12 @@ class ARMORED_OT_autosmooth(bpy.types.Operator):
 		'''
 
 		for obj in objects:
-			me = obj.data
-			bm = bmesh.from_edit_mesh(me)
+			mesh = obj.data
+			bm = bmesh.from_edit_mesh(mesh)
 			for f in bm.faces:
 				f.smooth = value
 		
-		bmesh.update_edit_mesh(me)
+		bmesh.update_edit_mesh(mesh)
 
 
 classes = (
