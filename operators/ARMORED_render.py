@@ -1,10 +1,11 @@
-version = (2, 0, 0)
+version = (2, 0, 1)
 
 import bpy
 import pathlib
 import os
 
 
+# Probably does NOT work if you move your desktop folder.
 default_path = str(pathlib.Path.home() / 'Desktop')
 
 
@@ -24,8 +25,8 @@ class RENDER_OT_armored_render(bpy.types.Operator):
 			('SCENE',    'Scene',    'Render the current scene camera (numpad 0).'),
 			('SELECTED', 'Selected', 'Render the selected cameras.'),
 			('ALL',      'All',      'Render all cameras in the scene.'),
-			],
-		)
+		],
+	)
 	
 	def draw(self, context):
 		layout = self.layout
@@ -68,7 +69,7 @@ class RENDER_OT_armored_render(bpy.types.Operator):
 		return {'FINISHED'}
 	
 
-	# PRIVATE METHODS
+	# PRIVATE METHODS  __________________________________________________
 
 	def _get_path_from_addon(self, context):
 		armored_toolkit = context.preferences.addons['ARMORED-Toolkit']
