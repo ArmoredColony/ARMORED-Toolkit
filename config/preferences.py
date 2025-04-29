@@ -2,11 +2,10 @@ import bpy
 
 import sys
 import pathlib
-# import os
 
 from .. utils import (
     addon,
-    config,
+#     config,
     descriptions,
     icons,
     paths,
@@ -14,7 +13,7 @@ from .. utils import (
 
 from .. customize import (
     keymaps,
-    resources,  # DO NOT DELETE (USED BY EVAL)
+    resources,
 )
 
 
@@ -31,8 +30,9 @@ def update(self, context, prop='', category=''):
 		else:       keymap_group.unregister()
 
 	elif category in {'matcaps', 'hdris', 'studio_lights', 'themes'}:
-		if state:   eval(f'resources.{category.upper()}.load()')
-		else:       eval(f'resources.{category.upper()}.unload()')
+		cls = getattr(resources, category.upper())
+		func = getattr(cls, 'load' if state else 'unload')
+		func()
 
 	elif category == 'operator':
 		from .. operators import ARMORED_mode_toggle
@@ -144,20 +144,9 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
 
 	def draw(self, context):
-		layout = self.layout
-		layout.use_property_split = False
 
-		web_icons = preview_collections['web_icons']
-
-		col = layout.column(align=True)
-		row = col.row(align=True)
-		row.scale_y = 1.5
-		row.operator('wm.url_open', text='Armored Colony',	icon_value=web_icons['armored_colony32'].icon_id).url 	= 'https://armoredColony.com'
-		row.operator('wm.url_open', text='Artstation', 		icon_value=web_icons['artstation32'].icon_id).url 	= 'https://armoredColony.artstation.com'
-		row.operator('wm.url_open', text='Blender Market', 	icon_value=web_icons['blender_market32'].icon_id).url 	= 'https://blendermarket.com/creators/armoredcolony'
-		row.operator('wm.url_open', text='GitHub', 		icon_value=web_icons['github32'].icon_id).url 		= 'https://github.com/ArmoredColony/ARMORED-Toolkit'
-		row.operator('wm.url_open', text='Youtube', 		icon_value=web_icons['youtube32'].icon_id).url 		= 'https://www.youtube.com/armoredColony'
-		layout.separator()
+		def url_button(row, text, url, icon):
+			row.operator('wm.url_open', text=text, icon_value=web_icons[icon].icon_id).url = url
 
 		def prop_line(prop, icon, url='www.youtube.com/armoredcolony', text=''):
 			row = box.column(align=True).row()
@@ -167,9 +156,31 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 			row.prop(self, prop, text='On' if getattr(self, prop) else 'Off', toggle=True);
 			#     row.operator('wm.url_open', icon=icon, text='').url = url
 
-		# box = layout.box()
-		# col = box.column(align=True)
-		# col.label(text='This addon automatically enables developer extras', icon='ERROR')
+		layout = self.layout
+		layout.use_property_split = False
+
+		# PROMO BUTTONS __________________________________________________
+
+		web_icons = preview_collections['web_icons']
+
+		col = layout.column(align=True)
+		row = col.row(align=True)
+		row.alignment = 'CENTER'
+		row.scale_y = 1.5
+		row.scale_x = 4.0	# Anything above 2.0 seems to stretch to fill the space.
+
+		url_button(row, text='', url='https://armoredColony.com', 			 icon='armored_colony32')
+		url_button(row, text='', url='https://www.artstation.com/armoredcolony', 	 icon='artstation32')
+		url_button(row, text='', url='https://blendermarket.com/creators/armoredcolony', icon='blender_market32')
+
+		url_button(row, text='', url='https://github.com/ArmoredColony/ARMORED-Toolkit', icon='github32')
+		url_button(row, text='', url='https://armoredcolony.gumroad.com', 		 icon='gumroad32')
+		url_button(row, text='', url='https://www.youtube.com/armoredColony', 		 icon='youtube32')
+
+		layout.separator()
+
+
+		# KEYMAP OVERRIDES  __________________________________________________
 
 		split = layout.split(factor=0.6)
 		col1 = split.column(align=True)
