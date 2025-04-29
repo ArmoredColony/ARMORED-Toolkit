@@ -74,7 +74,7 @@ class ARMORED_OT_autosmooth(bpy.types.Operator):
 	def _shade_smooth(self, objects: list[bpy.types.Object], value: bool) -> None:
 		'''
 		Alternative to `object.shade_smooth()` that works on the specified objects instead of the current selection.
-		THis is useful in case your selection includes non-mesh objects or if the active is not part of the selection.
+		This is useful in case your selection includes non-mesh objects or if the active is not part of the selection.
 		'''
 
 		for obj in objects:
