@@ -39,6 +39,19 @@ def update(self, context, prop='', category=''):
 		ARMORED_mode_toggle.register()
 		ARMORED_mode_toggle.unregister()
 
+
+def update_wireframe_selected(self, context):
+	from .. operators_internal import ARMORED_wireframe_selected
+
+	wireframe_selected = getattr(addon.prefs(), 'wireframe_selected')
+
+	if wireframe_selected: 
+		ARMORED_wireframe_selected.add_load_post_handler()
+		ARMORED_wireframe_selected.add_depsgraph_handler()
+	else:     
+		# ARMORED_wireframe_selected.remove_depsgraph_handler()
+		ARMORED_wireframe_selected.unregister()
+
 	# config.set_config(prop, category, state)
 
 
@@ -103,7 +116,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 
 	wireframe_selected: bpy.props.BoolProperty(name='Wireframe Selected', default=False,
 		description='Display the wireframe of any objects you select and viceversa', 
-		update=closure(prop='wireframe_selected', category='keymaps'),)
+		update=update_wireframe_selected,)
 
 
 	# STUDIO LIGHTS >>
