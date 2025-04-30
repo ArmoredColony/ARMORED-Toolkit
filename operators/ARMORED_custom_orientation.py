@@ -1,4 +1,4 @@
-# v1.0
+VERSION = (1, 0, 1)
 
 
 import bpy
@@ -28,7 +28,7 @@ def delete_custom_orientation(self):
     try:
         bpy.ops.transform.select_orientation(orientation=self.orientation_name)
         bpy.ops.transform.delete_orientation()
-    #     print('deleted custom orientation')
+        # print('deleted custom orientation')
     except TypeError:
         pass
         # print('orientation does not exist')
@@ -51,7 +51,7 @@ class ARMORED_OT_custom_orientation(bpy.types.Operator):
     bl_label   = 'ARMORED Set Custom Orientation'
     bl_options = {'REGISTER',}
     
-    orientation_name: bpy.props.StringProperty(name='Orientation Name', default='AC Custom')
+    orientation_name: bpy.props.StringProperty(name='Orientation Name', default='Element')
     
 
     def invoke(self, context, event):
