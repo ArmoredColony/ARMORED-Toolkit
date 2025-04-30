@@ -6,4 +6,7 @@
 **/.sourcery
 ARMORED_muscle_patterns.py
 ARMORED_export_cyber_muscles.py
+ARMORED_export_robo_caps.py
 ARMORED_sculpting_gizmo.py
+operators/ARMORED_pivot.py
+operators/ARMORED_gizmo.py
