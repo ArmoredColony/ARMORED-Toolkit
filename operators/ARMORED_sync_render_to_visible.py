@@ -1,85 +1,74 @@
-# v1.1
+version = (1, 2, 0)
 
 import bpy
-from bpy.props import EnumProperty, BoolProperty
 
 
-class ARMORED_OT_sync_render_to_viewport(bpy.types.Operator):
-    '''Syncronizes render visibility to match object visibility (what you see what you render).
+def traverse_tree(tree):
+	yield tree
+	for child in tree.children:
+        	yield from traverse_tree(child)
 
-(www.armoredColony.com)'''
-    
-    sync_meshes  : BoolProperty(name='Sync Meshes', default=True, description='Sync Mesh Render visibility to Viewport visibility.')
-    sync_curves  : BoolProperty(name='Sync Curves', default=True, description='Sync Curve Render visibility to Viewport visibility.')
-    sync_lights  : BoolProperty(name='Sync Lights', default=True, description='Sync Light Render visibility to Viewport visibility.')
-    sync_fonts   : BoolProperty(name='Sync Text',   default=True, description='Sync Text Object Render visibility to Viewport visibility.')
-    
-    bl_idname = 'view3d.armored_sync_render_to_viewport'
-    bl_label = 'ARMORED Sync Render to Viewport'
-    bl_options = {'REGISTER', 'UNDO'}
 
-    def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
+def get_view_layer_collections(context):
+	'''
+	Returns a list of LayerCollections in the current view layer,
+	excluding the root 'Scene Collection'.
+	'''
 
-        layout.label(text='Sync by Type:')
-        layout.prop(self, 'sync_meshes',  text='Mesh')
-        layout.prop(self, 'sync_curves',  text='Curve')
-        layout.prop(self, 'sync_lights',  text='Light')
-        layout.prop(self, 'sync_fonts',   text='Text')
-    
-    def execute(self, context):
-        # Sync Collections.
-        ignore_collections_with_name = {'light', 'lights','scene lights'}
-        if self.sync_lights:
-            ignore_collections_with_name = {}
+	return [
+		lc for lc in traverse_tree(context.view_layer.layer_collection)
+		if lc.collection.name != 'Scene Collection'
+	]
 
-        vlayer = context.view_layer
-        for col in context.scene.collection.children:
-            if col.name.lower() not in ignore_collections_with_name:
-                col.hide_render = vlayer.layer_collection.children[col.name].hide_viewport
 
-        # Sync Individual Objects.
-        objects = context.scene.objects
-        meshes  = (ob for ob in objects if ob.type == 'MESH')
-        curves  = (ob for ob in objects if ob.type == 'CURVE')
-        lights  = (ob for ob in objects if ob.type == 'LIGHT')
-        fonts   = (ob for ob in objects if ob.type == 'FONT')
+def get_all_scene_objects(context):
+	'''
+	Get all objects that are being used in the current scene.
+	'''
 
-        if self.sync_meshes:
-            for ob in meshes:
-                ob.hide_render = ob.hide_get()
+	scene_objects = [
+		ob for ob in bpy.data.objects if context.scene.user_of_id(ob)
+	]
 
-        if self.sync_curves:
-            for ob in curves:
-                ob.hide_render = ob.hide_get()
+	return scene_objects
 
-        if self.sync_lights:
-            for ob in lights:
-                ob.hide_render = ob.hide_get()
 
-        if self.sync_fonts:
-            for ob in fonts:
-                ob.hide_render = ob.hide_get()
+@bpy.app.handlers.persistent
+def sync_render_to_viewport(*args):
+	'''
+	Check if the sync_render Scene property is enabled before
+	syncing the render visibility to the viewport visibility.
+	'''
+	
+	sync_render = bpy.context.scene.armored_sync_render
 
-        return {'FINISHED'}
+	if not sync_render:
+		return
+
+	print('ARMORED-Toolkit: Syncing Render to Viewport visibility')
+	layer_collections = get_view_layer_collections(bpy.context)
+	scene_objects     = get_all_scene_objects(bpy.context)
+
+	for layer_coll in layer_collections:
+		layer_coll.collection.hide_render = layer_coll.hide_viewport
+
+	for obj in scene_objects:
+		obj.hide_render = obj.hide_get()
 
 
 def draw_sync_button(self, context):
-    self.layout.operator(ARMORED_OT_sync_render_to_viewport.bl_idname, icon='RESTRICT_RENDER_OFF', text='')
+	self.layout.prop(context.scene, 'armored_sync_render', icon='RESTRICT_RENDER_OFF', text='')
 
-classes = (
-    ARMORED_OT_sync_render_to_viewport,
-)
 
 def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
-    bpy.types.OUTLINER_HT_header.append(draw_sync_button)
-    # bpy.types.VIEW3D_HT_header.prepend(draw_sync_button)
+	bpy.types.Scene.armored_sync_render = bpy.props.BoolProperty(
+		name='ARMORED Sync Render to Viewport', 
+		default=False,
+		description='When starting a render, automatically sync it to the Viewport object visibility',
+	)
+	bpy.app.handlers.render_pre.append(sync_render_to_viewport)
+	bpy.types.OUTLINER_HT_header.append(draw_sync_button)
 
 def unregister():
-    for cls in classes:
-        bpy.utils.unregister_class(cls)
-    bpy.types.OUTLINER_HT_header.remove(draw_sync_button)
-    # bpy.types.VIEW3D_HT_header.remove(draw_sync_button)
+	bpy.app.handlers.render_pre.remove(sync_render_to_viewport)
+	bpy.types.OUTLINER_HT_header.remove(draw_sync_button)
