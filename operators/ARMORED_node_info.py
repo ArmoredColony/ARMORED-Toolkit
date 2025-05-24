@@ -1,4 +1,4 @@
-version = (2, 0, 0)
+version = (2, 1, 0)
 
 import bpy
 
@@ -11,8 +11,11 @@ class NODE_OT_armored_node_info(bpy.types.Operator):
 	bl_idname = 'node.armored_node_info'
 	bl_label = 'ARMORED Node Info'
 	bl_options = {'REGISTER', 'UNDO'}
-    
 
+	@classmethod
+	def poll(cls, context):
+		return context.area.type == 'NODE_EDITOR' and context.active_node is not None
+	
 	def execute(self, context):
 		node = context.active_node
 
