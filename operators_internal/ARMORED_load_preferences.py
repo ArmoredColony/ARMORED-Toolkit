@@ -1,4 +1,4 @@
-version = (2, 2, 0)
+version = (2, 2, 1)
 
 import bpy
 
@@ -12,10 +12,8 @@ USER_PREFERENCES = {
 	'context.preferences.inputs.invert_mouse_zoom': True,
 	'context.preferences.edit.undo_steps': 150,
 
-	# 'context.scene.render.engine': 'CYCLES',
-
+	'context.scene.render.engine': 'CYCLES',
 	'context.scene.world.color': [0.215861, 0.215861, 0.215861],
-
 	'context.scene.cycles.device': 'GPU',
 	'context.scene.cycles.use_preview_denoising': True,
 	'context.scene.cycles.denoiser': 'OPTIX',
@@ -28,10 +26,8 @@ FACTORY_USER_PREFERENCES = {
 	'context.preferences.inputs.invert_mouse_zoom': False,
 	'context.preferences.edit.undo_steps': 32,
 
-	# 'context.scene.render.engine': 'BLENDER_EEVEE_NEXT',
-
+	'context.scene.render.engine': 'BLENDER_EEVEE_NEXT',
 	'context.scene.world.color': [0.050876, 0.050876, 0.050876],
-
 	'context.scene.cycles.device': 'CPU',
 	'context.scene.cycles.use_preview_denoising': False,
 	'context.scene.cycles.denoiser': 'AUTO',
