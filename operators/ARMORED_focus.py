@@ -137,7 +137,11 @@ class SCULPT_OT_armored_focus(bpy.types.Operator, Focus):
 class NODE_OT_armored_focus(bpy.types.Operator, Focus):
 	
 	bl_idname = 'node.armored_focus'
-	poll_mode = None
+
+	@classmethod
+	def poll(cls, context):
+		return context.area.type == 'NODE_EDITOR' and context.active_node is not None
+
 
 	def _focus(self, context):
 		if context.selected_nodes:
@@ -150,7 +154,10 @@ class NODE_OT_armored_focus(bpy.types.Operator, Focus):
 class IMAGE_OT_armored_focus(bpy.types.Operator, Focus):
 	
 	bl_idname = 'image.armored_focus'
-	poll_mode = None
+
+	@classmethod
+	def poll(cls, context):
+		return context.area.type == 'IMAGE_EDITOR'
 
 	def _focus(self, context):
 		bpy.ops.image.view_all('INVOKE_DEFAULT', fit_view=True)
