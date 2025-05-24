@@ -3,8 +3,9 @@
 This is my free collection of modeling Scripts for Blender, bundled into a single Addon for easy installation. It also includes *optional* extras (disabled by default) like my personal Blender Theme, Matcaps and Hotkeys.
 
 ## How to Install?
-- Click the `<> Code` button and download the ZIP file.
-- Go to **Blender Preferences> Addons> Install** and select the ZIP you downloaded. 
+- Go to `Releases` and download the latest `ARMORED-Toolkit-vXXX` ZIP file.
+- Open Blender and drag the ZIP file into the viewport.
+- Restart Blender.
 
 That's it! Scripts will automatically appear in the search menu (F3) and will be marked with the ARMORED prefix. Note that some scripts will be hidden based on the context. For example: **Flatten** only works in Edit mode and will not appear in Object mode.
 
@@ -18,7 +19,7 @@ That's it! Scripts will automatically appear in the search menu (F3) and will be
 - **Fast Subdivision**: Applies a subsurface modifier with a lower `limit_surface` value for faster subdivisions with no quality loss. 
 - **Edge to Pipe**: Convert a curve or edge selection into a pipe (like Modo)
 - **Fast Bevel**: Combine the edge and vertex bevel tools into a single one. On face selections it will bevel the face border.
-- **Fast Crease**: Instantly apply full crease/uncrease to your selection. Can also crease by angle or face selection border.
+- **Mark Edges**: Mark/Unmark edges as Creases, UV Seams or Sharp edges. Can filter by trait such as border edges or angle based selection..
 - **Hide**: Toggle the visibility of an object by only pressing H (like Maya).
 - **Primitives**: new primitives with divisions/sides you can interactively increase or decrease by scrolling; plus quadsphere and single vertex, etc.
 - **Focus**: Same as Blender's View Selected but capable of centering the mesh when nothing is selected.
