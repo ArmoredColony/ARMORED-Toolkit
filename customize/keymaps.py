@@ -5,23 +5,96 @@ import sys
 
 from .. utils import(
 	addon, 
+	debug,
 	keymap_utils,
 	mod_utils,
 )
 
 
+wm = bpy.context.window_manager
+kc = wm.keyconfigs.addon
+
+
+special_keymaps = []
+keymap_groups = {}
+
+
+ABSTRACT_ARMORED_FOCUS_CATEGORY = '3D View'	# Must be an existing category for persistence in the USER keyconfig.
+ABSTRACT_ARMORED_FOCUS_IDNAME   = 'armored._abstract_focus'
+
+
+def set_abstract_armored_focus_kmi():
+	'''
+	Sets the abstract keymap item to be referenced by all the `armored_focus` operators.
+	'''
+	
+	category = ABSTRACT_ARMORED_FOCUS_CATEGORY
+	km = kc.keymaps.get(category) or kc.keymaps.new(name=category, space_type='EMPTY', region_type='WINDOW')
+	kmi = create_kmi(km, ABSTRACT_ARMORED_FOCUS_IDNAME, type='F', value='PRESS', ctrl=False, alt=False, shift=False)
+	special_keymaps.append((km, kmi))
+
+
+def get_abstract_armored_focus_kmi():
+	'''
+	Returns the abstract keymap reference for the `armored_focus` operators.
+	'''
+	
+	wm  = bpy.context.window_manager
+	kc  = wm.keyconfigs.user
+	km  = kc.keymaps[ABSTRACT_ARMORED_FOCUS_CATEGORY]
+	kmi = km.keymap_items.get(ABSTRACT_ARMORED_FOCUS_IDNAME)
+
+	if not kmi:
+		debug.msg('ARMORED-Toolkit: No abstract Armored Focus Keymap Item found.')
+		return None
+	
+	return kmi
+
+
+
+@bpy.app.handlers.persistent
+def update_armored_focus_keymaps(*args):
+	'''
+	Updates all `armored_focus` operator keymaps to match the abstract reference keymap.
+	'''
+	
+	if not addon.prefs().focus_selected_key:
+		return
+	
+	debug.msg('ARMORED-Toolkit: Updating Armored Focus Keymaps from abstract reference.')
+	# print('ARMORED-Toolkit: Updating Armored Focus Keymaps from abstract reference.')
+
+	abstract_kmi = get_abstract_armored_focus_kmi()
+
+	for _km, kmi in keymap_groups['focus_selected_key'].keymap_list:
+		kmi.type  = abstract_kmi.type
+		kmi.value = abstract_kmi.value
+		kmi.ctrl  = abstract_kmi.ctrl
+		kmi.alt   = abstract_kmi.alt
+		kmi.shift = abstract_kmi.shift
+
+
 def get_path_from_addon():
+	'''
+	Gets the custom `export_path` property, defined in the addon preferences.
+	'''
+	
 	armored_toolkit = bpy.context.preferences.addons['ARMORED-Toolkit']
 	props = armored_toolkit.preferences
 
 	return getattr(props, 'export_path')
 
 
+def create_kmi(km, idname, type, value, ctrl=False, alt=False, shift=False, active=True):
+	kmi = km.keymap_items.new(idname, type, value, ctrl=ctrl, alt=alt, shift=shift)
+	kmi.active = active
+	# addon_keymaps.append((km, kmi))
+
+	return kmi
+
+
 # Use underscores in the class names. Capitalization is irrelevant as long as the letters
 # match the property names in the addon preferences
-
-wm = bpy.context.window_manager
-kc = wm.keyconfigs.addon
 
 class MAYA_NAVIGATION(keymap_utils.KeymapGroup):
 	def register(self):
@@ -59,18 +132,26 @@ class LOOP_SELECTION(keymap_utils.KeymapGroup):
 		self.enabled_message()
 
 
-class FOCUS_SELECTED_WITH_F(keymap_utils.KeymapGroup):
+class focus_selected_key(keymap_utils.KeymapGroup):
 	def register(self):
 		'''
 		Some keymaps work with the global self.km = kc.keymaps.new('Window') (space_type defaults to EMPTY)
 		...but others get overriden by more specific category names. Not sure how space_type affects priority.
-		Individual KMs is ugly but it guarantees priority
 		'''
 
-		key = 'F'
-		ctrl  = False
-		shift = False
-		alt   = False
+
+		_km, kmi = special_keymaps[0]
+		# print('type', kmi.type)
+	
+		key   = kmi.type
+		ctrl  = kmi.ctrl
+		shift = kmi.shift
+		alt   = kmi.alt
+
+		# key   = 'F'
+		# ctrl  = False
+		# alt   = False
+		# shift = False
 
 		self.km = kc.keymaps.new('Outliner', space_type='OUTLINER')
 		self.add('outliner.show_active', key, 'PRESS', ctrl, alt, shift)
@@ -407,6 +488,8 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
 		self.km = kc.keymaps.new(name='Mesh')
 
+		self.add('mesh.armored_select_through',		'RIGHTMOUSE',		'CLICK_DRAG', ctrl=True)
+		self.prop('select_mode', 'SET')
 		
 		self.add('mesh.armored_custom_orientation',	'D',			'PRESS')
 		self.add('wm.context_toggle',			'W',			'PRESS', shift=True)
@@ -483,27 +566,27 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
 
 def register():
+	# We register this separately so the user defined value is persistent and uncoupled from the `focus keymap override`.
+	set_abstract_armored_focus_kmi()
+
+	# We do this here to delay the instancing until `special_keymaps` is populated.
+	for cls in classes:
+		keymap_groups[cls.__name__.lower()] = cls()
+
 	for cls_name, cls_instance in keymap_groups.items():
 		if getattr(addon.prefs(), cls_name.lower()):
 			cls_instance.register()
 
 
 def unregister():
-	# It's'safe to unregister everything. 
-	# Classes that never registered keymaps will "early return" from their <unregister> method.
+	# Classes that never registered keymaps will return early from their `unregister`` method.
 	for cls_instance in keymap_groups.values():
 		cls_instance.unregister()
 
+	for km, kmi in special_keymaps:
+		km.keymap_items.remove(kmi)
 
-# List of (cls_name, cls_obj) tuples. 
-# Experiment by putting this in <register> as a global variable.
+
+# KEEP THIS AT THE END OF THE FILE
 classes = mod_utils.get_module_classes(sys.modules[__name__])
 
-# Only need 1 instance per class. Each instance can keep track of the keymaps it registers.
-# Have to test if importing this module creates duplicate instances which resets the internal <registered_keymaps> list.
-keymap_groups = {cls[0].lower(): cls[1]() for cls in classes}
-
-# DEBUGGING
-# addon.debug doesnt exist yet, so reference the config file (Not Implemented yet).
-# for cls_name, cls_instance in keymap_groups.items():
-	# print(cls_name.title().ljust(22, ' '), cls_instance)

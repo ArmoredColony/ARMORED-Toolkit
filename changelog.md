@@ -118,7 +118,7 @@
 *12/Jun/2023*
 
 ### FIXED
-- Registration errors if the Looptools addon and the Armored-Toolkit were enabled at the same time.
+- Registration errors if the Looptools addon and the ARMORED-Toolkit were enabled at the same time.
 
 
 ## v0.7.0

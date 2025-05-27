@@ -1,13 +1,14 @@
-from abc import ABC, abstractmethod
-from typing import Union
-from operator import attrgetter
+import abc
 
 from . import(
     debug,
 )
 
 
-class KeymapGroup(ABC):
+
+
+
+class KeymapGroup(abc.ABC):
     '''Keymaps that override or supersede default Blender Keymaps'''
 
     def __init__(self):
@@ -24,13 +25,22 @@ class KeymapGroup(ABC):
         return self.kmi
 
     def prop(self, attr: str, val):
+        '''''
+        The complexity here allows for operators that use other operators as properties (macros?).
+
+        Example:
+            self.add('mesh.loopcut_slide')
+            self.prop('TRANSFORM_OT_edge_slide.release_confirm', True)
+        '''
+        
         try:
             split_attr = attr.split('.')
+
             if len(split_attr) > 1:
                 last_attr = split_attr.pop()
                 join_attr = '.'.join(split_attr)
-                # print(f'self.kmi.properties.{join_attr}.{last_attr}')
                 setattr(eval(f'self.kmi.properties.{join_attr}'), last_attr, val)
+
             else:
                 setattr(self.kmi.properties, attr, val)
 
@@ -38,7 +48,7 @@ class KeymapGroup(ABC):
             self.error_count += 1
             print(f'\tARMORED-Toolkit WARNING: {e}')
 
-    @abstractmethod
+    @abc.abstractmethod
     def register():
         pass
     

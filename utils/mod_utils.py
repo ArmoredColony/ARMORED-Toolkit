@@ -52,8 +52,11 @@ def reload_addon(debug=False):
                 print(f'Reloaded: {module.__name__}')
 
 
+# def get_module_classes(module):
+#     return [(name, obj) for name, obj in inspect.getmembers(module) if inspect.isclass(obj)]
+
 def get_module_classes(module):
-    return [(name, obj) for name, obj in inspect.getmembers(module) if inspect.isclass(obj)]
+	return [obj for _, obj in inspect.getmembers(module) if inspect.isclass(obj)]
 
 
 def get_module_class_names(module):

@@ -17,6 +17,18 @@ from .. customize import (
 )
 
 
+# Used to track changes in the addon preferences
+# for the abstract armored_focus kmi.
+cached_key_state = {
+	'type': None,
+	'value': None,
+	'ctrl': None,
+	'alt': None,
+	'shift': None,
+	'has_run_once': False,
+}
+
+
 preview_collections = {}
 default_path = str(pathlib.Path.home() / 'Desktop')
 
@@ -71,9 +83,9 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 		description='Double Click to select component loops', 
 		update=closure(prop='loop_selection', category='keymaps'),)
 		
-	focus_selected_with_f: bpy.props.BoolProperty(name='Focus Selected with F', default=False,
-		description='Frame your selection with the F key (NUMPAD_PERIOD can still be used). This option does NOT affect Sculpt or similar modes where F is used to resize the brush. See the dedicated ZBrush Sculpting override for this functionality', 
-		update=closure(prop='focus_selected_with_f', category='keymaps'),)
+	focus_selected_key: bpy.props.BoolProperty(name='Focus Selected with F', default=False,
+		description='Frame your selection with the specified key. This option does NOT affect Sculpt or similar modes where F is used to resize the brush. See the dedicated ZBrush Sculpting override for this functionality', 
+		update=closure(prop='focus_selected_key', category='keymaps'),)
 
 	fast_subdivision: bpy.props.BoolProperty(name='Fast Subdivision', default=False,
 		description='Lowers the \'quality\' of the \'use_limit_surface\' property in Subsurf Modifiers applied with Ctrl + 1...9', 
@@ -161,8 +173,8 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 		def url_button(row, text, url, icon):
 			row.operator('wm.url_open', text=text, icon_value=web_icons[icon].icon_id).url = url
 
-		def prop_line(prop, icon, url='www.youtube.com/armoredcolony', text=''):
-			row = box.column(align=True).row()
+		def prop_line(layout, prop, icon, url='www.youtube.com/armoredcolony', text=''):
+			row = layout.column(align=True).row()
 
 			row.label(text=text or prop.replace('_', ' ').title())
 			row.separator()
@@ -202,38 +214,72 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 		box = col1.box()
 		box.label(text='Keymap Overrides:')
 		box.operator('armored.open_folder', text='PDF Keymap List', icon='TEXT').path = paths.AddonPaths.docs_keymaps
-		prop_line(prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
-		prop_line(prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
-		prop_line(prop='focus_selected_with_f', icon='FILE_MOVIE', url='www.youtube.com')
-		prop_line(prop='fast_subdivision',      icon='FILE_MOVIE', url='www.youtube.com')
-		prop_line(prop='delete_without_menus',  icon='FILE_MOVIE', url='www.youtube.com')
-		prop_line(prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
-		prop_line(prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
-		prop_line(prop='allow_gizmo_click',     icon='FILE_MOVIE', url='www.youtube.com')
-		prop_line(prop='zbrush_sculpting',      icon='FILE_MOVIE', url='www.youtube.com')
-		prop_line(prop='operator_shortcuts',    icon='FILE_MOVIE', url='www.youtube.com')
+		prop_line(box, prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
+		prop_line(box, prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
+		
+		sub_box = box.box() if self.focus_selected_key else box
+		prop_line(sub_box, prop='focus_selected_key', icon='FILE_MOVIE', url='www.youtube.com')
+
+		if self.focus_selected_key:
+			abstract_kmi = keymaps.get_abstract_armored_focus_kmi()
+
+			row       = sub_box.row()
+			split     = row.split(factor=0.53)
+			left_col  = split.column(align=True)
+			right_col = split.column(align=True)
+
+			left_col.label(text='\tNew Keymap:')
+			right_col.prop(abstract_kmi, 'type', text='', full_event=True)
+
+			if abstract_kmi.type == 'NONE':
+				abstract_kmi.type = 'F'  # Default to F key if it is not set.
+			
+			if (
+				abstract_kmi.type  != cached_key_state['type'] or
+				abstract_kmi.value != cached_key_state['value'] or
+				abstract_kmi.ctrl  != cached_key_state['ctrl'] or
+				abstract_kmi.alt   != cached_key_state['alt'] or
+				abstract_kmi.shift != cached_key_state['shift']
+			):
+				
+				keymaps.update_armored_focus_keymaps()
+				
+				# Cache new state
+				cached_key_state['type']  = abstract_kmi.type
+				cached_key_state['value'] = abstract_kmi.value
+				cached_key_state['ctrl']  = abstract_kmi.ctrl
+				cached_key_state['alt']   = abstract_kmi.alt
+				cached_key_state['shift'] = abstract_kmi.shift
+
+		prop_line(box, prop='fast_subdivision',      icon='FILE_MOVIE', url='www.youtube.com')
+		prop_line(box, prop='delete_without_menus',  icon='FILE_MOVIE', url='www.youtube.com')
+		prop_line(box, prop='deselect_with_ctrl',    icon='FILE_MOVIE', url='www.youtube.com')
+		prop_line(box, prop='transform_with_gizmos', icon='FILE_MOVIE', url='www.youtube.com')
+		prop_line(box, prop='allow_gizmo_click',     icon='FILE_MOVIE', url='www.youtube.com')
+		prop_line(box, prop='zbrush_sculpting',      icon='FILE_MOVIE', url='www.youtube.com')
+		prop_line(box, prop='operator_shortcuts',    icon='FILE_MOVIE', url='www.youtube.com')
 
 		col1.separator()
 
 		box = col1.box()
 		box.label(text='Extra Resources:')
-		prop_line(prop='matcaps',       icon='MATERIAL', url='www.youtube.com')
-		prop_line(prop='hdris',         icon='MATERIAL', url='www.youtube.com', text='HDRIS')
-		prop_line(prop='studio_lights', icon='MATERIAL', url='www.youtube.com')
-		prop_line(prop='themes',        icon='MATERIAL', url='www.youtube.com')
+		prop_line(box, prop='matcaps',       icon='MATERIAL', url='www.youtube.com')
+		prop_line(box, prop='hdris',         icon='MATERIAL', url='www.youtube.com', text='HDRIS')
+		prop_line(box, prop='studio_lights', icon='MATERIAL', url='www.youtube.com')
+		prop_line(box, prop='themes',        icon='MATERIAL', url='www.youtube.com')
 
 		col1.separator()
 
 		box = col1.box()
 		box.label(text='TAB Override:')
-		prop_line(prop='tab_history', icon='FILE_MOVIE', url='www.youtube.com')
+		prop_line(box, prop='tab_history', icon='FILE_MOVIE', url='www.youtube.com')
 		if self.tab_history:
 			box.prop(self, 'tab_undo_mode', text='', expand=False)
 		col1.separator()
 
 		box = col1.box()
 		box.label(text='EXPERIMENTAL', icon='ERROR')
-		prop_line(prop='wireframe_selected', icon='MATERIAL', url='www.youtube.com')
+		prop_line(box, prop='wireframe_selected', icon='MATERIAL', url='www.youtube.com')
 		col1.separator()
 
 		box = col2.box()
@@ -241,7 +287,7 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 		layout.use_property_split = True
 		box.operator('armored.load_preferences', text='Load Preferences')
 		box.operator('armored.unload_preferences', text='Unload Preferences')
-		# prop_line(prop='system_preferences', icon='TOPBAR', url='www.youtube.com')
+		# prop_line(box, prop='system_preferences', icon='TOPBAR', url='www.youtube.com')
 		layout.use_property_split = False
 		col2.separator()
 
@@ -312,11 +358,13 @@ classes = (
 def register():
 	for cls in classes:
 		bpy.utils.register_class(cls)
-	icons.load_icons(preview_collections)
-	# config.load_config()
 
+	icons.load_icons(preview_collections)
+	bpy.app.handlers.load_post.append(keymaps.update_armored_focus_keymaps)
 
 def unregister():
 	for cls in classes:
 		bpy.utils.unregister_class(cls)
+
 	icons.unload_icons(preview_collections)
+	bpy.app.handlers.load_post.remove(keymaps.update_armored_focus_keymaps)
