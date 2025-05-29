@@ -1,10 +1,14 @@
-version = (1, 0, 0)
+version = (2, 0, 0)
 
 import bpy
 
 
+class EVENTS:
+	FINISH = {'ESC', 'SPACE'}
+
+
 class ARMORED_OT_paint_select(bpy.types.Operator):
-	'''Paint Select like Modo (bind it to a single key, like "Q") (Experimental)
+	'''Tap to activate Rectangle Select, hold and mousemove for Circle Select (bind to a single key like 'Q').
 
 	armoredColony.com '''
 
@@ -13,47 +17,30 @@ class ARMORED_OT_paint_select(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 
 	def invoke(self, context, event):
-		self.painted = False
-		self.selecting = False
-		self.deselecting = False
 		self.first_key_pressed = event.type
 
 		context.window_manager.modal_handler_add(self)
+		# bpy.ops.wm.tool_set_by_id(name='builtin.select_circle', cycle=False)
 		
 		return {'RUNNING_MODAL'}
 
 	def modal(self, context, event):
+		# context.area.tag_redraw()	# I think bpy.ops calls already do this.
 
-		if event.type == 'LEFTMOUSE':
-
-			if event.value == 'PRESS':
-				self.selecting = True
-				self.painted = True
-			else:
-				self.selecting = False
-
-
-		elif event.type == 'RIGHTMOUSE':
-				self.deselecting = True if event.value == 'PRESS' else False
-
-
-		elif event.type == self.first_key_pressed and event.value == 'RELEASE':  
-
-			if not self.painted:
-				bpy.ops.wm.tool_set_by_id(name='builtin.select_box', cycle=False)
+		if event.type == self.first_key_pressed and event.value == 'RELEASE': 
+			bpy.ops.wm.tool_set_by_id(name='builtin.select_box', cycle=False)
 
 			return {'FINISHED'}
+		
+		if event.type == 'MOUSEMOVE':
+			bpy.ops.wm.tool_set_by_id(name='builtin.select_circle', cycle=False)
 
-		elif event.type in {'ESC'}:
-			return {'CANCELLED'}
-	
-		if self.selecting:
-			bpy.ops.view3d.select('INVOKE_DEFAULT', extend=True, deselect=False)
-
-		if self.deselecting:
-			bpy.ops.view3d.select('INVOKE_DEFAULT', extend=False, deselect=True)
-
-		return {'RUNNING_MODAL'}
+			return {'RUNNING_MODAL'}
+		
+		if event.type in EVENTS.FINISH:
+			return {'FINISHED'}
+		
+		return {'PASS_THROUGH'}
 
 
 classes = (
