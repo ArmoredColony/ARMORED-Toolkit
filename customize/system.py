@@ -1,19 +1,17 @@
 import bpy
-from bpy.app import handlers
 
 from .. utils import debug
 
 
-@handlers.persistent
+@bpy.app.handlers.persistent
 def developer_extras_delay(*args):
-    bpy.context.preferences.view.show_developer_ui = True
-    print('ARMORED Toolkit: Enabled Developer Extras')
+	bpy.context.preferences.view.show_developer_ui = True
+	print('ARMORED Toolkit: Enabled Developer Extras')
 
 
 def register():
-    handlers.load_post.append(developer_extras_delay)
-    debug.msg(f'ARMORED-Toolkit System: LOAD_POST handlers in buffer:\n  {handlers.load_post[:]}')
-
+	bpy.app.handlers.load_post.append(developer_extras_delay)
+	
 
 def unregister():
-    handlers.load_post.remove(developer_extras_delay)
+	bpy.app.handlers.load_post.remove(developer_extras_delay)
