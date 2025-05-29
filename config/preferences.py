@@ -5,9 +5,10 @@ import pathlib
 
 from .. utils import (
     addon,
-#     config,
+    debug,
     descriptions,
     icons,
+    keymap_utils,
     paths,
 )
 
@@ -15,18 +16,6 @@ from .. customize import (
     keymaps,
     resources,
 )
-
-
-# Used to track changes in the addon preferences
-# for the abstract armored_focus kmi.
-cached_key_state = {
-	'type': None,
-	'value': None,
-	'ctrl': None,
-	'alt': None,
-	'shift': None,
-	'has_run_once': False,
-}
 
 
 preview_collections = {}
@@ -82,10 +71,17 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 	loop_selection: bpy.props.BoolProperty(name='Double Click to Select Loops', default=False,
 		description='Double Click to select component loops', 
 		update=closure(prop='loop_selection', category='keymaps'),)
-		
-	focus_selected_key: bpy.props.BoolProperty(name='Focus Selected with F', default=False,
-		description='Frame your selection with the specified key. This option does NOT affect Sculpt or similar modes where F is used to resize the brush. See the dedicated ZBrush Sculpting override for this functionality', 
-		update=closure(prop='focus_selected_key', category='keymaps'),)
+	
+	# We use these because they regist early and pesist through script reloads.
+	focus_kmi_type:  bpy.props.StringProperty(default='F')
+	focus_kmi_value: bpy.props.StringProperty(default='PRESS')
+	focus_kmi_ctrl:  bpy.props.BoolProperty(default=False)
+	focus_kmi_alt:   bpy.props.BoolProperty(default=False)
+	focus_kmi_shift: bpy.props.BoolProperty(default=False)
+
+	focus_selected: bpy.props.BoolProperty(name='Focus Selected with', default=False,
+		description='Frame your selection with the specified key. \n\nThis option does NOT affect Sculpt or similar modes where F is used to resize the brush. See the dedicated ZBrush Sculpting override for this functionality', 
+		update=closure(prop='focus_selected', category='keymaps'),)
 
 	fast_subdivision: bpy.props.BoolProperty(name='Fast Subdivision', default=False,
 		description='Lowers the \'quality\' of the \'use_limit_surface\' property in Subsurf Modifiers applied with Ctrl + 1...9', 
@@ -217,11 +213,17 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 		prop_line(box, prop='maya_navigation',       icon='FILE_MOVIE', url='www.youtube.com')
 		prop_line(box, prop='loop_selection',        icon='FILE_MOVIE', url='www.youtube.com')
 		
-		sub_box = box.box() if self.focus_selected_key else box
-		prop_line(sub_box, prop='focus_selected_key', icon='FILE_MOVIE', url='www.youtube.com')
+		sub_box = box.box() if self.focus_selected else box
+		prop_line(sub_box, prop='focus_selected', icon='FILE_MOVIE', url='www.youtube.com')
 
-		if self.focus_selected_key:
-			abstract_kmi = keymaps.get_abstract_armored_focus_kmi()
+		if self.focus_selected:
+			kc = bpy.context.window_manager.keyconfigs.user
+			km = kc.keymaps[keymaps.ABSTRACT_ARMORED_FOCUS_CATEGORY]
+
+			abstract_kmi = keymap_utils.get_kmi(
+				km     = km,
+				idname = keymaps.ABSTRACT_ARMORED_FOCUS_IDNAME,
+			)
 
 			row       = sub_box.row()
 			split     = row.split(factor=0.53)
@@ -231,25 +233,26 @@ class ARMORED_PT_Toolkit_Preferences(bpy.types.AddonPreferences):
 			left_col.label(text='\tNew Keymap:')
 			right_col.prop(abstract_kmi, 'type', text='', full_event=True)
 
+			  # No reason to allow NONE when the override can simply be disabled.
 			if abstract_kmi.type == 'NONE':
-				abstract_kmi.type = 'F'  # Default to F key if it is not set.
+				abstract_kmi.type = 'F'
 			
 			if (
-				abstract_kmi.type  != cached_key_state['type'] or
-				abstract_kmi.value != cached_key_state['value'] or
-				abstract_kmi.ctrl  != cached_key_state['ctrl'] or
-				abstract_kmi.alt   != cached_key_state['alt'] or
-				abstract_kmi.shift != cached_key_state['shift']
+				abstract_kmi.type  != self.focus_kmi_type or
+				abstract_kmi.value != self.focus_kmi_value or
+				abstract_kmi.ctrl  != self.focus_kmi_ctrl or
+				abstract_kmi.alt   != self.focus_kmi_alt or
+				abstract_kmi.shift != self.focus_kmi_shift
 			):
+				
+				self.focus_kmi_type  = abstract_kmi.type
+				self.focus_kmi_value = abstract_kmi.value
+				self.focus_kmi_ctrl  = abstract_kmi.ctrl
+				self.focus_kmi_alt   = abstract_kmi.alt
+				self.focus_kmi_shift = abstract_kmi.shift
 				
 				keymaps.update_armored_focus_keymaps()
 				
-				# Cache new state
-				cached_key_state['type']  = abstract_kmi.type
-				cached_key_state['value'] = abstract_kmi.value
-				cached_key_state['ctrl']  = abstract_kmi.ctrl
-				cached_key_state['alt']   = abstract_kmi.alt
-				cached_key_state['shift'] = abstract_kmi.shift
 
 		prop_line(box, prop='fast_subdivision',      icon='FILE_MOVIE', url='www.youtube.com')
 		prop_line(box, prop='delete_without_menus',  icon='FILE_MOVIE', url='www.youtube.com')
@@ -361,6 +364,13 @@ def register():
 
 	icons.load_icons(preview_collections)
 	bpy.app.handlers.load_post.append(keymaps.update_armored_focus_keymaps)
+	# bpy.app.handlers.load_post.append(keymaps.disable_conflicting_keymaps)
+
+	debug.msg('ARMORED-Toolkit System: LOAD_POST handlers in buffer:')
+	
+	if addon.debug():
+		for handler in bpy.app.handlers.load_post:
+			print('\t', handler)
 
 def unregister():
 	for cls in classes:
@@ -368,3 +378,4 @@ def unregister():
 
 	icons.unload_icons(preview_collections)
 	bpy.app.handlers.load_post.remove(keymaps.update_armored_focus_keymaps)
+	# bpy.app.handlers.load_post.remove(keymaps.disable_conflicting_keymaps)

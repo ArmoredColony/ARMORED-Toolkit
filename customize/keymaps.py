@@ -15,66 +15,97 @@ wm = bpy.context.window_manager
 kc = wm.keyconfigs.addon
 
 
-special_keymaps = []
 keymap_groups = {}
+special_keymaps = []
 
 
 ABSTRACT_ARMORED_FOCUS_CATEGORY = '3D View'	# Must be an existing category for persistence in the USER keyconfig.
-ABSTRACT_ARMORED_FOCUS_IDNAME   = 'armored._abstract_focus'
+ABSTRACT_ARMORED_FOCUS_IDNAME   = 'armored.abstract_focus'
 
 
-def set_abstract_armored_focus_kmi():
+def create_abstract_armored_focus_kmi() -> None:
 	'''
-	Sets the abstract keymap item to be referenced by all the `armored_focus` operators.
+	Sets the abstract keymap item that appears in the addon preferences.
+	It is a dummy kmi used to capture a user input (bpy.props has no kmi type).
+
+	Note:
+		This kmi is only referenced by the same properties it is created with.
 	'''
-	
+
+	prefs = addon.prefs()
 	category = ABSTRACT_ARMORED_FOCUS_CATEGORY
-	km = kc.keymaps.get(category) or kc.keymaps.new(name=category, space_type='EMPTY', region_type='WINDOW')
-	kmi = create_kmi(km, ABSTRACT_ARMORED_FOCUS_IDNAME, type='F', value='PRESS', ctrl=False, alt=False, shift=False)
+	km = kc.keymaps.get(category) or kc.keymaps.new(name=category)
+
+	kmi = keymap_utils.create_kmi(
+		km     = km, 
+		idname = ABSTRACT_ARMORED_FOCUS_IDNAME, 
+		type   = prefs.focus_kmi_type, 
+		value  = prefs.focus_kmi_value, 
+		ctrl   = prefs.focus_kmi_ctrl, 
+		alt    = prefs.focus_kmi_alt, 
+		shift  = prefs.focus_kmi_shift,
+	)
+
 	special_keymaps.append((km, kmi))
-
-
-def get_abstract_armored_focus_kmi():
-	'''
-	Returns the abstract keymap reference for the `armored_focus` operators.
-	'''
-	
-	wm  = bpy.context.window_manager
-	kc  = wm.keyconfigs.user
-	km  = kc.keymaps[ABSTRACT_ARMORED_FOCUS_CATEGORY]
-	kmi = km.keymap_items.get(ABSTRACT_ARMORED_FOCUS_IDNAME)
-
-	if not kmi:
-		debug.msg('ARMORED-Toolkit: No abstract Armored Focus Keymap Item found.')
-		return None
-	
-	return kmi
-
 
 
 @bpy.app.handlers.persistent
 def update_armored_focus_keymaps(*args):
 	'''
-	Updates all `armored_focus` operator keymaps to match the abstract reference keymap.
+	Updates all `armored_focus` operator keymaps to match 
+	the related kmi properties in the addon preferences.
 	'''
 	
-	if not addon.prefs().focus_selected_key:
+	if not addon.prefs().focus_selected:
 		return
 	
-	debug.msg('ARMORED-Toolkit: Updating Armored Focus Keymaps from abstract reference.')
-	# print('ARMORED-Toolkit: Updating Armored Focus Keymaps from abstract reference.')
+	debug.msg('ARMORED-Toolkit: Updating Armored Focus Keymaps.')
 
-	abstract_kmi = get_abstract_armored_focus_kmi()
-
-	for _km, kmi in keymap_groups['focus_selected_key'].keymap_list:
-		kmi.type  = abstract_kmi.type
-		kmi.value = abstract_kmi.value
-		kmi.ctrl  = abstract_kmi.ctrl
-		kmi.alt   = abstract_kmi.alt
-		kmi.shift = abstract_kmi.shift
+	prefs = addon.prefs()
+	for _km, kmi in keymap_groups['focus_selected'].keymap_list:
+		kmi.type  = prefs.focus_kmi_type
+		kmi.value = prefs.focus_kmi_value
+		kmi.ctrl  = prefs.focus_kmi_ctrl
+		kmi.alt   = prefs.focus_kmi_alt
+		kmi.shift = prefs.focus_kmi_shift
 
 
-def get_path_from_addon():
+# @bpy.app.handlers.persistent
+# def disable_conflicting_keymaps(*args):
+# 	'''
+# 	Disable keymaps that may conflict with addon keymaps.
+# 	'''
+	
+# 	disable_select_through_conflicts()
+
+
+# def disable_select_through_conflicts():
+# 	'''
+# 	Disables any keymaps that may conflict with the default keymap
+# 	for the `armored_select_through` operator.
+# 	'''
+	
+# 	kc = bpy.context.window_manager.keyconfigs.user
+# 	km = kc.keymaps.get('Mesh')
+
+# 	if km is None:
+# 		debug.msg('ARMORED-Toolkit: keymap category [Mesh] not found.')
+# 		return
+
+# 	result = keymap_utils.disable_kmi(
+# 		km=km,
+# 		idname='wm.call_menu',
+# 		type='RIGHTMOUSE',
+# 		value='PRESS'
+# 	)
+
+# 	if result:
+# 		print('Disabled Select Through Keymap Conflict')
+# 	else:
+# 		print('No Select Through Keymap Conflict Found')
+
+
+def get_export_path_from_addon():
 	'''
 	Gets the custom `export_path` property, defined in the addon preferences.
 	'''
@@ -83,14 +114,6 @@ def get_path_from_addon():
 	props = armored_toolkit.preferences
 
 	return getattr(props, 'export_path')
-
-
-def create_kmi(km, idname, type, value, ctrl=False, alt=False, shift=False, active=True):
-	kmi = km.keymap_items.new(idname, type, value, ctrl=ctrl, alt=alt, shift=shift)
-	kmi.active = active
-	# addon_keymaps.append((km, kmi))
-
-	return kmi
 
 
 # Use underscores in the class names. Capitalization is irrelevant as long as the letters
@@ -104,7 +127,7 @@ class MAYA_NAVIGATION(keymap_utils.KeymapGroup):
 		self.add('view3d.move',   'MIDDLEMOUSE', 'PRESS',	alt=True)
 		self.add('view3d.zoom',   'RIGHTMOUSE',  'PRESS',	alt=True)
 
-		self.enabled_message()
+		self.status_message('ENABLED')
 
 
 class LOOP_SELECTION(keymap_utils.KeymapGroup):
@@ -129,24 +152,21 @@ class LOOP_SELECTION(keymap_utils.KeymapGroup):
 		self.prop('deselect', True)
 		self.prop('toggle', False)
 
-		self.enabled_message()
+		self.status_message('ENABLED')
 
 
-class focus_selected_key(keymap_utils.KeymapGroup):
+class focus_selected(keymap_utils.KeymapGroup):
 	def register(self):
 		'''
 		Some keymaps work with the global self.km = kc.keymaps.new('Window') (space_type defaults to EMPTY)
 		...but others get overriden by more specific category names. Not sure how space_type affects priority.
 		'''
 
-
-		_km, kmi = special_keymaps[0]
-		# print('type', kmi.type)
-	
-		key   = kmi.type
-		ctrl  = kmi.ctrl
-		shift = kmi.shift
-		alt   = kmi.alt
+		prefs = addon.prefs()
+		key   = prefs.focus_kmi_type
+		ctrl  = prefs.focus_kmi_ctrl
+		shift = prefs.focus_kmi_shift
+		alt   = prefs.focus_kmi_alt
 
 		# key   = 'F'
 		# ctrl  = False
@@ -199,7 +219,7 @@ class focus_selected_key(keymap_utils.KeymapGroup):
 		self.km = kc.keymaps.new('Outliner', space_type='OUTLINER')
 		self.add('clip.view_selected', key, 'PRESS', ctrl, alt, shift)
 
-		self.enabled_message()
+		self.status_message('ENABLED')
 
 	
 class FAST_SUBDIVISION(keymap_utils.KeymapGroup):
@@ -229,7 +249,7 @@ class FAST_SUBDIVISION(keymap_utils.KeymapGroup):
 		self.add('mesh.armored_fast_subdivision',   'EIGHT', 'PRESS', ctrl=True); self.prop('level', 8)
 		self.add('mesh.armored_fast_subdivision',   'NINE',  'PRESS', ctrl=True); self.prop('level', 9)
 
-		self.enabled_message()
+		self.status_message('ENABLED')
 
 
 class DESELECT_WITH_CTRL(keymap_utils.KeymapGroup):
@@ -246,7 +266,7 @@ class DESELECT_WITH_CTRL(keymap_utils.KeymapGroup):
 		self.km = kc.keymaps.new('Curve', space_type='EMPTY')
 		self.add('armored.deselect', 'LEFTMOUSE', 'CLICK', ctrl=True)
 
-		self.enabled_message()
+		self.status_message('ENABLED')
 
 
 class TRANSFORM_WITH_GIZMOS(keymap_utils.KeymapGroup):
@@ -262,7 +282,7 @@ class TRANSFORM_WITH_GIZMOS(keymap_utils.KeymapGroup):
 		self.add('view3d.armored_toggle_tool', 'R', 'PRESS'); self.prop('name', 'builtin.rotate')
 		self.add('view3d.armored_toggle_tool', 'S', 'PRESS'); self.prop('name', 'builtin.scale')
 
-		self.enabled_message()
+		self.status_message('ENABLED')
 
 
 class DELETE_WITHOUT_MENUS(keymap_utils.KeymapGroup):
@@ -271,7 +291,7 @@ class DELETE_WITHOUT_MENUS(keymap_utils.KeymapGroup):
 		self.add('mesh.armored_smart_delete', 'X', 'PRESS')
 		self.add('wm.call_menu', 'X', 'PRESS', alt=True); self.prop('name', 'VIEW3D_MT_edit_mesh_delete')
 
-		self.enabled_message()
+		self.status_message('ENABLED')
 
 
 class ALLOW_GIZMO_CLICK(keymap_utils.KeymapGroup):
@@ -279,7 +299,7 @@ class ALLOW_GIZMO_CLICK(keymap_utils.KeymapGroup):
 		self.km = kc.keymaps.new('Generic Gizmo Maybe Drag', space_type='EMPTY')     # Makes Gizmos activate on click instead of drag.
 		self.add('gizmogroup.gizmo_tweak', 'LEFTMOUSE', 'PRESS')
 
-		self.enabled_message()
+		self.status_message('ENABLED')
 
 
 class TAB_HISTORY(keymap_utils.KeymapGroup):
@@ -287,7 +307,7 @@ class TAB_HISTORY(keymap_utils.KeymapGroup):
 		self.km = kc.keymaps.new('Object Non-modal')
 		self.add('armored.mode_toggle', 'TAB', 'PRESS')
 
-		self.enabled_message()
+		self.status_message('ENABLED')
 
 
 class ZBRUSH_SCULPTING(keymap_utils.KeymapGroup):
@@ -393,7 +413,7 @@ class ZBRUSH_SCULPTING(keymap_utils.KeymapGroup):
 		self.prop('secondary_tex', False)
 		self.prop('release_confirm', True)  # Only property that was changed.
 
-		self.enabled_message()
+		self.status_message('ENABLED')
 
 
 class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
@@ -473,7 +493,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
 		self.add('mesh.armored_classic_mirror',     	'X', 'PRESS', ctrl=True, alt=True)
 		self.add('wm.obj_export',                   	'E', 'PRESS', ctrl=True)
-		self.prop('filepath', get_path_from_addon())
+		self.prop('filepath', get_export_path_from_addon())
 		self.prop('export_selected_objects',    True)
 		self.prop('export_materials',           False)
 		self.prop('export_triangulated_mesh',   True)
@@ -489,7 +509,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 		self.km = kc.keymaps.new(name='Mesh')
 
 		self.add('mesh.armored_select_through',		'RIGHTMOUSE',		'CLICK_DRAG', ctrl=True)
-		self.prop('select_mode', 'SET')
+		self.prop('select_mode', 'ADD')
 		
 		self.add('mesh.armored_custom_orientation',	'D',			'PRESS')
 		self.add('wm.context_toggle',			'W',			'PRESS', shift=True)
@@ -537,7 +557,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 		self.add('mesh.armored_mark_edges',		'BUTTON4MOUSE',		'PRESS', ctrl=True, shift=True)
 		self.prop('action', 'CLEAR')
 
-		self.add('mesh.select_linked_pick',		'LEFTMOUSE',			'DOUBLE_CLICK', alt=True)
+		self.add('mesh.select_linked_pick',		'LEFTMOUSE',		'DOUBLE_CLICK', alt=True)
 		self.prop('deselect', False)
 		
 		self.add('mesh.select_more',			'WHEELUPMOUSE',		'PRESS', ctrl=True)
@@ -562,12 +582,12 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 		self.add('curve.shortest_path_pick',		'LEFTMOUSE', 'PRESS', ctrl=True, shift=True)
 		# self.add('curve.draw', 'LEFTMOUSE', 'PRESS', alt=True)
 
-		self.enabled_message()
+		self.status_message('ENABLED')
 
 
 def register():
 	# We register this separately so the user defined value is persistent and uncoupled from the `focus keymap override`.
-	set_abstract_armored_focus_kmi()
+	create_abstract_armored_focus_kmi()
 
 	# We do this here to delay the instancing until `special_keymaps` is populated.
 	for cls in classes:
