@@ -68,7 +68,7 @@
           <ThemeWidgetColors
             outline="#3d3d3dff"
             inner="#282828ff"
-            inner_sel="#a1a1a1ff"
+            inner_sel="#a3a3a3ff"
             item="#ffffffb3"
             text="#e6e6e6"
             text_sel="#000000"
@@ -390,7 +390,7 @@
         facedot_size="3"
         freestyle_face_mark="#7fff7f4d"
         face_retopology="#50c8ff0f"
-        face_back="#ff0000b3"
+        face_back="#000000ff"
         face_front="#0000ff00"
         nurb_uline="#909000"
         nurb_vline="#803060"
