@@ -16,11 +16,14 @@ class MESH_OT_armored_select_through(bpy.types.Operator):
 		name='Mode', 
 		description='Selection Mode', 
 		default='SET', 
-		items=[ ('SET', 'Set',      'Create a new selecton'),
-			('ADD', 'Add',      'Add to the current selection'),
-			('SUB', 'Subtract', 'Subtract from the curent selection'), ]
-		)
-
+		items=[
+			('SET', 'Set',        'Set a new selection'),
+			('ADD', 'Extend',     'Extend existing selection'),
+			('SUB', 'Subtract',   'Subtract existing selection'), 
+			('XOR', 'Difference', 'Invert existing selection'),
+			('AND', 'Intersect',  'Intersect existing selection'), 
+		]
+	)
 
 	def invoke(self, context, event):
 		context.space_data.shading.show_xray = True
