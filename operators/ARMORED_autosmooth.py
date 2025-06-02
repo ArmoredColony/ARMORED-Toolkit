@@ -1,8 +1,23 @@
-version = (1, 2, 0)
+version = (1, 3, 0)
 
 import bpy
 import bmesh
 import math
+
+
+def move_modifier_to_bottom(context, obj: bpy.types.Object, modifier_name: str) -> None:
+	'''
+	Move the modifier down the stack until it reaches the bottom.
+	'''
+	
+	mod = obj.modifiers.get(modifier_name)
+
+	for _ in range( len(obj.modifiers) ):
+		if obj.modifiers[-1] == mod:
+			break
+		
+		with context.temp_override(object=obj):
+			bpy.ops.object.modifier_move_down(modifier=modifier_name)
 
 
 class ARMORED_OT_autosmooth(bpy.types.Operator):
@@ -68,6 +83,8 @@ class ARMORED_OT_autosmooth(bpy.types.Operator):
 			mod = obj.modifiers.get('Smooth by Angle')
 			mod['Input_1'] = self.angle
 			mod.use_pin_to_last = True
+
+			move_modifier_to_bottom(context, obj, mod.name)
 		
 		context.view_layer.objects.active = active_object
 	
