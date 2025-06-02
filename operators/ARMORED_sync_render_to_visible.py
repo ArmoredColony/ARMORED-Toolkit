@@ -47,7 +47,7 @@ def sync_render_to_viewport(self, context):
 
 	print('ARMORED-Toolkit: Syncing Render to Viewport visibility')
 
-	# A layer collection is the instance of a collection in a specifif view layer.
+	# A layer collection is the instance of a collection in a specific view layer.
 	layer_collections = get_view_layer_collections(bpy.context)
 	scene_objects     = get_all_scene_objects(bpy.context)
 
