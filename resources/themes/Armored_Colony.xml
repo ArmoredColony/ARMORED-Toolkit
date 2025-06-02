@@ -390,7 +390,7 @@
         facedot_size="3"
         freestyle_face_mark="#7fff7f4d"
         face_retopology="#50c8ff0f"
-        face_back="#000000ff"
+        face_back="#000000fe"
         face_front="#0000ff00"
         nurb_uline="#909000"
         nurb_vline="#803060"
