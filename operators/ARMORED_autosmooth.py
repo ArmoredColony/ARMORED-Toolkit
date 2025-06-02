@@ -48,10 +48,10 @@ class ARMORED_OT_autosmooth(bpy.types.Operator):
 		selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
 
 		if context.mode == 'OBJECT':
-			self._shade_smooth(objects=selected_objects, value=True)
+			self._shade_smooth(objects=selected_objects)
 				
-		elif context.mode in {'EDIT_MESH', 'EDIT_CURVE'}:
-			self._shade_smooth_bmesh(objects=selected_objects, value=True)
+		elif context.mode == 'EDIT_MESH':
+			self._shade_smooth_bmesh(objects=selected_objects)
 
 		self._add_smooth_by_angle_modifier(context, objects=selected_objects)
 			
@@ -88,10 +88,9 @@ class ARMORED_OT_autosmooth(bpy.types.Operator):
 		
 		context.view_layer.objects.active = active_object
 	
-	def _shade_smooth(self, objects: list[bpy.types.Object], value: bool) -> None:
+	def _shade_smooth(self, objects: list[bpy.types.Object], value: bool = True) -> None:
 		'''
-		Alternative to `object.shade_smooth()` that works on the specified objects instead of the current selection.
-		This is useful in case your selection includes non-mesh objects or if the active is not part of the selection.
+		Smoothing for objects in Object Mode.
 		'''
 
 		for obj in objects:
@@ -100,18 +99,19 @@ class ARMORED_OT_autosmooth(bpy.types.Operator):
 			mesh.polygons.foreach_set('use_smooth', values)
 			mesh.update()
 
-	def _shade_smooth_bmesh(self, objects: list[bpy.types.Object], value: bool) -> None:
+	def _shade_smooth_bmesh(self, objects: list[bpy.types.Object], value: bool = True) -> None:
 		'''
-		Smoothing for geometry that is still being edited.
+		Smoothing for objects in Edit Mode.
 		'''
 
 		for obj in objects:
 			mesh = obj.data
 			bm = bmesh.from_edit_mesh(mesh)
+			
 			for f in bm.faces:
 				f.smooth = value
 		
-		bmesh.update_edit_mesh(mesh)
+			bmesh.update_edit_mesh(mesh)
 
 
 classes = (
