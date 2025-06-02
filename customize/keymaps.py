@@ -508,6 +508,7 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
 		self.km = kc.keymaps.new(name='Mesh')
 
+		self.add('mesh.armored_target_weld',		'Y',			'PRESS')
 		self.add('mesh.armored_select_through',		'RIGHTMOUSE',		'CLICK_DRAG', ctrl=True)
 		self.prop('select_mode', 'ADD')
 		
