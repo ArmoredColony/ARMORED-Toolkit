@@ -1,4 +1,4 @@
-version = (1, 4, 0)
+version = (1, 5, 0)
 
 import bpy
 import bmesh
@@ -72,6 +72,7 @@ class MESH_OT_armored_delete_mirrored(bpy.types.Operator):
 
 			if context.mode == 'OBJECT':
 				bm.to_mesh(mesh)
+				mesh.update()
 
 			elif context.mode == 'EDIT_MESH':
 				bmesh.update_edit_mesh(mesh)
