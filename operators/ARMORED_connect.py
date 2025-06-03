@@ -1,4 +1,4 @@
-version = (3, 0, 0)
+version = (3, 0, 1)
 
 import bpy
 import bmesh
@@ -12,7 +12,7 @@ def any_elements_selected(context) -> bool:
 
 
 def set_property_percent(self, context) -> None:
-	c = self.cuts-1
+	c = self.cuts - 1
 	self.width_percent = c / (c + 2) * 100
 
 
@@ -32,7 +32,7 @@ class MESH_OT_armored_connect(bpy.types.Operator):
 		name='Width Percent', default=0, min=0, max=100, step=100)
 	
 	grid_fill: bpy.props.BoolProperty(
-		name='Grid Fill', default=True, description='Affects perpendicular face loop selections')
+		name='Grid Fill', default=True, description='Affects intersecting face loops')
 
 	def draw(self, context):
 		layout = self.layout
@@ -53,7 +53,6 @@ class MESH_OT_armored_connect(bpy.types.Operator):
 
 		col.operator("wm.operator_defaults")
 
-	
 	@classmethod
 	def poll(cls, context):
 		return context.mode == 'EDIT_MESH'
@@ -68,8 +67,9 @@ class MESH_OT_armored_connect(bpy.types.Operator):
 		me = ob.data
 		bm = bmesh.from_edit_mesh(me)
 
-		# VERTEX MODE
-		if self._in_vertex_mode(context):
+		vert_mode, edge_mode, face_mode = context.tool_settings.mesh_select_mode
+
+		if vert_mode:
 			
 			selected_verts = self._get_selected_verts(bm)
 
@@ -85,15 +85,14 @@ class MESH_OT_armored_connect(bpy.types.Operator):
 				return {'FINISHED'}
 
 
-		# EDGE MODE
-		if self._in_edge_mode(context):
+		if edge_mode:
 
 			selected_edges = self._get_selected_edges(bm)
 			self._select_set(selected_edges, False)
 
 			if len(selected_edges) == 1:
 				bevel_mode = 'VERTICES'
-				self.cuts = 1
+				# self.cuts = 1	# Let the user decide.
 			else:
 				bevel_mode = 'EDGES'
 
@@ -109,8 +108,7 @@ class MESH_OT_armored_connect(bpy.types.Operator):
 			return {'FINISHED'}
 
 			
-		#  FACE MODE
-		if self._in_face_mode(context):
+		if face_mode:
 			
 			selected_faces = self._get_selected_faces(bm)
 			selected_edges = self._get_selected_edges(bm)
@@ -156,11 +154,12 @@ class MESH_OT_armored_connect(bpy.types.Operator):
 
 	def _connect_edge_ring(self, bm: bmesh.types.BMesh, edges: bmesh.types.BMEdgeSeq, cuts: int, bevel_mode='EDGES') -> bmesh.types.BMElemSeq:
 		'''
-		Connects the input edge ring(s) with the specified ammount of edge loops ('Cuts' in Blender lingo).
+		Connects the input edge ring(s) with the specified amount of edge loops ('Cuts' in Blender lingo).
 		Supports both open and closed edge rings.
 		Supports multiple, unconnected edge rings.
 
-		Return: BMEdgeSeq to be selected.
+		RETURNS: 
+			BMEdgeSeq to be selected.
 		'''
 
 		# WE CREATE A SINGLE CUT WITH SUBDIVIDE BECAUSE IT DOES NOT HAVE
@@ -168,7 +167,7 @@ class MESH_OT_armored_connect(bpy.types.Operator):
 		subdivided_edges = bmesh.ops.subdivide_edges(bm, edges=edges, cuts=1, use_grid_fill=self.grid_fill)
 
 		if cuts == 1:
-			# THIS ONLY FIXES THE OUTPUT FROM PERPENDICULAR FACE LOOP SELECTIONS, BUT I'M A PERFECTIONIS SO HERE IT IS.
+			# THIS ONLY FIXES THE OUTPUT FROM PERPENDICULAR FACE LOOP SELECTIONS, BUT I'M A PERFECTIONIST SO HERE IT IS.
 			bad_faces = {elem for elem in subdivided_edges['geom_inner'] if isinstance(elem, bmesh.types.BMFace)}
 
 			return set(subdivided_edges['geom_inner']).difference(bad_faces)
@@ -186,21 +185,12 @@ class MESH_OT_armored_connect(bpy.types.Operator):
 			clamp_overlap=True, 
 			affect=bevel_mode)
 
-		return beveled_edges['faces']
+		if bevel_mode == 'EDGES':
+			return beveled_edges['faces']
+		
+		else:
+			return beveled_edges['verts']
 
-
-
-	# SELECTION MODE CHECK >>
-
-	def _in_vertex_mode(self, context) -> bool:
-		return context.tool_settings.mesh_select_mode[0]
-	
-	def _in_edge_mode(self, context) -> bool:
-		return context.tool_settings.mesh_select_mode[1]
-	
-	def _in_face_mode(self, context) -> bool:
-		return context.tool_settings.mesh_select_mode[2]
-	
 
 	# SELECTION GETTERS >>
 
@@ -224,8 +214,8 @@ class MESH_OT_armored_connect(bpy.types.Operator):
 	# SELECTION SETTERS >>
 
 	def _select_set(self, elements: list[bmesh.types.BMElemSeq], state: bool) -> None:
-		for element in elements:
-			element.select = state
+		for e in elements:
+			e.select = state
 
 
 classes = (
