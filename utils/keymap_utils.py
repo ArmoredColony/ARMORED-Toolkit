@@ -137,7 +137,7 @@ class KeymapGroup(abc.ABC):
 				km.keymap_items.remove(kmi)
 			except Exception as e:
 				self.error_count += 1
-				debug.msg(e, 'Probably an F2 Addon Exception')
+				debug.msg(e)
 
 	def status_message(self, action:str):
 		'''
