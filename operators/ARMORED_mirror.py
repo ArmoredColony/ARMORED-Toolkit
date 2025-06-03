@@ -3,17 +3,6 @@ version = (1, 7, 0)
 import bpy
 
 
-def get_selected_and_active_meshes(context) -> set:
-	'''
-	Returns a set of selected and active objects filtered to type 'MESH'.
-	'''
-	
-	selected_objects = set(context.selected_objects)
-	selected_objects.add(context.active_object)
-
-	return {obj for obj in selected_objects if obj and obj.type == 'MESH'}
-
-
 def move_modifier_up(context, obj: bpy.types.Object, modifier_name: str) -> None:
 	with context.temp_override(object=obj):
 		bpy.ops.object.modifier_move_up(modifier=modifier_name)
@@ -30,12 +19,12 @@ class MESH_OT_armored_mirror(bpy.types.Operator):
 
 	@classmethod
 	def poll(cls, context):
-		return bool(get_selected_and_active_meshes)
+		return bool([obj for obj in context.selected_objects if obj.type == 'MESH'])
 
 	def execute(self, context):
-		objects_to_mirror = get_selected_and_active_meshes(context)
+		selected_objects = [obj for obj in context.selected_objects if obj.type == 'MESH']
 
-		for obj in objects_to_mirror:
+		for obj in selected_objects:
 
 			# Gets the first mirror modifier it finds.
 			mod = next((mod for mod in obj.modifiers if mod.type == 'MIRROR'), None)
