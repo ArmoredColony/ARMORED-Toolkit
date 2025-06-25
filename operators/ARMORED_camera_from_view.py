@@ -1,10 +1,10 @@
-version = (1, 0, 0)
+version = (2, 0, 0)
 
 import bpy
 
 
 class OBJECT_OT_armored_camera_from_view(bpy.types.Operator):
-	'''Create a Camera based on the current view.
+	'''Create a new camera and align it to viewport or simply align a selected camera.
 
 	armoredColony.com '''
 
@@ -12,43 +12,24 @@ class OBJECT_OT_armored_camera_from_view(bpy.types.Operator):
 	bl_label = 'ARMORED Camera from View'
 	bl_options = {'REGISTER', 'UNDO'}
 
-	# @classmethod
-	# def poll(cls, context):
-		# return context.active_object is not None
+	@classmethod
+	def poll(cls, context):
+		return context.mode == 'OBJECT'
 
 	def execute(self, context):
-		context.scene.camera = self._add_camera(context)
-		self._align_camera_to_view(context)
+		cameras = [obj for obj in context.selected_objects if obj.type == 'CAMERA']
 
-		return {'FINISHED'}
-	
-
-	# PRIVATE METHODS
-
-	def _add_camera(self, context):
-		# Create a new camera object
-		camera_data = bpy.data.cameras.new(name='Camera')
-		camera_object = bpy.data.objects.new(name='Camera', object_data=camera_data)
-		
-		# Link the camera to the scene
-		context.scene.collection.objects.link(camera_object)
-		
-		# Make the camera active
-		context.view_layer.objects.active = camera_object
-		camera_object.select_set(True)
-		
-		return camera_object
-
-	def _align_camera_to_view(self, context):
-		window = context.window
-		areas = [area for area in window.screen.areas if area.type == 'VIEW_3D']
-		region = [region for region in areas[0].regions if region.type == 'WINDOW']
-
-		with context.temp_override(window=window, area=areas[0], region=region[0]):
+		if not cameras:
+			bpy.ops.object.camera_add(align='VIEW')
 			bpy.ops.view3d.camera_to_view()
 		
-		context.space_data.lock_camera = True
+		for camera in cameras:
+			context.scene.camera = camera
+			bpy.ops.view3d.camera_to_view()
+			bpy.ops.view3d.view_camera()
+		# bpy.ops.view3d.camera_to_view()
 
+		return {'FINISHED'}
 
 classes = (
 	OBJECT_OT_armored_camera_from_view,
