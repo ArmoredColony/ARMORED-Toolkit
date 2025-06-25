@@ -448,7 +448,7 @@ class ARMORED_OT_align_verts(bpy.types.Operator):
 		name='Neighbors', 
 		description=(
 			'Method used to find the neighbor verts of the selected verts '
-			'when dealing with non-quad topology.'
+			'when dealing with non-quad topology'
 		),
 		items=[
 			('MOST_PERPENDICULAR',	'Most Perpendicular ',	''),
