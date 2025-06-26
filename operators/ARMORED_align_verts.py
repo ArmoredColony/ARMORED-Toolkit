@@ -203,17 +203,16 @@ class Alignment:
 			'Z': mathutils.Vector((0, 0, 1))
 		}
 
-		# Find axis with the highest absolute alignment
-		def axis_distance(axis_vec):
-			return dir_vec.dot(axis_vec)
-
-		closest_axis = max(world_axes, key=lambda a: abs(axis_distance(world_axes[a])))
+		most_parallel_axis_key = max(
+			world_axes, key=lambda a: 
+				abs( dir_vec.dot(world_axes[a]) )
+		)
 
 		# Project start/end along the closest axis (world space)
-		if closest_axis == 'X':
+		if most_parallel_axis_key == 'X':
 			start = (xform_start.x, avg.y, avg.z)
 			end   = (xform_end.x,   avg.y, avg.z)
-		elif closest_axis == 'Y':
+		elif most_parallel_axis_key == 'Y':
 			start = (avg.x, xform_start.y, avg.z)
 			end   = (avg.x,   xform_end.y, avg.z)
 		else:  # Z
@@ -487,7 +486,7 @@ class ARMORED_OT_align_verts(bpy.types.Operator):
 		return context.mode == 'EDIT_MESH'
 	
 	def execute(self, context):
-		obj = context.active_object
+		obj = context.edit_object
 		mesh = obj.data
 		bm = bmesh.from_edit_mesh(mesh)
 
@@ -521,7 +520,7 @@ class ARMORED_OT_align_verts(bpy.types.Operator):
 				Redistribute.predictive_spacing(start_co, end_co, verts, neighbor_strategy=self.neighbors)
 
 		elif self.spacing == 'EVEN':       
-			Redistribute.even_spacing(start_co, end_co, verts, matrix, self.axis)
+			Redistribute.even_spacing(start_co, end_co, verts, matrix, space=self.axis)
 
 		bmesh.update_edit_mesh(mesh)
 		
