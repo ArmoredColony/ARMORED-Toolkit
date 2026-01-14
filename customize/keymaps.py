@@ -508,11 +508,13 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
 		self.km = kc.keymaps.new(name='Mesh')
 
-		self.add('mesh.armored_target_weld',		'Y',			'PRESS')
+		self.add('mesh.armored_target_weld_modal',	'Y',			'PRESS')
+		# self.add('wm.tool_set_by_id',			'Y',			'PRESS')
+		# self.prop('name', 'mesh_tool.armored_target_weld')
+
 		self.add('mesh.armored_select_through',		'RIGHTMOUSE',		'CLICK_DRAG', ctrl=True)
 		self.prop('select_mode', 'ADD')
 		
-		self.add('mesh.armored_custom_orientation',	'D',			'PRESS')
 		self.add('wm.context_toggle',			'W',			'PRESS', shift=True)
 		self.prop('data_path', 'space_data.overlay.show_wireframes')
 
@@ -546,7 +548,6 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 		self.add('mesh.armored_smart_crease',		'E',			'PRESS', shift=True)
 		self.add('mesh.armored_mark_edges',		'BUTTON5MOUSE',		'PRESS', shift=True)
 		self.prop('action', 'MARK')
-		self.prop('face_limit_method', 'BORDER')
 		
 		self.add('mesh.armored_mark_edges',		'BUTTON5MOUSE',		'PRESS', ctrl=True, shift=True)
 		self.prop('action', 'MARK')
@@ -588,7 +589,8 @@ class OPERATOR_SHORTCUTS(keymap_utils.KeymapGroup):
 
 def register():
 	# We register this separately so the user defined value is persistent and uncoupled from the `focus keymap override`.
-	create_abstract_armored_focus_kmi()
+	# PATCH → DOING IT IN ADDON PREFS NOW, SO ITS CREATED EARLY
+	# create_abstract_armored_focus_kmi()
 
 	# We do this here to delay the instancing until `special_keymaps` is populated.
 	for cls in classes:

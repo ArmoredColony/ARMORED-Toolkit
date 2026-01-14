@@ -365,6 +365,8 @@ def register():
 	icons.load_icons(preview_collections)
 	bpy.app.handlers.load_post.append(keymaps.update_armored_focus_keymaps)
 	# bpy.app.handlers.load_post.append(keymaps.disable_conflicting_keymaps)
+	
+	keymaps.create_abstract_armored_focus_kmi()
 
 	debug.msg('ARMORED-Toolkit System: LOAD_POST handlers in buffer:')
 	
